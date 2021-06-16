@@ -1,25 +1,32 @@
-"""Run on content/ dir to make a tsv of only the text for each page."""
-
 from glob import glob
+import re
 
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-with open('culture.tsv', 'w') as culture_file, \
-     open('grammar.tsv', 'w') as grammar_file, \
-     open('kanji.tsv', 'w') as kanji_file, \
-     open('sound.tsv', 'w') as sound_file, \
-     open('translation.tsv', 'w') as translation_file, \
-     open('vocab.tsv', 'w') as vocab_file, \
-     open('extract_err.tmp', 'w') as err_file:
-    print('lesson', 'category', 'filename', 'content', sep='\t', file=translation_file)
-    for full_path in tqdm(glob('**/*.htm*', recursive=True)):
-        try:
-            lesson, category, filename = full_path.split('/')
-        except ValueError:
-            print(full_path, file=err)
-            continue
-        with open(full_path) as f:
-            soup = BeautifulSoup(f, 'lxml')
-        content = soup.body.get_text(' ').strip()
-        print(lesson, category, filename, content, sep='\t', file=tsv_file)
+
+with open('translation.tsv', 'w') as trans_tsv_file:
+    print('lesson', 'sent_id', 'sent', 'sound_file', 'trans', sep='\t', file=trans_tsv_file)
+    for lesson_dir in tqdm(glob('content/lesson*')):
+        lesson = lesson_dir.split('/')[-1]
+        trans_dir = lesson_dir + '/translation/'
+        with open(lesson_dir + '/translation.html') as trans_file:
+            soup = BeautifulSoup(trans_file, 'lxml')
+        title = soup.find('p', class_='heading').font.get_text(' ').strip()
+        lesson_sound_file = soup.div.p.a['href']
+        print(lesson, 'TITLE', title, '', lesson_sound_file, '', sep='\t', file=trans_tsv_file)
+        sentences = []
+        for p in soup.find_all('p', class_='sentence'):
+            sound_file = p.a['href']
+            sent_id = sound_file.split('/')[-1].split('.')[0]
+            sent = p.get_text(' ').strip()
+
+            # Retrieve translation
+            trans_id = set(re.search(r'translation[\'"]\s*,\s*(\d+)\s*,\s*(\d+)\s*\)',
+                                     p.find_all('a')[1]['href']).groups())
+            assert len(trans_id) == 1, f'{lesson} {title} {sent_id} had {trans_id}.'
+            trans_id = trans_id.pop()
+            with open(f'{lesson_dir}/translation/{trans_id}.htm') as f:
+                trans_soup = BeautifulSoup(f, 'lxml')
+            trans = trans_soup.body.get_text(' ').strip()
+            print(lesson, sent_id, sent, sound_file, trans, sep='\t', file=trans_tsv_file)
