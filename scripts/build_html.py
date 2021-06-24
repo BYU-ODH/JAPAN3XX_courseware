@@ -29,7 +29,7 @@ top_matter = '''<html>
   </title>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-  <link rel="stylesheet" href="../bulma.min.css">
+  <link rel="stylesheet" href="../bootstrap.min.css">
   <link rel="stylesheet" href="../fontawesome-free-5.15.3-web/css/all.min.css">
 <script>
 function aud_play_pause(this_elem, elemId) {
@@ -67,9 +67,11 @@ function show_hide_trans(elem) {
 function change_mode(mode) {
     mode_buttons = document.getElementsByClassName('mode-button');
     for (let i = 0; i < mode_buttons.length; i++) {
-        mode_buttons[i].classList.remove('is-primary')
+        mode_buttons[i].classList.remove('btn-primary')
+        mode_buttons[i].classList.add('btn-secondary')
     }
-    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+    document.getElementsByClassName(mode)[0].classList.add('btn-primary')
+    document.getElementsByClassName(mode)[0].classList.remove('btn-secondary')
     sents = document.getElementsByClassName('sent-content');
     for (let i = 0; i < sents.length; i++) {
         sents[i].innerHTML = sents[i].dataset[mode];
@@ -77,6 +79,7 @@ function change_mode(mode) {
 }
 
 function show(content_path) {
+    console.log(content_path);
     modal_card_body = document.getElementById("modal-card-body");
     fetch(content_path)
         .then(response => response.text())
@@ -111,27 +114,47 @@ function close_modal() {
     visibility: hidden;
 }
 
+.trans-img {
+    height: 20px;
+    width: 20px;
+}
+
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
 }
-nav.navbar.is-fixed-bottom > .field {
+.fixed-bottom > .btn-group {
     justify-content: center;
 }
 
 </style>
 </head>
 
-<body class="has-navbar-fixed-bottom">
+<body>
 
 <div id="modal-card" class="modal">
-  <div class="modal-background" onclick="close_modal()"></div>
-  <div class="modal-card">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
     </section>
   </div>
   <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div class="modal fade" id="modal-card" tabindex="-1" aria-labelledby="Explanation" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-body">
+        <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+        </section>
+      </div>
+<!--      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div> -->
+    </div>
+  </div>
 </div>
 
 <div id="modal-img" class="modal">
@@ -179,53 +202,40 @@ def generate_lesson(rows):
                '    </p>\n'
                '  </div>\n'
                '  <hr>\n'
-               '  <table id="sentences" class="table-NOT"><tbody>\n',
+               '  <div id="sentences" class="container">\n',
               file=f)
         for row in rows:
             lesson, sent_id, sound_file, sent, trans, grammar_sent, vocab_sent, kanji_sent = row
             trans = trans.replace('"', '&quot;').replace("'", '&#39;')
-            print(f'    <tr id="{sent_id}" class="sentence">\n'
-                   '      <td>\n'
-                   '      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">\n'
+            print(f'    <div id="{sent_id}" class="row sentence">\n'
+                   '      <div class="col-1 align-self-center" onclick="aud_play_pause(this)">\n'
                   f'        <i id="play_{sent_id}" class="fas fa-play"></i>\n'
                   f'        <audio id="audio_{sent_id}" onended="unplay(this.parentElement.getElementsByTagName(\'i\')[0])">\n'
                   f'          <source src="../sound/{sent_id}.mp3" type="audio/mpeg">\n'
                    '        </audio>\n'
-                   '      </span>\n'
-                   '      </td>\n'
-                   '      <td>\n'
-                  f'      <span class="sent-content" data-grammar="{html.escape(grammar_sent.strip() or sent)}"\n'
-                  f'                                   data-kanji="{html.escape(kanji_sent.strip() or sent)}"\n'
-                  f'                                   data-vocab="{html.escape(vocab_sent.strip() or sent)}">\n'
+                   '      </div>\n'
+                  f'      <div class="col-11 sent-content"\n'
+                  f'            data-grammar="{html.escape(grammar_sent.strip() or sent)}"\n'
+                  f'            data-kanji="{html.escape(kanji_sent.strip() or sent)}"\n'
+                  f'            data-vocab="{html.escape(vocab_sent.strip() or sent)}">\n'
                   f'        {vocab_sent}\n'
-                   '      </span>\n'
-                   '      </td>\n'
-                   '    </tr>\n'
-                   '    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
-                   '      <td>\n'
-                  f'        <span class="icon">\n'
-                  f'          <i class="fas fa-language"></i>\n'
-                   '        </span>\n'
-                   '      </td>\n'
-                   '      <td>\n'
-                  f'        <span class="trans">{trans}</span>\n'
-                   '      </td>\n'
-                   '    </tr>\n',
+                   '      </div>\n'
+                   '    </div>\n'
+                   '    <div class="row" onclick="show_hide_trans(this)">\n'
+                  f'      <div class="col-1 align-self-center">\n'
+                  f'        <img src="../translate.svg" class="img-fluid trans-img">\n'
+                   '      </div>\n'
+                  f'      <div class="col-11 trans">{trans}</div>\n'
+                   '    </div>\n',
                   file=f)
-        print('  </tbody></table>\n'
-              '  <nav class="navbar is-fixed-bottom">\n'
-              '      <div class="field has-addons">\n'
-              '        <p class="control">\n'
-              '          <button class="button is-primary mode-button vocab" onclick="change_mode(\'vocab\')">Vocab</button>\n'
-              '        </p>\n'
-              '        <p class="control">\n'
-              '          <button class="button mode-button grammar" onclick="change_mode(\'grammar\')">Grammar</button>\n'
-              '        </p>\n'
-              '        <p class="control">\n'
-              '          <button class="button mode-button kanji" onclick="change_mode(\'kanji\')">Kanji</button>\n'
-              '        </p>\n'
+        print('  </div>\n'
+              '  <div class="fixed-bottom">\n'
+              '    <div class="btn-group" role="group">\n'
+              '      <button class="btn btn-primary mode-button vocab" onclick="change_mode(\'vocab\')">Vocab</button>\n'
+              '      <button class="btn btn-secondary mode-button grammar" onclick="change_mode(\'grammar\')">Grammar</button>\n'
+              '      <button class="btn btn-secondary mode-button kanji" onclick="change_mode(\'kanji\')">Kanji</button>\n'
               '    </div>\n'
-              '  </nav>\n'
+              '  </div>\n'
               '</body>\n'
               '\n'
               '</html>\n', file=f)
