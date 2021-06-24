@@ -116,10 +116,10 @@ function close_modal() {
     border-top-style: solid;
     border-top-width: thin;
 }
+
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
 }
-
 </style>
 </head>
 
@@ -185,7 +185,7 @@ def generate_lesson(rows):
             lesson, sent_id, sound_file, sent, trans, grammar_sent, vocab_sent, kanji_sent = row
             trans = trans.replace('"', '&quot;').replace("'", '&#39;')
             print(f'    <tr id="{sent_id}" class="sentence">\n'
-                   '      <td>\n'
+                   '      <td class="has-text-centered" style="vertical-align: middle">\n'
                    '      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">\n'
                   f'        <i id="play_{sent_id}" class="fas fa-play"></i>\n'
                   f'        <audio id="audio_{sent_id}" onended="unplay(this.parentElement.getElementsByTagName(\'i\')[0])">\n'
@@ -202,7 +202,7 @@ def generate_lesson(rows):
                    '      </td>\n'
                    '    </tr>\n'
                    '    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
-                   '      <td>\n'
+                   '      <td class="has-text-centered" style="vertical-align: middle">\n'
                   f'        <span class="icon">\n'
                   f'          <i class="fas fa-language"></i>\n'
                    '        </span>\n'
