@@ -52,15 +52,10 @@ function unplay(elem) {
 
 function show_hide_trans(elem) {
     trans_elem = elem.getElementsByClassName('trans')[0];
-    trans_style = getComputedStyle(trans_elem)
-    if (trans_style['visibility'] == 'hidden') {
-        trans_elem.style.visibility = 'visible';
-    } else if (trans_style['visibility'] == 'visible') {
-        trans_elem.style.visibility = 'hidden';
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible');
     } else {
-        console.log('trans_elem has unexpected visibility style:')
-        console.log(trans_elem)
-        console.log(trans_elem.innerHTML)
+        trans_elem.classList.add('is-invisible');
     }
 }
 
@@ -70,9 +65,15 @@ function change_mode(mode) {
         mode_buttons[i].classList.remove('is-primary')
     }
     document.getElementsByClassName(mode)[0].classList.add('is-primary')
-    sents = document.getElementsByClassName('sent-content');
-    for (let i = 0; i < sents.length; i++) {
-        sents[i].innerHTML = sents[i].dataset[mode];
+
+    all_sents = document.getElementsByClassName('content-sent');
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden');
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent');
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden');
     }
 }
 
@@ -107,10 +108,6 @@ function close_modal() {
 </script>
 
 <style>
-.trans {
-    visibility: hidden;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -124,6 +121,8 @@ nav.navbar.is-fixed-bottom > .field {
 </head>
 
 <body class="has-navbar-fixed-bottom">
+
+<section class="section">
 
 <div id="modal-card" class="modal">
   <div class="modal-background" onclick="close_modal()"></div>
@@ -172,13 +171,12 @@ def generate_lesson(rows):
                '  <div class="block is-centered">\n'
                '    <p>\n'
                '      Listen to Whole Story <br>\n'
-               '      <audio controls>\n'
+               '      <audio controls controlsList="nodownload">\n'
               f'        <source src="../{sound_file}" type="audio/mpeg">\n'
                '      </audio>\n'
                '      </a>\n'
                '    </p>\n'
                '  </div>\n'
-               '  <hr>\n'
                '  <table id="sentences" class="table-NOT"><tbody>\n',
               file=f)
         for row in rows:
@@ -194,11 +192,10 @@ def generate_lesson(rows):
                    '      </span>\n'
                    '      </td>\n'
                    '      <td>\n'
-                  f'      <span class="sent-content" data-grammar="{html.escape(grammar_sent.strip() or sent)}"\n'
-                  f'                                   data-kanji="{html.escape(kanji_sent.strip() or sent)}"\n'
-                  f'                                   data-vocab="{html.escape(vocab_sent.strip() or sent)}">\n'
-                  f'        {vocab_sent}\n'
-                   '      </span>\n'
+                  f'        <span class="content-sent grammar-sent is-hidden">{grammar_sent.strip() or sent}"</span>\n'
+                  f'        <span class="content-sent kanji-sent is-hidden">{kanji_sent.strip() or sent}"</span>\n'
+                  f'        <span class="content-sent plain-sent is-hidden">{sent}"</span>\n'
+                  f'        <span class="content-sent vocab-sent">{vocab_sent.strip() or sent}"</span>\n'
                    '      </td>\n'
                    '    </tr>\n'
                    '    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
@@ -208,12 +205,12 @@ def generate_lesson(rows):
                    '        </span>\n'
                    '      </td>\n'
                    '      <td>\n'
-                  f'        <span class="trans">{trans}</span>\n'
+                  f'        <span class="trans is-invisible">{trans}</span>\n'
                    '      </td>\n'
                    '    </tr>\n',
                   file=f)
         print('  </tbody></table>\n'
-              '  <nav class="navbar is-fixed-bottom">\n'
+              '  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">\n'
               '      <div class="field has-addons">\n'
               '        <p class="control">\n'
               '          <button class="button is-primary mode-button vocab" onclick="change_mode(\'vocab\')">Vocab</button>\n'
@@ -226,6 +223,7 @@ def generate_lesson(rows):
               '        </p>\n'
               '    </div>\n'
               '  </nav>\n'
+              '</section>\n'
               '</body>\n'
               '\n'
               '</html>\n', file=f)
@@ -244,6 +242,7 @@ main_front_matter = '''<html>
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
 </head>
 <body>
+<section class="section">
 <span class="title">Japanese 302</span>
 <hr>
 <aside class="menu">
@@ -270,6 +269,7 @@ def generate_main(lessons):
                   file=f)
         print('  </ul>\n'
               '</aside>\n'
+              '</section>\n'
               '</body>\n',
               file=f)
 
