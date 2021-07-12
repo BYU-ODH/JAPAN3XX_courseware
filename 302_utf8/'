@@ -1,0 +1,46 @@
+from collections import defaultdict
+from glob import glob
+import os
+from pathlib import Path
+from pprint import pprint
+
+OUTPUT_DIR = 'duplicates'
+dupl_dict = {}
+
+
+for content_type in ('grammar', 'kanji', 'vocab'):
+    dupl_dict[content_type] = defaultdict(dict)
+    for fname in glob(f'content/lesson*/{content_type}/*.htm*'):
+        p = Path(fname)
+        try:
+            dupl_dict[content_type][p.name].append(fname)
+        except AttributeError:
+            dupl_dict[content_type][p.name] = [fname]
+
+delete_us = []
+for content_type, ct_dict in dupl_dict.items():
+    for name, full_names in ct_dict.items():
+        if len(full_names) < 2:
+            delete_us.append((content_type, name))
+        else:
+            all_contents = [open(fname).read() for fname in full_names]
+            if all(all_contents[0] == content for content in all_contents):
+                delete_us.append((content_type, name))
+for content_type, name in delete_us:
+    del dupl_dict[content_type][name]
+
+pprint(dupl_dict)
+
+try:
+    os.mkdir(OUTPUT_DIR)
+except FileExistsError:
+    pass
+print(f'Writing duplicate files to {OUTPUT_DIR}/ ...')
+for content_type, ct_dict in dupl_dict.items():
+    for name, full_names in ct_dict.items():
+        for fname in full_names:
+            fname_long = fname.replace('/', '_')
+            with open(fname) as f:
+                content = f.read()
+            with open(f'{OUTPUT_DIR}/{fname_long}', 'w') as f:
+                f.write(content)
