@@ -1,6 +1,6 @@
 # Generate HTML
 
-The file `lessons.tsv` was automatically extracted from `../302_utf8/`, using
+The file `lessons.tsv` was automatically extracted from `302_orig_utf8/`, using
 the python script in `scripts/extract_content.py`. This script and the
 original source are kept for historical reasons, but moving forward,
 `lessons.tsv` is to be treated as the source file for any editing.
