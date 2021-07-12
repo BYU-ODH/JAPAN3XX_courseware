@@ -89,15 +89,15 @@ with open('lessons.tsv', 'w') as trans_tsv_file:
             sent = p.get_text(' ').strip().replace('\n', '<br>')
             grammar_sent = get_sent_by_sound_file_id(grammar_soup, sent_id)
             grammar_sent = re.sub(r'''<a\s+href="javascript:getDesc\('grammar',\d+,(\d+)\)">\s*(.+?)\s*</a>''',
-                                  r'''<a onclick="show('../grammar/\1.html')">\2</a>''',
+                                  r'''<a onclick="show('./grammar/\1.html')">\2</a>''',
                                   grammar_sent)
             vocab_sent = get_sent_by_sound_file_id(vocab_soup, sent_id)
             vocab_sent = re.sub(r'''<a\s+href="javascript:getDesc\('vocab',\d+,(\d+)\)">\s*(.+?)\s*</a>''',
-                                r'''<a onclick="show('../vocab/\1.html')">\2</a>''',
+                                r'''<a onclick="show('./vocab/\1.html')">\2</a>''',
                                 vocab_sent)
             kanji_sent = get_sent_by_sound_file_id(kanji_soup, sent_id)
             kanji_sent = re.sub(r'''<a\s+href="javascript:getDesc\('kanji',\d+,(\d+)\)">\s*(.+?)\s*</a>''',
-                                r'''<a onclick="show_gif('../kanji/\1.gif')">\2</a>''',
+                                r'''<a onclick="show('./kanji/\1.html')">\2</a>''',
                                 kanji_sent)
 
             # Retrieve translation

@@ -143,7 +143,7 @@ nav.navbar.is-fixed-bottom > .field {
 <nav class="breadcrumb" aria-label="breadcrumbs">
   <ul>
     <li>
-      <a href="../index.html">
+      <a href="index.html">
         <span class="icon is-small">
           <i class="fas fa-home" aria-hidden="true"></i>
         </span>
@@ -158,8 +158,7 @@ nav.navbar.is-fixed-bottom > .field {
 def generate_lesson(rows):
     title_row, rows = rows[0], rows[1:]
     lesson, _, sound_file, title, unit = title_row
-    os.makedirs(f'{target_dir}/{lesson}', exist_ok=True)
-    with open(f'{target_dir}/{lesson}/index.html', 'w') as f:
+    with open(f'{target_dir}/{lesson}.html', 'w') as f:
         print(f'{top_matter}\n'
               f'        <span>{title}</span>\n'
                '      </a>\n'
@@ -265,7 +264,7 @@ def generate_main(lessons):
                        '  <ul class="menu-list">\n',
                       file=f)
 
-            print(f'    <li><a href="{lesson}/index.html">{short_lesson}: {title}</a></li>',
+            print(f'    <li><a href="{lesson}.html">{short_lesson}: {title}</a></li>',
                   file=f)
         print('  </ul>\n'
               '</aside>\n'
