@@ -63,7 +63,7 @@ def get_sent_by_sound_file_id(soup, sent_id):
 with open('lessons.tsv', 'w') as trans_tsv_file:
     print('lesson', 'sent_id', 'sound_file', 'sent', 'trans', 'grammar_sent',
           'vocab_sent', 'kanji_sent', sep='\t', file=trans_tsv_file)
-    for lesson_dir in tqdm(sorted(glob('content/lesson*'))):
+    for lesson_dir in tqdm(sorted(glob('../302_utf8/content/lesson*'))):
         lesson = lesson_dir.split('/')[-1]
         with open(lesson_dir + '/translation.html') as trans_file:
             trans_soup = BeautifulSoup(trans_file, 'lxml')
