@@ -21,145 +21,17 @@ except IndexError:
     target_dir = 'generated_html'
 
 
-top_matter = '''<html>
+with open('../common/lesson_front_matter.html') as f:
+    lesson_front_matter = f.read().replace('3XX', '302')
 
-<head>
-  <title>
-    Japanese 302
-  </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
-  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-  <link rel="stylesheet" href="../bulma.min.css">
-  <link rel="stylesheet" href="../fontawesome-free-5.15.3-web/css/all.min.css">
-<script>
-function aud_play_pause(this_elem, elemId) {
-    var myIcon = this_elem.getElementsByTagName("i")[0];
-    var myAudio = this_elem.getElementsByTagName("audio")[0];
-    if (myAudio.paused) {
-        myIcon.classList.remove('fas', 'fa-play');
-        myIcon.classList.add('fas', 'fa-pause');
-        myAudio.play();
-    } else {
-        unplay(myIcon);
-        myAudio.pause();
-    }
-}
-
-function unplay(elem) {
-    elem.classList.remove('fas', 'fa-pause');
-    elem.classList.add('fas', 'fa-play');
-}
-
-function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0];
-    if (trans_elem.classList.contains('is-invisible')) {
-        trans_elem.classList.remove('is-invisible');
-    } else {
-        trans_elem.classList.add('is-invisible');
-    }
-}
-
-function change_mode(mode) {
-    mode_buttons = document.getElementsByClassName('mode-button');
-    for (let i = 0; i < mode_buttons.length; i++) {
-        mode_buttons[i].classList.remove('is-primary')
-    }
-    document.getElementsByClassName(mode)[0].classList.add('is-primary')
-
-    all_sents = document.getElementsByClassName('content-sent');
-    for (let i = 0; i < all_sents.length; i++) {
-        all_sents[i].classList.add('is-hidden');
-    }
-
-    mode_sents = document.getElementsByClassName(mode + '-sent');
-    for (let i = 0; i < mode_sents.length; i++) {
-        mode_sents[i].classList.remove('is-hidden');
-    }
-}
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body");
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src);
-    modal_card = document.getElementById("modal-card");
-    modal_card.classList.add("is-active");
-}
-
-function show_gif(gif_path) {
-    var img = document.createElement("IMG");
-    img.src = gif_path;
-    document.getElementById('modal-content-img').appendChild(img);
-    modal = document.getElementById("modal-img");
-    modal.classList.add("is-active");
-}
-
-function close_modal() {
-    modals = document.getElementsByClassName("modal");
-    modals[0].classList.remove("is-active");
-    modals[1].classList.remove("is-active");
-
-    modal_card_body = document.getElementById("modal-card-body");
-    modal_card_body.innerHTML = '';
-
-    modal_content_img = document.getElementById("modal-content-img");
-    modal_content_img.innerHTML = '';
-}
-</script>
-
-<style>
-.sentence {
-    border-top-color: gray;
-    border-top-style: solid;
-    border-top-width: thin;
-}
-
-nav.navbar.is-fixed-bottom > .field {
-    justify-content: center;
-}
-</style>
-</head>
-
-<body class="has-navbar-fixed-bottom">
-
-<section class="section">
-
-<div id="modal-card" class="modal">
-  <div class="modal-background" onclick="close_modal()"></div>
-  <div class="modal-card">
-    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
-    </section>
-  </div>
-  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
-</div>
-
-<div id="modal-img" class="modal">
-  <div class="modal-background" onclick="close_modal()"></div>
-  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
-  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
-</div>
-
-
-<nav class="breadcrumb" aria-label="breadcrumbs">
-  <ul>
-    <li>
-      <a href="index.html">
-        <span class="icon is-small">
-          <i class="fas fa-home" aria-hidden="true"></i>
-        </span>
-        <span>Home</span>
-      </a>
-    </li>
-    <li class="is-active">
-      <a href="#">
-'''
-
+with open('../common/main_front_matter.html') as f:
+    main_front_matter = f.read().replace('3XX', '302')
 
 def generate_lesson(rows):
     title_row, rows = rows[0], rows[1:]
     lesson, _, sound_file, title, unit = title_row
     with open(f'{target_dir}/{lesson}.html', 'w') as f:
-        print(f'{top_matter}\n'
+        print(f'{lesson_front_matter}\n'
               f'        <span>{title}</span>\n'
                '      </a>\n'
                '    </li>\n'
@@ -226,26 +98,6 @@ def generate_lesson(rows):
               '</body>\n'
               '\n'
               '</html>\n', file=f)
-
-
-
-main_front_matter = '''<html>
-
-<head>
-  <title>
-    Japanese 302
-  </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
-  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-  <link rel="stylesheet" href="bulma.min.css">
-  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
-</head>
-<body>
-<section class="section">
-<span class="title">Japanese 302</span>
-<hr>
-<aside class="menu">
-'''
 
 
 def generate_main(lessons):
