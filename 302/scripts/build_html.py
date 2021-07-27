@@ -43,11 +43,13 @@ def generate_lesson(rows):
                '    <p>\n'
                '      Listen to Whole Story <br>\n'
                '      <audio controls controlsList="nodownload">\n'
-              f'        <source src="../{sound_file}" type="audio/mpeg">\n'
+              f'        <source src="{sound_file}" type="audio/mpeg">\n'
                '      </audio>\n'
                '      </a>\n'
                '    </p>\n'
                '  </div>\n'
+               '  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.\n'
+               '                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>\n'
                '  <table id="sentences" class="table-NOT"><tbody>\n',
               file=f)
         for row in rows:
@@ -58,15 +60,15 @@ def generate_lesson(rows):
                    '      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">\n'
                   f'        <i id="play_{sent_id}" class="fas fa-play"></i>\n'
                   f'        <audio id="audio_{sent_id}" onended="unplay(this.parentElement.getElementsByTagName(\'i\')[0])">\n'
-                  f'          <source src="../sound/{sent_id}.mp3" type="audio/mpeg">\n'
+                  f'          <source src="sound/{sent_id}.mp3" type="audio/mpeg">\n'
                    '        </audio>\n'
                    '      </span>\n'
                    '      </td>\n'
                    '      <td>\n'
-                  f'        <span class="content-sent grammar-sent is-hidden">{grammar_sent.strip() or sent}"</span>\n'
-                  f'        <span class="content-sent kanji-sent is-hidden">{kanji_sent.strip() or sent}"</span>\n'
-                  f'        <span class="content-sent plain-sent is-hidden">{sent}"</span>\n'
-                  f'        <span class="content-sent vocab-sent">{vocab_sent.strip() or sent}"</span>\n'
+                  f'        <span class="content-sent grammar-sent is-hidden">{grammar_sent.strip() or sent}</span>\n'
+                  f'        <span class="content-sent kanji-sent is-hidden">{kanji_sent.strip() or sent}</span>\n'
+                  f'        <span class="content-sent plain-sent is-hidden">{sent}</span>\n'
+                  f'        <span class="content-sent vocab-sent">{vocab_sent.strip() or sent}</span>\n'
                    '      </td>\n'
                    '    </tr>\n'
                    '    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
@@ -115,9 +117,14 @@ def generate_main(lessons):
                        '  </p>\n'
                        '  <ul class="menu-list">\n',
                       file=f)
+            if 'b' in short_lesson:
+                indent = '&nbsp;' * 19
+                print(f'    <li><a href="{lesson}.html">{indent}{title}</a></li>',
+                      file=f)
+            else:
+                print(f'    <li><a href="{lesson}.html">Lesson {int(short_lesson.replace("a", ""))}: {title}</a></li>',
+                      file=f)
 
-            print(f'    <li><a href="{lesson}.html">{short_lesson}: {title}</a></li>',
-                  file=f)
         print('  </ul>\n'
               '</aside>\n'
               '</section>\n'
