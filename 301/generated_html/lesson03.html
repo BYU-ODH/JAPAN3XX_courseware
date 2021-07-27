@@ -1,0 +1,333 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>たこあげ</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u305f\u3053\u3042\u3052": ["\u305f\u3053\u3042\u3052", "", "kite flying"], "\u305f\u3053": ["\u305f\u3053", "", "kite"], "\u3080\u3059\u3053": ["\u3080\u3059\u3053", "", "son"], "\u5e83\u5834": ["\u5e83\u5834", "\u3072\u308d\u3070", "square; plaza"], "\u3069\u3046\u3057\u3066\u3082": ["\u3069\u3046\u3057\u3066\u3082", "", "no matter what"], "\u304a\u7236\u3055\u3093": ["\u304a\u7236\u3055\u3093", "\u304a\u3068\u304a\u3055\u3093", "father"], "\u3069\u308c\u3069\u308c": ["\u3069\u308c\u3069\u308c", "", "well, well"], "\u3072\u3068\u8d70\u308a": ["\u3072\u3068\u8d70\u308a", "\u3072\u3068\u306f\u3057\u308a", "a short run"], "\u3069\u3093\u3069\u3093": ["\u3069\u3093\u3069\u3093", "", "rapidly"], "\u3042\u304c\u308b": ["\u3042\u304c\u308b", "", "to rise"], "\u3042\u304c\u308a\u307e\u305b\u3093": ["\u3042\u304c\u308b", "", "to rise"], "\u4e0a\u304c\u308a\u307e\u305b\u3093": ["\u3042\u304c\u308b", "", "to rise"], "\u3044\u3068": ["\u7cf8", "\u3044\u3068", "string"], "\u7cf8": ["\u7cf8", "\u3044\u3068", "string"], "\u5f15\u304f": ["\u5f15\u304f", "\u3072\u304f", "to pull"], "\u5f15\u3044\u305f\u308a": ["\u5f15\u304f", "\u3072\u304f", "to pull"], "\u306f\u306a\u3059": ["\u306f\u306a\u3059", "", "to release; to go"], "\u306f\u306a\u3057\u305f\u308a": ["\u306f\u306a\u3059", "", "to release; to go"], "\u5922\u4e2d\u306b\u306a\u308b": ["\u5922\u4e2d\u306b\u306a\u308b", "\u3080\u3061\u3085\u3046\u306b\u306a\u308b", "to be absorbed in; to forget (oneself) in"], "\u3059\u305d": ["\u3059\u305d", "", "cuffs; sleeves"], "\u5f15\u3063\u3071\u308b": ["\u5f15\u3063\u3071\u308b", "\u3072\u3063\u3071\u308b", "to pull on"], "\u5f15\u3063\u3071\u308a": ["\u5f15\u3063\u3071\u308b", "\u3072\u3063\u3071\u308b", "to pull on"], "\u307c\u304f": ["\u307c\u304f", "", "I; me"], "\u306a\u3069": ["\u306a\u3069", "", "like (you)"]};
+  var grammar_json = {"\u3069\u3046\u3057\u3066\u3082": ["\u3069\u3046\u3057\u3066\u3082", "no matter what", [["\u3069\u3046\u3057\u3066\u3082\u305f\u3053\u304c\u9ad8\u304f\u3042\u304c\u308a\u307e\u305b\u3093\u3002", "No matter what, the kite wouldn't go very high."], ["\u3069\u3046\u3057\u3066\u3082\u884c\u304d\u305f\u304f\u306a\u3044\u3002", "I wouldn't want to go in any case."], ["\u3069\u3046\u3057\u3066\u3082\u3042\u3057\u305f\u6765\u3044\u3002", "Come tomorrow no matter what."]]], "\u3042\u3052\u3066\u3042\u3052\u3088\u3046": ["V<SUB>\u3066</SUB> + \u3042\u3052\u308b<br>V<SUB>\u3066</SUB> + \u3084\u308b", "V [something for someone]", [["\u304a\u7236\u3055\u3093\u304c\u3042\u3052\u3066\u3084\u308d\u3046\u3002", "Father will fly it for you."], ["\u65b0\u3057\u3044\u304b\u3070\u3093\u3092\u8cb7\u3063\u3066\u3042\u3052\u308b\u3002", "I will buy a new bag for you."], ["\u304a\u7236\u3055\u3093\u306e\u305f\u3081\u306b\u304a\u3082\u3057\u308d\u3044\u8a71\u3092\u3057\u3066\u3042\u3052\u305f\u3002", "I told my father an interesting story."]]], "\u5f15\u3044\u305f\u308a\u3001\u306f\u306a\u3057\u305f\u308a\u3057\u3066": ["V<SUP>x</SUP><SUB>\u305f</SUB> + \u308a, V<SUP>y</SUP><SUB>\u305f</SUB> + \u308a . . . \u3059\u308b", "to sometimes V<SUP>x</SUP> and sometimes V<SUP>y</SUP><br>to alternatively V<SUP>x</SUP> and V<SUP>y</SUP><br>to do such things as V<SUP>x</SUP> and V<SUP>y</SUP>", [["\u305f\u3053\u7cf8\u3092\u5f15\u3044\u305f\u308a\u306f\u306a\u3057\u305f\u308a\u3059\u308b\u3002", "He pulls on the kite string and then lets it go (and repeats these actions alternatively)."], ["\u5c0f\u3055\u306a\u5b50\u3069\u3082\u304c\u884c\u3063\u305f\u308a\u6765\u305f\u308a\u3059\u308b\u3002", "The little children go back and forth."], ["\u65b0\u3057\u3044\u3082\u306e\u3092\u58f2\u3063\u305f\u308a\u8cb7\u3063\u305f\u308a\u3057\u307e\u3059\u3002", "We buy and sell new things."]]], "\u305f\u3053\u3042\u3052\u306b\u5922\u4e2d\u306b\u306a\u3063\u3066\u3057\u307e\u3044\u307e\u3057\u305f": ["\uff2e\u306b\u5922\u4e2d\u306b\u306a\u308b", "to forget [oneself]<br>to be absorbed in N", [["\u305f\u3053\u3042\u3052\u306b\u5922\u4e2d\u306b\u306a\u3063\u3066\u3057\u307e\u3044\u307e\u3057\u305f\u3002", "He was absorbed in kite flying."], ["\u30c6\u30ec\u30d3\u306b\u5922\u4e2d\u306b\u306a\u3063\u305f\u3002", "She became absorbed in the television."]]], "\u5f15\u3063\u3071\u308a\u306a\u304c\u3089": ["V<SUB>2</SUB> + \u306a\u304c\u3089", "while V<br>as V", [["\u3080\u3059\u3053\u304c\u304a\u7236\u3055\u3093\u306e\u3059\u305d\u3092\u5f15\u3063\u3071\u308a\u306a\u304c\u3089\u8a00\u3044\u307e\u3057\u305f\u3002", "The son spoke as he pulled on his father's cuffs."], ["\u3054\u306f\u3093\u3092\u305f\u3079\u306a\u304c\u3089\u30c6\u30ec\u30d3\u3092\u898b\u305f\u3002", "I watched television while I ate."]]], "\u3084\u3089\u305b\u3066": ["Godan:  N\u306bV<SUB>1</SUB> + \u305b\u3066\u304f\u3060\u3055\u3044<br>Ichidan: N\u306bV<SUB>1</SUB> + \u3055\u305b\u3066\u304f\u3060\u3055\u3044", "Please let N V", [["\u884c\u304b\u305b\u3066\u304f\u3060\u3055\u3044\u3002", "Please let me go."], ["\u59b9\u306b\u898b\u3055\u305b\u3066\u304f\u3060\u3055\u3044\u3002", "Please let my little sister see."], ["\u307c\u304f\u306b\u3082\u305f\u3053\u3042\u3052\u3084\u3089\u305b\u3066\u3002", "Please let me fly a kite, too!"]]], "\u3064\u308c\u3066\u6765\u308b\u3093\u3058\u3083\u306a\u304b\u3063\u305f": ["V<SUB>3</SUB> + \u3093\u3058\u3083\u306a\u304b\u3063\u305f", "shouldn't have V-ed", [["\u304a\u524d\u3092\u3064\u308c\u3066\u6765\u308b\u3093\u3058\u3083\u306a\u304b\u3063\u305f\u3002", "I shouldn't have brought you."], ["\u305d\u3093\u306a\u3053\u3068\u3092\u805e\u304f\u3093\u3058\u3083\u306a\u304b\u3063\u305f\u3002", "I shouldn't have listened to such things."]]], "\u305d\u3046\u3067\u3059": ["S\u305d\u3046\u3060", "I heard<br>They say<br>It is said that S", [["\u5927\u58f0\u3067\u3069\u306a\u3063\u305f\u305d\u3046\u3067\u3059\u3002", "They say he shouted with a loud voice."], ["\u305d\u306e\u3078\u3084\u306f\u3001\u3068\u3066\u3082\u5e83\u3044\u305d\u3046\u3067\u3059\u3002", "I heard that room is very spacious."], ["\u3042\u306e\u5b50\u306e\u304a\u7236\u3055\u3093\u306f\u3001\u30b9\u30da\u30a4\u30f3\u8a9e\u304c\u4e0a\u624b\u3060\u305d\u3046\u3067\u3059\u3002", "I heard that his father speaks very good Spanish."]]]};
+  var kanji_json = {"\u5e83": ["\u3072\u308d\uff08\u3044\uff09\u30fb\u3072\u308d\uff08\u307e\u308b\uff09\u30fb\u3072\u308d\uff08\u3081\u308b\uff09\u30fb\u3072\u308d\uff08\u304c\u308b\uff09\u30fb\u3072\u308d\uff08\u3052\u308b\uff09", "\u30b3\u30a6", "wide, large, expansive; to spread; to widen", [["\u5e83\u544a\uff08\u3053\u3046\u3053\u304f\uff09", "advertising"], ["\u5e83\u5927\uff08\u3053\u3046\u3060\u3044\uff09", "vast"], ["\u5e83\u5834\uff08\u3072\u308d\u3070\uff09", "square"], ["\u5e83\u9593\uff08\u3072\u308d\u307e\uff09", "salon"]]], "\u9ad8": ["\u305f\u304b\uff08\u3044\uff09\u30fb\u305f\u304b\u30fb\u305f\u304b\uff08\u307e\u308b\uff09\u30fb\u305f\u304b\uff08\u3081\u308b\uff09", "\u30b3\u30a6", "tall, expensive; amount; to rise; to raise, lift", [["\u6700\u9ad8\uff08\u3055\u3044\u3053\u3046\uff09", "the best"], ["\u9ad8\u6821\uff08\u3053\u3046\u3053\u3046\uff09", "high school"], ["\u9ad8\u7b49\u306a\uff08\u3053\u3046\u3068\u3046\u306a\uff09", "high level"], ["\u9ad8\u7d1a\u306a\uff08\u3053\u3046\u304d\u3085\u3046\u306a\uff09", "high class"], ["\u9ad8\u4fa1\uff08\u3053\u3046\u304b\uff09", "expensive"]]], "\u4e0a": ["\u3046\u3048\u30fb\uff3b\u3046\u308f\uff3d\u30fb\u304b\u307f\u30fb\u3042\uff08\u3052\u308b\uff09\u30fb\u3042\uff08\u304c\u308b\uff09\u30fb\u306e\u307c\uff08\u305b\u308b\uff09\u30fb\u306e\u307c\uff08\u308b\uff09\u30fb\u306e\u307c\uff08\u3059\uff09", "\u30b8\u30e7\u30a6\u30fb\uff3b\u30b7\u30e7\u30a6\uff3d", "above; lord; to raise", [["\u4ee5\u4e0a\uff08\u3044\u3058\u3087\u3046\uff09", "more than"], ["\u5411\u4e0a\uff08\u3053\u3046\u3058\u3087\u3046\uff09", "improvement"], ["\u76ee\u4e0a\uff08\u3081\u3046\u3048\uff09", "senior"], ["\u4e0a\u4e0b\uff08\u3058\u3087\u3046\u3052\uff09", "high and low"], ["\u5c4b\u4e0a\uff08\u304a\u304f\u3058\u3087\u3046\uff09", "the roof"]]], "\u7236": ["\u3061\u3061\u30fb\uff08\u304a\uff09\u3068\u3046\uff08\u3055\u3093\uff09", "\u30d5", "father", [["\u7236\u6bcd\uff08\u3075\u307c\uff09", "father and mother"], ["\u7236\u5144\uff08\u3075\u3051\u3044\uff09", "guardian"], ["\u7236\u4e0a\uff08\u3061\u3061\u3046\u3048\uff09", "father"], ["\u7236\u89aa\uff08\u3061\u3061\u304a\u3084\uff09", "father"], ["\u203b\u304a\u7236\u3055\u3093\uff08\u304a\u3068\u3046\u3055\u3093\uff09", "father"], ["\u795e\u7236\uff08\u3057\u3093\u3077\uff09", "Catholic priest"]]], "\u59b9": ["\u3044\u3082\u3046\u3068", "\u30de\u30a4", "younger sister", [["\u59c9\u59b9\uff08\u3057\u307e\u3044\uff09", "sisters"], ["\u5f1f\u59b9\uff08\u3066\u3044\u307e\u3044\uff09", "younger brothers and sisters"]]], "\u5f15": ["\u3072\uff08\u304f\uff09\u30fb\u3072\uff08\u3051\u308b\uff09", "\u30a4\u30f3", "to pull; to close, to be over; to discount; to guide", [["\u5f15\u7528\uff08\u3044\u306b\u3087\u3046\uff09", "quote"], ["\u5f15\u529b\uff08\u3044\u3093\u308a\u3087\u304f\uff09", "gravity"], ["\u53d6\u5f15\uff08\u3068\u308a\u3072\u304d\uff09", "dealings"], ["\u5272\u5f15\uff08\u308f\u308a\u3073\u304d\uff09", "discount"], ["\u5b57\u5f15\uff08\u3058\u3073\u304d\uff09", "character dictionary"]]], "\u5b57": ["\u3042\u3056", "\u30b8", "section of a village; characters; writing symbols", [["\u6f22\u5b57\uff08\u304b\u3093\u3058\uff09", "Chinese characters"], ["\u6587\u5b57\uff08\u3082\u3058\uff09", "letters"], ["\u5b57\u66f8\uff08\u3058\u3057\u3087\uff09", "character dictionary"], ["\u6570\u5b57\uff08\u3059\u3046\u3058\uff09", "numerals"], ["\u5b57\u5178\uff08\u3058\u3066\u3093\uff09", "character dictionary"]]], "\u6765": ["\u304f\uff08\u308b\uff09\u30fb\u304d\u305f\uff08\u308b\uff09\u30fb\u304d\u305f\uff08\u3059\uff09\u30fb\u3053\uff08\u306a\u3044\uff09", "\u30e9\u30a4", "to come; coming; to cause, to breing about; to not come", [["\u6765\u6708\uff08\u3089\u3044\u3052\u3064\uff09", "next month"], ["\u5c06\u6765\uff08\u3057\u3087\u3046\u3089\u3044\uff09", "future"], ["\u672a\u6765\uff08\u307f\u3089\u3044\uff09", "future"], ["\u6765\u65e5\uff08\u3089\u3044\u306b\u3061\uff09", "coming to Japan"], ["\u4ee5\u6765\uff08\u3044\u3089\u3044\uff09", "since"]]], "\u5916": ["\u305d\u3068\u30fb\u307b\u304b\u30fb\u306f\u305a\uff08\u3059\uff09\u30fb\u306f\u305a\uff08\u308c\u308b\uff09", "\u30ac\u30a4\u30fb\uff3b\u30b2\uff3d", "outside, exterior; other; take off", [["\u5916\u56fd\uff08\u304c\u3044\u3053\u304f\uff09", "foreign countries"], ["\u4ee5\u5916\uff08\u3044\u304c\u3044\uff09", "besides"], ["\u5916\u4ea4\uff08\u304c\u3044\u3053\u3046\uff09", "diplomacy"], ["\u5916\u4eba\uff08\u304c\u3044\u3058\u3093\uff09", "foreigners"], ["\u5916\u52d9\uff08\u304c\u3044\u3080\uff09", "foreign affairs"]]], "\u53f3": ["\u307f\u304e", "\u30a6\u30fb\u30e6\u30a6", "right", [["\u53f3\u6d3e\uff08\u3046\u306f\uff09", "right faction"], ["\u5de6\u53f3\uff08\u3055\u3086\u3046\uff09", "right and left"], ["\u53f3\u7ffc\uff08\u3046\u3088\u304f\uff09", "right wing"], ["\u53f3\u624b\uff08\u307f\u304e\u3066\uff09", "right hand"]]], "\u5de6": ["\u3072\u3060\u308a", "\u30b5", "left", [["\u5de6\u6d3e\uff08\u3055\u306f\uff09", "left faction"], ["\u5de6\u53f3\uff08\u3055\u3086\u3046\uff09", "right and left"], ["\u5de6\u7ffc\uff08\u3055\u3088\u304f\uff09", "left wing"], ["\u5de6\u5074\uff08\u3072\u3060\u308a\u304c\u308f\uff09", "left side"], ["\u5de6\u8a18\uff08\u3055\u304d\uff09", "mentioned below"]]]};
+  </script>
+  <div class="block title">たこあげ</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/03-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="03-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_03-001" class="fas fa-play"></i>
+        <audio id="audio_03-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/03-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むすこが広場でたこあげをしていましたが、<a onclick="show_grammar_data('どうしても')">どうしても</a>たこが高く上がりません。</span>
+        <span class="content-sent kanji-sent is-hidden">むすこが<a onclick="show_kanji_data('広')">広</a>場でたこあげをしていましたが、どうしてもたこが<a onclick="show_kanji_data('高')">高</a>く<a onclick="show_kanji_data('上')">上</a>がりません。</span>
+        <span class="content-sent plain-sent is-hidden">むすこが広場でたこあげをしていましたが、どうしてもたこが高く上がりません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('むすこ')">むすこ</a>が<a onclick="show_vocab_data('広場')">広場</a>で<a onclick="show_vocab_data('<a onclick="show_vocab_data('たこ')">たこ</a>あげ')"><a onclick="show_vocab_data('たこ')">たこ</a>あげ</a>をしていましたが、<a onclick="show_vocab_data('どうしても')">どうしても</a><a onclick="show_vocab_data('たこ')">たこ</a>が高く<a onclick="show_vocab_data('上がりません')">上がりません</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">A son was flying his kite in the square, but no matter what he did, the kite wouldn&#39;t rise high.</span>
+      </td>
+    </tr>
+
+    <tr id="03-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_03-002" class="fas fa-play"></i>
+        <audio id="audio_03-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/03-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それを見ていたお父さんは、「どれどれ、お父さんが<a onclick="show_grammar_data('あげてあげよう')">あげてあげよう</a>。」と言ってひと走りすると、たこはどんどんあがっていきました。</span>
+        <span class="content-sent kanji-sent is-hidden">それを見ていたお<a onclick="show_kanji_data('父')">父</a>さんは、「どれどれ、お<a onclick="show_kanji_data('父')">父</a>さんがあげてあげよう。」と言ってひと走りすると、たこはどんどんあがっていきました。</span>
+        <span class="content-sent plain-sent is-hidden">それを見ていたお父さんは、「どれどれ、お父さんがあげてあげよう。」と言ってひと走りすると、たこはどんどんあがっていきました。</span>
+        <span class="content-sent vocab-sent">それを見ていた<a onclick="show_vocab_data('お父さん')">お父さん</a>は、「<a onclick="show_vocab_data('どれどれ')">どれどれ</a>、<a onclick="show_vocab_data('お父さん')">お父さん</a>があげてあげよう。」と言って<a onclick="show_vocab_data('ひと走り')">ひと走り</a>すると、<a onclick="show_vocab_data('たこ')">たこ</a>は<a onclick="show_vocab_data('どんどん')">どんどん</a>あがっていきました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">His father, who was watching all this, said, &quot;Here, Father will get it up for you.&quot;  When father had run a short distance, the kite rose rapidly.</span>
+      </td>
+    </tr>
+
+    <tr id="03-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_03-003" class="fas fa-play"></i>
+        <audio id="audio_03-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/03-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、お父さんは、たこ糸を<a onclick="show_grammar_data('引いたり、はなしたりして')">引いたり、はなしたりして</a>、<a onclick="show_grammar_data('たこあげに夢中になってしまいました')">たこあげに夢中になってしまいました</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、お<a onclick="show_kanji_data('父')">父</a>さんは、たこ糸を<a onclick="show_kanji_data('引')">引</a>いたり、はなしたりして、たこあげに夢中になってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、お父さんは、たこ糸を引いたり、はなしたりして、たこあげに夢中になってしまいました。</span>
+        <span class="content-sent vocab-sent">ところが、<a onclick="show_vocab_data('お父さん')">お父さん</a>は、<a onclick="show_vocab_data('たこ')">たこ</a><a onclick="show_vocab_data('糸')">糸</a>を<a onclick="show_vocab_data('引いたり')">引いたり</a>、<a onclick="show_vocab_data('はなしたり')">はなしたり</a>して、<a onclick="show_vocab_data('<a onclick="show_vocab_data('たこ')">たこ</a>あげ')"><a onclick="show_vocab_data('たこ')">たこ</a>あげ</a>に夢中になってしまいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But father, pulling on and letting go of the string, became absorbed in flying the kite.</span>
+      </td>
+    </tr>
+
+    <tr id="03-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_03-004" class="fas fa-play"></i>
+        <audio id="audio_03-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/03-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むすこがお父さんのすそを<a onclick="show_grammar_data('引っぱりながら')">引っぱりながら</a>、「お父さん、ぼくにもたこあげ<a onclick="show_grammar_data('やらせて')">やらせて</a>よ。」と言うと、「やかましい。お前など<a onclick="show_grammar_data('つれて来るんじゃなかった')">つれて来るんじゃなかった</a>。」と大声でどなった<a onclick="show_grammar_data('そうです')">そうです</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">むすこがお<a onclick="show_kanji_data('父')">父</a>さんのすそを<a onclick="show_kanji_data('引')">引</a>っぱりながら、「お<a onclick="show_kanji_data('父')">父</a>さん、ぼくにもたこあげやらせてよ。」と言うと、「やかましい。お前などつれて<a onclick="show_kanji_data('来')">来</a>るんじゃなかった。」と大声でどなったそうです。</span>
+        <span class="content-sent plain-sent is-hidden">むすこがお父さんのすそを引っぱりながら、「お父さん、ぼくにもたこあげやらせてよ。」と言うと、「やかましい。お前などつれて来るんじゃなかった。」と大声でどなったそうです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('むすこ')">むすこ</a>が<a onclick="show_vocab_data('お父さん')">お父さん</a>の<a onclick="show_vocab_data('すそ')">すそ</a>を<a onclick="show_vocab_data('引っぱり')">引っぱり</a>ながら、「<a onclick="show_vocab_data('お父さん')">お父さん</a>、<a onclick="show_vocab_data('ぼく')">ぼく</a>にも<a onclick="show_vocab_data('<a onclick="show_vocab_data('たこ')">たこ</a>あげ')"><a onclick="show_vocab_data('たこ')">たこ</a>あげ</a>やらせてよ。」と言うと、「やかましい。お前<a onclick="show_vocab_data('など')">など</a>つれて来るんじゃなかった。」と大声でどなったそうです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The son, while pulling on the father&#39;s cuffs, said, &quot;Dad, let me fly the kite too!&quot;  When he said this, Father thundered in a loud voice, &quot;Shut up!  I shouldn&#39;t have brought anyone like you with me!&quot;, so they say.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

@@ -1,0 +1,1629 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>つるの恩返し</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u3064\u308b": ["\u3064\u308b", "", "crane"], "\u6069\u8fd4\u3057": ["\u6069\u8fd4\u3057", "\u304a\u3093\u304c\u3048\u3057", "repayment of on"], "\u6c88\u3080": ["\u6c88\u3080", "\u3057\u305a\u3080", "to sink"], "\u6c88\u307f": ["\u6c88\u3080", "\u3057\u305a\u3080", "to sink"], "\u5915\u713c\u3051": ["\u5915\u713c\u3051", "\u3086\u3046\u3084\u3051", "sunset"], "\u3042\u305b\u308b": ["\u3042\u305b\u308b", "", "to fade"], "\u3042\u305b\u3066": ["\u3042\u305b\u308b", "", "to fade"], "\u7551\u4ed5\u4e8b": ["\u7551\u4ed5\u4e8b", "\u306f\u305f\u3051\u3057\u3054\u3068", "work in the fields"], "\u3042\u305c\u9053": ["\u3042\u305c\u9053", "\u3042\u305c\u307f\u3061", "footpath between rice paddies"], "\u30d0\u30bf\u30d0\u30bf\u3068": ["\u30d0\u30bf\u30d0\u30bf\u3068", "", "flapping; fluttering"], "\u7fbd\u97f3": ["\u7fbd\u97f3", "\u306f\u304a\u3068", "sound of wings or feathers"], "\u4e00\u7fbd": ["\uff5e\u7fbd", "", "counter for birds"], "\u308f\u306a": ["\u308f\u306a", "", "trap"], "\u304b\u304b\u308b": ["\u304b\u304b\u308b", "", "to take (time)"], "\u304b\u304b\u3063\u3066": ["\u304b\u304b\u308b", "", "to be caught in"], "\u3082\u304c\u304f": ["\u3082\u304c\u304f", "", "to struggle; to writhe"], "\u3082\u304c\u3044\u3066": ["\u3082\u304c\u304f", "", "to struggle; to writhe"], "\u512a\u3057\u3044": ["\u512a\u3057\u3044", "\u3084\u3055\u3057\u3044", "kind; gentle"], "\u304b\u308f\u3044\u305d\u3046\u306b\u306a\u308b": ["\u304b\u308f\u3044\u305d\u3046\u306b\u306a\u308b", "", "to take pity"], "\u304b\u308f\u3044\u305d\u3046\u306b\u306a\u308a": ["\u304b\u308f\u3044\u305d\u3046\u306b\u306a\u308b", "", "to take pity"], "\u5916\u3059": ["\u5916\u3059", "\u306f\u305a\u3059", "to release; to undo"], "\u5916\u3057\u3066": ["\u5916\u3059", "\u306f\u305a\u3059", "to release; to undo"], "\u9003\u304c\u3059": ["\u9003\u304c\u3059", "\u306b\u304c\u3059", "to let go; to set free"], "\u9003\u304c\u3057\u3066": ["\u9003\u304c\u3059", "\u306b\u304c\u3059", "to let go; to set free"], "\u3057\u3070\u3089\u304f": ["\u3057\u3070\u3089\u304f", "", "a while"], "\u3053\u305f\u3064": ["\u3053\u305f\u3064", "", "low table with heat underneath"], "\u30c8\u30f3\u30c8\u30f3\u3068": ["\u30c8\u30f3\u30c8\u30f3\u3068", "", "(rap) loudly"], "\u3060\u308c\u304b": ["\u3060\u308c\u304b", "", "someone"], "\u5927\u96ea": ["\u5927\u96ea", "\u304a\u304a\u3086\u304d", "heavy snowfall"], "\u8fba": ["\u8fba", "\u3078\u3093", "vicinity"], "\u5bbf": ["\u5bbf", "\u3084\u3069", "inn"], "\u56f0\u308b": ["\u56f0\u308b", "\u3053\u307e\u308b", "to be upset; to be at a loss"], "\u56f0\u3063\u3066": ["\u56f0\u308b", "\u3053\u307e\u308b", "to be upset; to be at a loss"], "\u627f\u77e5\u3057": ["\u627f\u77e5\uff08\u3059\u308b\uff09", "\u3057\u3087\u3046\u3061\uff08\u3059\u308b\uff09", "consent; (to consent to)"], "\u304a\u98a8\u5442": ["\uff08\u304a\uff09\u98a8\u5442", "\uff08\u304a\uff09\u3075\u308d", "bath"], "\u305f\u304f": ["\u305f\u304f", "", "to heat; to kindle"], "\u304d\u304c\u3048": ["\u7740\u66ff\u3048", "\u304d\u304c\u3048", "change of clothes"], "\u3081\u3093\u3069\u3046\u3092\u898b\u308b": ["\u3081\u3093\u3069\u3046\uff08\u3092\u898b\u308b\uff09", "\u3081\u3093\u3069\u3046\uff08\u3092\u307f\u308b\uff09", "care; attention; (to look after [someone's] needs)"], "\u3081\u3093\u3069\u3046\u3092\u898b\u3066": ["\u3081\u3093\u3069\u3046\uff08\u3092\u898b\u308b\uff09", "\u3081\u3093\u3069\u3046\uff08\u3092\u307f\u308b\uff09", "care; attention; (to look after [someone's] needs)"], "\u671d\u5fa1\u98ef": ["\u671d\u5fa1\u98ef", "\u3042\u3055\u3054\u306f\u3093", "breakfast"], "\u5f15\u304d\u6b62\u3081\u308b": ["\u5f15\u304d\u6b62\u3081\u308b", "\u3072\u304d\u3068\u3081\u308b", "to hold (someone) back; to detain; to stop from doing"], "\u5f15\u304d\u6b62\u3081\u3088\u3046": ["\u5f15\u304d\u6b62\u3081\u308b", "\u3072\u304d\u3068\u3081\u308b", "to hold (someone) back; to detain; to stop from doing"], "\u6628\u6669": ["\u6628\u6669", "\u3055\u304f\u3070\u3093", "last night"], "\u304a\u793c\u306b": ["\u304a\u793c\u306b", "\u304a\u308c\u3044\u306b", "in return for"], "\u3057\u3093\u3057\u3093\u3068": ["\u3057\u3093\u3057\u3093\u3068", "", "(snow falling) thick and fast"], "\u3044\u3063\u3053\u3046\u306b": ["\u3044\u3063\u3053\u3046\u306b", "", "(not) at all"], "\u3084\u3080": ["\u3084\u3080", "", "to stop"], "\u3084\u307f\u305d\u3046": ["\u3084\u3080", "", "to stop"], "\u3044\u3063\u3057\u3087\u306b": ["\u4e00\u7dd2\u306b", "\u3044\u3063\u3057\u3087\u306b", "together"], "\u304a\u624b\u4f1d\u3044": ["\u304a\u624b\u4f1d\u3044", "\u304a\u3066\u3064\u3060\u3044", "help; a maid"], "\u3059\u3063\u304b\u308a": ["\u3059\u3063\u304b\u308a", "", "entirely"], "\u3068\u3051\u308b": ["\u3068\u3051\u308b", "", "to melt"], "\u3068\u3051\u3066": ["\u3068\u3051\u308b", "", "to melt"], "\u8349\u6728": ["\u8349\u6728", "\u304f\u3055\u304d", "plants; vegetation"], "\u82bd": ["\u82bd", "\u3081", "bud"], "\u90e8\u5c4b": ["\u90e8\u5c4b", "\u3078\u3084", "room"], "\u3053\u3082\u308b": ["\u3053\u3082\u308b", "", "to shut oneself up in"], "\u3053\u3082\u3063\u3066": ["\u3053\u3082\u308b", "", "to shut oneself up in"], "\u7834\u308b": ["\u7834\u308b", "\u3084\u3076\u308b", "to break"], "\u8863": ["\u8863", "\u3053\u308d\u3082", "clothing"], "\u307e\u3055\u304b": ["\u307e\u3055\u304b", "", "nonsense! impossible!"], "\u307e\u3044": ["\u301c\u307e\u3044", "", "will probably not \u301c\u3000(\uff1d\u306a\u3044\u3060\u308d\u3046)"], "\u75c5\u6c17": ["\u75c5\u6c17", "\u3073\u3087\u3046\u304d", "sickness; illness"], "\u69d8\u5b50": ["\u69d8\u5b50", "\u3088\u3046\u3059", "state of affairs; situation"], "\u3046\u304b\u304c\u3046": ["\u3046\u304b\u304c\u3046", "", "to observe; to look into"], "\u7fbd\u6839": ["\u7fbd\u6839", "\u306f\u306d", "plucked feather (note \u7fbd\uff1a\u306f\u306d feather)"], "\u5fa1\u6069": ["\uff08\u5fa1\uff09\u6069", "\uff08\u3054\uff09\u304a\u3093", "obligation; debt of gratitude"], "\u53cd\u7269": ["\u53cd\u7269", "\u305f\u3093\u3082\u306e", "cloth; drapery"], "\u3081\u305a\u3089\u3057\u3044": ["\u3081\u305a\u3089\u3057\u3044", "", "unusual; rare"], "\u697d\u306b": ["\u697d\u306b", "\u3089\u304f\u306b", "comfortably"], "\u66ae\u3059": ["\u66ae\u3059", "", "to live"], "\u66ae\u3089\u3057\u3066": ["\u66ae\u3059", "", "to live"], "\u304a\u5143\u6c17\u3067": ["\u304a\u5143\u6c17\u3067", "\u304a\u3052\u3093\u304d\u3067", "Take care! Farewell! (a parting expression)"], "\u624b\u6e21\u3059": ["\u624b\u6e21\u3059", "\u3066\u308f\u305f\u3059", "to hand over"], "\u6069\u77e5\u3089\u305a": ["\u6069\u77e5\u3089\u305a", "\u304a\u3093\u3057\u3089\u305a", "someone who does not return on; an ingrate"], "\u3051\u3082\u306e": ["\u3051\u3082\u306e", "", "animals"], "\u52a3\u308b": ["\u52a3\u308b", "\u304a\u3068\u308b", "to be inferior to; to be lower than"], "\u7236\u6bcd": ["\u7236\u6bcd", "\u3075\u307c", "parents; father and mother"], "\u5bfa\u5b50\u5c4b": ["\u5bfa\u5b50\u5c4b", "\u3066\u3089\u3053\u3084", "temple school"]};
+  var grammar_json = {"\u3084\u307f\u305d\u3046\u306b\u3042\u308a\u307e\u305b\u3093": ["V<SUB>2</SUB> + \u305d\u3046\u306b\u306a\u3044", "to not seem to V<br>to not look like V", [["?\u75f0\uff8d\u3001\u3084\u307f\u305d\u3046\u306b\u3042\u308a\u307e\u305b\u3093\u3002", "The snow does not seem to quit."], ["\u304b\u308c\u306f\u3001\u6765\u305d\u3046\u306b\u306a\u3044\u3002", "It does not look like he is going to come."]]], "\u79c1\u304c\u6a5f\u3092\u7e54\u3063\u3066\u3044\u308b\u3068\u3053\u308d\u3092\u3001\u3069\u3093\u306a\u3053\u3068\u304c\u3042\u3063\u3066\u3082\u898b\u306a\u3044": ["V<SUB>\u3066</SUB> + \u3044\u308b\u3068\u3053\u308d\u3092\u898b\u308b", "to see [someone] V-ing", [["\u7e54\u3063\u3066\u3044\u308b\u3068\u3053\u308d\u3092\u307f\u305f\u3002", "He saw her weaving."], ["\u7551\u3067\u4ed5\u4e8b\u3092\u3057\u3066\u3044\u308b\u3068\u3053\u308d\u3092\u898b\u305f\u3002", "I saw him working in the field."], ["\u304a\u3055\u3051\u3092\u98f2\u3082\u3046\u3068\u3057\u3066\u3044\u308b\u3068\u3053\u308d\u3092\u898b\u305f\u3002", "I saw her as she was just about to drink the <i>sake</i>."]]], "\u307e\u3055\u304b": ["\u307e\u3055\u304b", "cannot be; to not be likely<br>(used with a negative conjecture)", [["\u307e\u3055\u304b\u4e00?T\u9593\u306f\u304b\u304b\u308b\u307e\u3044\u3002", "Impossible! Surely it won't take a week."], ["\u4e03\u5915\u306b\u3001\u307e\u3055\u304b?\u75f0\uff8d\u3075\u3089\u306a\u3044\u3060\u308d\u3046\u3002", "Surely it won't snow during <i>Tanabata</i>."], ["\u307e\u3055\u304b\u3001\u3042\u306e\u4eba\u304c\u6765\u308b\u3068\u601d\u3044\u307e\u305b\u3093\u304c\u3002", "I really don't think he will come."]]], "\u304b\u304b\u308b\u307e\u3044": ["V<SUB>3</SUB> + \u307e\u3044", "I'm sure it will not V<br>will not V", [["\u307e\u3055\u304b\u4e00\u9031\u9593\u304b\u304b\u308b\u307e\u3044\u3002", "I'm sure it won't take a week."], ["\u660e\u65e5\u306f\u3001\u96ea\u306f\u3075\u308b\u307e\u3044\u3002", "I'm sure it won't snow tomorrow."], ["\u3042\u305d\u3053\u3078\u306f\u3082\u3046\u4e8c\u5ea6\u3068\u884c\u304f\u307e\u3044\u3002", "I will never go there again."]]], "\u6d77\u3088\u308a\u3082\u6df1\u304f": ["X\u306f\u3001Y\u3088\u308a\u3082 TA/QA", "X is more Adj. than Y", [["\u6d77\u3088\u308a\u3082\u6df1\u3044\u3002", "It is deeper than the ocean."], ["\u5c71\u3088\u308a\u3082\u9ad8\u3044\u3002", "It is taller than the mountains."], ["\u767d\u96ea\u3072\u3081\u306f\u3001\u5973\u738b\u3088\u308a\u3082\u7f8e\u3057\u304b\u3063\u305f\u3002", "Snow White was more beautiful than the Queen."]]], "\u5c71\u3088\u308a\u3082\u9ad8\u3044": ["X\u306f\u3001Y\u3088\u308a\u3082 TA/QA", "X is more Adj. than Y", [["\u6d77\u3088\u308a\u3082\u6df1\u3044\u3002", "It is deeper than the ocean."], ["\u5c71\u3088\u308a\u3082\u9ad8\u3044\u3002", "It is taller than the mountains."], ["\u767d\u96ea\u3072\u3081\u306f\u3001\u5973\u738b\u3088\u308a\u3082\u7f8e\u3057\u304b\u3063\u305f\u3002", "Snow White was more beautiful than the Queen."]]], "\u5fd8\u308c\u3066\u306f\u3044\u3051\u306a\u3044": ["V<SUB>\u3066</SUB> + \u306f + \u3044\u3051\u306a\u3044/\u3044\u304b\u3093/\u3060\u3081\u3060", "must not V<br>(negative command)", [["\u3053\u306e\u3080\u304b\u3057\u8a71\u306b\u898b\u3089\u308c\u308b\u3088\u3046\u306a\u6069\u3092\u308f\u3059\u308c\u3066\u306f\u3044\u3051\u306a\u3044\u3002", "The kindness that can be seen in this old story must not be forgotten."], ["\u8aa4\u89e3\u3055\u308c\u3066\u306f\u3060\u3081\u306a\u306e\u3067\u3001\u4f55\u3082\u8a00\u308f\u306a\u304b\u3063\u305f\u3002", "So as not to be misunderstood, I did not say anything."], ["\u9053\u3092\u6b69\u304d\u306a\u304c\u3089\u3001\u98df\u3079\u7269\u3092\u98df\u3079\u3066\u306f\u3044\u3051\u307e\u305b\u3093\u3002", "You musn't eat while walking down the street."]]], "\u7d04\u675f\u3092\u7834\u308b\u308f\u3051\u306b\u306f\u3044\u304d\u307e\u305b\u3093\u3002": ["V<SUB>3</SUB> + \u308f\u3051\u306b\uff08\u306f\uff09\u3044\u304b\u306a\u3044", "cannot very well V; just cannot V", [["\u7d04\u675f\u3092\u7834\u308b\u308f\u304d\u306b\u306f\u3044\u304d\u307e\u305b\u3093\u3002", "I just can't break my promise."], ["\u305d\u306e\u307e\u307e\u3067\u3001\u5e30\u308b\u308f\u3051\u306b\u306f\u3044\u304b\u306a\u3044\u3002", "I can't very well go home with things the way they are."], ["\u305f\u3060\u3067\u3001\u8eca\u306b\u306e\u305b\u3066\u3082\u3089\u3046\u308f\u3051\u306b\u306f\u3044\u304b\u306a\u304b\u3063\u305f\u3002", "I just couldn't accept a ride for free in the car."]]]};
+  var kanji_json = {"\u6069": ["", "\u30aa\u30f3", "obligation, debt of gratitude; sympathy received; blessing", [["\u6069\u6075\uff08\u304a\u3093\u3051\u3044\uff09", "a favor"], ["\u6069\u4eba\uff08\u304a\u3093\u3058\u3093\uff09", "a benefator, a patron"], ["\u6069\u5e2b\uff08\u304a\u3093\u3057\uff09", "one's former teacher"]]], "\u8fd4": ["\u304b\u3048\uff08\u3059\uff09\u30fb\u304b\u3048\uff08\u308b\uff09", "\u30d8\u30f3", "to return", [["\u8fd4\u4e8b\uff08\u3078\u3093\u3058\uff09", "an answer, a reply"], ["\u8fd4\u7b54\uff08\u3078\u3093\u3068\u3046\uff09", "an answer"]]], "\u98ef": ["\u3081\u3057", "\u30cf\u30f3", "cooked rice; meal", [["\u663c\u98ef\uff08\u3072\u308b\u3081\u3057\uff09", "lunch"], ["\u5915\u98ef\uff08\u3086\u3046\u306f\u3093\uff09", "supper"], ["\u8d64\u98ef\uff08\u305b\u304d\u306f\u3093\uff09", "festive red rice"]]], "\u98f2": ["\u306e\uff08\u3080\uff09", "\u30a4\u30f3", "to drink", [["\u98f2\u98df\uff08\u3044\u3093\u3057\u3087\u304f\uff09", "eating and drinking"], ["\u98f2\u6599\uff08\u3044\u3093\u308a\u3087\u3046\uff09", "a drink, a beverage"], ["\u98f2\u9152\uff08\u3044\u3093\u3057\u3085\uff09", "drinking liquor"]]], "\u6b21": ["\u3064\uff08\u3050\uff09\u30fb\u3064\u304e", "\u30b8\u30fb\u30b7", "to continue; next", [["\u76ee\u6b21\uff08\u3082\u304f\u3058\uff09", "a table of contents"], ["\u6b21\u7b2c\uff08\u3057\u3060\u3044\uff09", "order, circumstances"], ["\u6b21\u7537\uff08\u3058\u306a\u3093\uff09", "the second son"], ["\u6b21\u56de\uff08\u3058\u304b\u3044\uff09", "next time"]]], "\u713c": ["\u3084\uff08\u304f\uff09\u30fb\u3084\uff08\u3051\u308b\uff09", "\u30b8\u30e7\u30a6", "to burn; to be burnt/cooked; jealous", [["\u5e74\u5546\uff08\u306d\u3093\u3057\u3087\u3046\uff09", "combustion"], ["\u713c\u6b7b\uff08\u3057\u3087\u3046\u3057\uff09", "death by fire"], ["\u5915\u713c\u3051\uff08\u3086\u3046\u3084\u3051\uff09", "an evening glow"]]], "\u7551": ["\u306f\u305f\u30fb\u306f\u305f\u3051", "", "field", [["\u9ea6\u7551\uff08\u3080\u304e\u3070\u305f\u3051\uff09", "a wheat field"], ["\u82b1\u7551\uff08\u306f\u306a\u3070\u305f\u3051\uff09", "a flower garden"], ["\u7530\u7551\uff08\u305f\u306f\u305f\uff09", "fields"], ["\u7551\u4f5c\uff08\u306f\u305f\u3055\u304f\uff09", "dry-field farming"]]], "\u7d42": ["\u304a\uff08\u308f\u308b\uff09\u30fb\u304a\uff08\u3048\u308b\uff09", "\u30b7\u30e5\u30a6", "to end", [["\u7d42\u6226\uff08\u3057\u3085\u3046\u305b\u3093\uff09", "the end of the war"], ["\u7d42\u59cb\uff08\u3057\u3085\u3046\u3057\uff09", "throughout; from beginning to end"], ["\u59cb\u7d42\uff08\u3057\u3058\u3085\u3046\uff09", "all the time"], ["\u7d42\u70b9\uff08\u3057\u3085\u3046\u3066\u3093\uff09", "a terminal (station)"], ["\u6700\u7d42\uff08\u3055\u3044\u3057\u3085\u3046\uff09", "the last; final"]]], "\u7fbd": ["\u306f\u30fb\u306f\u306d", "\u30a6", "wing, feather", [["\u7fbd\u7e54\uff08\u306f\u304a\u308a\uff09", "a <i>haori</i> coat"], ["\u7fbd\u6bdb\uff08\u3046\u3082\u3046\uff09", "plumage, down"], ["\u7fbd\u7ffc\uff08\u3046\u3088\u304f\uff09", "wings"], ["\u4e00\u7fbd\uff08\u3044\u3061\u308f\uff09", "one bird"], ["\u4e09\u7fbd\uff08\u3055\u3093\u3070\uff09", "three birds"], ["\u516d\u7fbd\uff08\u308d\u3063\u3071\uff09", "six birds"]]], "\u6025": ["\u3044\u305d\uff08\u3050\uff09", "\u30ad\u30e5\u30a6", "to hurry; fast; wide angle; important", [["\u6025\u7528\uff08\u304d\u3085\u3046\u3088\u3046\uff09", "urgent business"], ["\u6551\u6025\uff08\u304d\u3085\u3046\u304d\u3085\u3046\uff09", "first aid"], ["\u6025\u884c\uff08\u304d\u3085\u3046\u3053\u3046\uff09", "an express train"], ["\u6025\u75c5\uff08\u304d\u3085\u3046\u3073\u3087\u3046\uff09", "a sudden illness"]]], "\u5bd2": ["\u3055\u3080\uff08\u3044\uff09", "\u30ab\u30f3", "cold; poor; lonely", [["\u5bd2\u6691\uff08\u304b\u3093\u3057\u3087\uff09", "coldness and heat"], ["\u5bd2\u6c17\uff08\u304b\u3093\u304d\uff09", "coldness"], ["\u5bd2\u6d41\uff08\u304b\u3093\u308a\u3085\u3046\uff09", "a cold current"], ["\u5927\u5bd2\uff08\u3060\u3044\u304b\u3093\uff09", "(the first day of) the coldest season"]]], "\u8fba": ["\u3042\u305f\uff08\u308a\uff09\u30fb\u3079", "\u30d8\u30f3", "near; boundary", [["\u5ddd\u8fba\uff08\u304b\u308f\u3079\uff09", "a riverside"], ["\u5cb8\u8fba\uff08\u304d\u3057\u3079\uff09", "ashore, on the shore"], ["\u6d77\u8fba\uff08\u3046\u307f\u3079\uff09", "the beach, the seaside"], ["\u5468\u8fba\uff08\u3057\u3085\u3046\u3078\u3093\uff09", "the circumference, the outskirts"]]], "\u5bbf": ["\u3084\u3069\u30fb\u3084\u3069\uff08\u308b\uff09\u30fb\u3084\u3069\uff08\u3059\uff09", "\u30b7\u30e5\u30af", "inn; to stay, live, dwell; to give shelter", [["\u5bbf\u984c\uff08\u3057\u3085\u304f\u3060\u3044\uff09", "homework"], ["\u5bbf\u547d\uff08\u3057\u3085\u304f\u3081\u3044\uff09", "fate, destiny"], ["\u4e0b\u5bbf\uff08\u3052\u3057\u3085\u304f\uff09", "lodging house"], ["\u5bbf\u820e\uff08\u3057\u3085\u304f\u3057\u3083\uff09", "lodgings, quarters"]]], "\u627f": ["\u3046\u3051\u305f\u307e\u308f\uff08\u308b\uff09", "\u30b7\u30e7\u30a6", "to receive; to succeed to", [["\u627f\u77e5\uff08\u3057\u3087\u3046\u3061\uff09", "agree, consent"], ["\u627f\u8afe\uff08\u3057\u3087\u3046\u3060\u304f\uff09", "consent, assent"], ["\u627f\u8a8d\uff08\u3057\u3087\u3046\u306b\u3093\uff09", "recognition"]]], "\u6e96": ["", "\u30b8\u30e5\u30f3", "flat; well-grounded; level; to compare; to provide", [["\u6a19\u6e96\uff08\u3072\u3087\u3046\u3058\u3085\u3093\uff09", "a standard, a norm"], ["\u57fa\u6e96\uff08\u304d\u3058\u3085\u3093\uff09", "a standard, a basis"], ["\u6c34\u6e96\uff08\u3059\u3044\u3058\u3085\u3093\uff09", "level (standard); the water level"]]], "\u5099": ["\u305d\u306a\uff08\u3048\u308b\uff09\u30fb\u305d\u306a\uff08\u308f\u308b\uff09", "\u30d3", "to provide; to be provided", [["\u8a2d\u5099\uff08\u305b\u3064\u3073\uff09", "equipment, arrangements, facilities"], ["\u6e96\u5099\uff08\u3058\u3085\u3093\u3073\uff09", "preparation"], ["\u6574\u5099\uff08\u305b\u3044\u3073\uff09", "complete equipment"], ["\u4e88\u5099\uff08\u3088\u3073\uff09", "reserve, spare, preparatory"]]], "\u5ba2": ["", "\u30ad\u30e3\u30af\u30fb\u30ab\u30af", "visitor; guest", [["\u65c5\u5ba2\uff08\u308a\u3087\u304b\u304f\uff09", "a passenger, a traveller"], ["\u5ba2\u9593\uff08\u304d\u3083\u304f\u307e\uff09", "a living room"], ["\u5ba2\u5e2d\uff08\u304d\u3083\u304f\u305b\u304d\uff09", "a seat (for a guest)"]]], "\u6628": ["", "\u30b5\u30af", "yesterday; lately, recent; ancient", [["\u6628\u65e5\uff08\u3055\u304f\u3058\u3064\uff09", "yesterday"], ["\u6628\u5e74\uff08\u3055\u304f\u306d\u3093\uff09", "last year"], ["\u6628\u591c\uff08\u3055\u304f\u3084\uff09", "last night"], ["\u203b\u6628\u65e5\uff08\u304d\u306e\u3046\uff09", "yesterday"]]], "\u501f": ["\u304b\uff08\u308a\u308b\uff09", "\u30b7\u30e3\u30af", "to borrow", [["\u62dd\u501f\uff08\u306f\u3044\u3057\u3083\u304f\uff09", "borrow"], ["\u501f\u91d1\uff08\u3057\u3083\u3063\u304d\u3093\uff09", "a debt"], ["\u501f\u7528\uff08\u3057\u3083\u304f\u3088\u3046\uff09", "borrowing"], ["\u524d\u501f\u308a\uff08\u307e\u3048\u304c\u308a\uff09", "have an advance"]]], "\u793c": ["", "\u30ec\u30a4\u30fb\u30e9\u30a4", "manners; ceremony; to bow; greeting; gratitude", [["\u793c\u5100\uff08\u308c\u3044\u304e\uff09", "courtesy"], ["\u5931\u793c\uff08\u3057\u3064\u308c\u3044\uff09", "rudeness, bad manners"], ["\u671d\u793c\uff08\u3061\u3087\u3046\u308c\u3044\uff09", "a morning gathering"], ["\u7121\u793c\uff08\u3076\u308c\u3044\uff09", "rudeness, impoliteness"]]], "\u82bd": ["\u3081", "\u30ac", "sprout", [["\u65b0\u82bd\uff08\u3057\u3093\u3081\uff09", "a sprout, a bud"], ["\u767a\u82bd\uff08\u306f\u3064\u304c\uff09", "germination"], ["\u82bd\u751f\u3048\uff08\u3081\u3070\u3048\uff09", "a bud, a sprout, a young shoot"]]], "\u59cb": ["\u306f\u3058\uff08\u3081\u308b\uff09\u30fb\u306f\u3058\uff08\u307e\u308b\uff09", "\u30b7", "to begin; beginning", [["\u59cb\u672b\uff08\u3057\u307e\u3064\uff09", "disposal"], ["\u539f\u59cb\uff08\u3052\u3093\u3057\uff09", "primitive (ages)"], ["\u958b\u59cb\uff08\u304b\u3044\u3057\uff09", "a start, a beginning"], ["\u59cb\u7d42\uff08\u3057\u3058\u3085\u3046\uff09", "all the time, from beginning to end"]]], "\u90e8": ["", "\u30d6", "division; group; section", [["\u90e8\u5206\uff08\u3076\u3076\u3093\uff09", "a part, a portion"], ["\u672c\u90e8\uff08\u307b\u3093\u3076\uff09", "the head office"], ["\u90e8\u9577\uff08\u3076\u3061\u3087\u3046\uff09", "the chief of a section"], ["\u5168\u90e8\uff08\u305c\u3093\u3076\uff09", "all"], ["\u203b\u90e8\u5c4b\uff08\u3078\u3084\uff09", "a room"]]], "\u5c4b": ["\u3084", "\u30aa\u30af", "store; occupation; roof; house", [["\u5bb6\u5c4b\uff08\u304b\u304a\u304f\uff09", "a house"], ["\u5c4b\u6577\uff08\u3084\u3057\u304d\uff09", "a residence, a mansion"], ["\u672c\u5c4b\uff08\u307b\u3093\u3084\uff09", "a bookstore"], ["\u203b\u90e8\u5c4b\uff08\u3078\u3084\uff09", "a room"]]], "\u9031": ["", "\u30b7\u30e5\u30a6", "week", [["\u9031\u9593\uff08\u3057\u3085\u3046\u304b\u3093\uff09", "a week"], ["\u9031\u672b\uff08\u3057\u3085\u3046\u307e\u3064\uff09", "the weekend"], ["\u6bce\u9031\uff08\u307e\u3044\u3057\u3085\u3046\uff09", "every week"], ["\u5148\u9031\uff08\u305b\u3093\u3057\u3085\u3046\uff09", "last week"], ["\u6765\u9031\uff08\u3089\u3044\u3057\u3085\u3046\uff09", "next week"], ["\u9031\u520a\uff08\u3057\u3085\u3046\u304b\u3093\uff09", "a weekly"]]], "\u7834": ["\u3084\u3076\uff08\u308b\uff09\u30fb\u3084\u3076\uff08\u308c\u308b\uff09", "\u30cf", "to break; to accomplish, complete", [["\u7834\u58ca\uff08\u306f\u304b\u3044\uff09", "destruction"], ["\u6253\u7834\uff08\u3060\u306f\uff09", "break down"], ["\u96e3\u6ce2\uff08\u306a\u3093\u3070\uff09", "a shipwreck; a wreck"], ["\u7834\u640d\uff08\u306f\u305d\u3093\uff09", "damage"], ["\u7834\u88c2\uff08\u306f\u308c\u3064\uff09", "an explosion"]]], "\u75c5": ["\u3084\uff08\u3080\uff09\u30fb\u3084\u307e\u3044", "\u30d3\u30e7\u30a6\u30fb\uff3b\u30d8\u30a4\uff3d", "to become sick; disease/sick; -itis", [["\u75c5\u6c17\uff08\u3073\u3087\u3046\u304d\uff09", "sickness, illness, a desease"], ["\u75c5\u9662\uff08\u3073\u3087\u3046\u3044\u3093\uff09", "a hospital"], ["\u6025\u75c5\uff08\u304d\u3085\u3046\u3073\u3087\u3046\uff09", "a sudden illness"], ["\u770b\u75c5\uff08\u304b\u3093\u3073\u3087\u3046\uff09", "nursing"], ["\u4eee\u75c5\uff08\u3051\u3073\u3087\u3046\uff09", "feigned illness"]]], "\u6839": ["\u306d", "\u30b3\u30f3", "root; origin; endurance", [["\u6839\u672c\uff08\u3053\u3093\u307c\u3093\uff09", "the foundation, the essence"], ["\u6839\u62e0\uff08\u3053\u3093\u304d\u3087\uff09", "a ground, an authority"], ["\u5927\u6839\uff08\u3060\u3044\u3053\u3093\uff09", "a radish"], ["\u5c4b\u6839\uff08\u3084\u306d\uff09", "a roof"]]], "\u52a9": ["\u305f\u3059\uff08\u3051\u308b\uff09\u30fb\u305f\u3059\uff08\u304b\u308b\uff09\u30fb\u3059\u3051", "\u30b8\u30e7", "to help; to rescue; to be helped; to be rescued", [["\u63f4\u52a9\uff08\u3048\u3093\u3058\u3087\uff09", "help, assistance"], ["\u52a9\u8a00\uff08\u3058\u3087\u3052\u3093\uff09", "advice, counsel, a suggestion"], ["\u6551\u52a9\uff08\u304d\u3085\u3046\u3058\u3087\uff09", "rescue"], ["\u52a9\u9577\uff08\u3058\u3087\u3061\u3087\u3046\uff09", "encouragement, promotion"]]], "\u98db": ["\u3068\uff08\u3076\uff09\u30fb\u3068\uff08\u3070\u3059\uff09", "\u30d2", "to fly", [["\u98db\u884c\u6a5f\uff08\u3072\u3053\u3046\u304d\uff09", "an airplane"], ["\u98db\u8e8d\uff08\u3072\u3084\u304f\uff09", "a flying jump, a leap"], ["\u98db\u77f3\uff08\u3068\u3073\u3044\u3057\uff09", "stepping-stones"], ["\u98db\u9b5a\uff08\u3068\u3073\u3046\u304a\uff09", "a flying fish"]]]};
+  </script>
+  <div class="block title">つるの恩返し</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/14-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="14-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-001" class="fas fa-play"></i>
+        <audio id="audio_14-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むかしむかし、あるところにおじいさんとおばあさんが住んでいました。</span>
+        <span class="content-sent kanji-sent is-hidden">むかしむかし、あるところにおじいさんとおばあさんが住んでいました。</span>
+        <span class="content-sent plain-sent is-hidden">むかしむかし、あるところにおじいさんとおばあさんが住んでいました。</span>
+        <span class="content-sent vocab-sent">むかしむかし、あるところにおじいさんとおばあさんが住んでいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Once upon a time, an old man and an old woman lived in a certain place.</span>
+      </td>
+    </tr>
+
+    <tr id="14-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-002" class="fas fa-play"></i>
+        <audio id="audio_14-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">夕日がだんだん西に沈み、</span>
+        <span class="content-sent kanji-sent is-hidden">夕日がだんだん西に沈み、</span>
+        <span class="content-sent plain-sent is-hidden">夕日がだんだん西に沈み、</span>
+        <span class="content-sent vocab-sent">夕日がだんだん西に<a onclick="show_vocab_data('沈み')">沈み</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It was about the time when the sun has slowly sunk in the west,</span>
+      </td>
+    </tr>
+
+    <tr id="14-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-003" class="fas fa-play"></i>
+        <audio id="audio_14-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">赤い夕焼けも、だんだんあせて、一番星が見えるころです。</span>
+        <span class="content-sent kanji-sent is-hidden">赤い夕<a onclick="show_kanji_data('焼')">焼</a>けも、だんだんあせて、一番星が見えるころです。</span>
+        <span class="content-sent plain-sent is-hidden">赤い夕焼けも、だんだんあせて、一番星が見えるころです。</span>
+        <span class="content-sent vocab-sent">赤い<a onclick="show_vocab_data('夕焼け')">夕焼け</a>も、だんだん<a onclick="show_vocab_data('あせて')">あせて</a>、一番星が見えるころです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and the red sunset has slowly faded, and the first stars can be seen.</span>
+      </td>
+    </tr>
+
+    <tr id="14-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-004" class="fas fa-play"></i>
+        <audio id="audio_14-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんが一日の畑仕事を終えて、そろそろ家に帰ろうと、あぜ道に腰をおろすと、</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんが一日の<a onclick="show_kanji_data('畑')">畑</a>仕事を<a onclick="show_kanji_data('終')">終</a>えて、そろそろ家に帰ろうと、あぜ道に腰をおろすと、</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんが一日の畑仕事を終えて、そろそろ家に帰ろうと、あぜ道に腰をおろすと、</span>
+        <span class="content-sent vocab-sent">おじいさんが一日の<a onclick="show_vocab_data('畑仕事')">畑仕事</a>を終えて、そろそろ家に帰ろうと、<a onclick="show_vocab_data('あぜ道')">あぜ道</a>に腰をおろすと、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The old man finished his day&#39;s work in the field, and as he sat down on the path between the rice paddies, thinking it was about time to head home,</span>
+      </td>
+    </tr>
+
+    <tr id="14-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-005" class="fas fa-play"></i>
+        <audio id="audio_14-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">バタバタと鳥の羽音が聞こえました。</span>
+        <span class="content-sent kanji-sent is-hidden">バタバタと鳥の<a onclick="show_kanji_data('羽')">羽</a>音が聞こえました。</span>
+        <span class="content-sent plain-sent is-hidden">バタバタと鳥の羽音が聞こえました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('バタバタと')">バタバタと</a>鳥の<a onclick="show_vocab_data('羽音')">羽音</a>が聞こえました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">he heard the flapping sound of a bird&#39;s wings.</span>
+      </td>
+    </tr>
+
+    <tr id="14-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-006" class="fas fa-play"></i>
+        <audio id="audio_14-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">音のする方を見てみると、一羽のつるが、わなにかかってもがいていました。</span>
+        <span class="content-sent kanji-sent is-hidden">音のする方を見てみると、一<a onclick="show_kanji_data('羽')">羽</a>のつるが、わなにかかってもがいていました。</span>
+        <span class="content-sent plain-sent is-hidden">音のする方を見てみると、一羽のつるが、わなにかかってもがいていました。</span>
+        <span class="content-sent vocab-sent">音のする方を見てみると、<a onclick="show_vocab_data('一羽')">一羽</a>の<a onclick="show_vocab_data('つる')">つる</a>が、<a onclick="show_vocab_data('わな')">わな</a>に<a onclick="show_vocab_data('かかって')">かかって</a><a onclick="show_vocab_data('もがいて')">もがいて</a>いました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When he looked towards where the sound was coming from, there was a crane, caught in a trap and writhing around.</span>
+      </td>
+    </tr>
+
+    <tr id="14-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-007" class="fas fa-play"></i>
+        <audio id="audio_14-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">心の優しいおじいさんは、そのつるを見ると、本当にかわいそうになり、急いでわなを外して逃がしてやりました。</span>
+        <span class="content-sent kanji-sent is-hidden">心の優しいおじいさんは、そのつるを見ると、本当にかわいそうになり、<a onclick="show_kanji_data('急')">急</a>いでわなを外して逃がしてやりました。</span>
+        <span class="content-sent plain-sent is-hidden">心の優しいおじいさんは、そのつるを見ると、本当にかわいそうになり、急いでわなを外して逃がしてやりました。</span>
+        <span class="content-sent vocab-sent">心の<a onclick="show_vocab_data('優しい')">優しい</a>おじいさんは、その<a onclick="show_vocab_data('つる')">つる</a>を見ると、本当に<a onclick="show_vocab_data('かわいそうになり')">かわいそうになり</a>、急いで<a onclick="show_vocab_data('わな')">わな</a>を<a onclick="show_vocab_data('外して')">外して</a><a onclick="show_vocab_data('逃がして')">逃がして</a>やりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the kind-hearted old man saw the crane, he took pity on it, and hurriedly opened the trap and let the crane go.</span>
+      </td>
+    </tr>
+
+    <tr id="14-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-008" class="fas fa-play"></i>
+        <audio id="audio_14-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それからしばらくした、寒い冬のある日、</span>
+        <span class="content-sent kanji-sent is-hidden">それからしばらくした、<a onclick="show_kanji_data('寒')">寒</a>い冬のある日、</span>
+        <span class="content-sent plain-sent is-hidden">それからしばらくした、寒い冬のある日、</span>
+        <span class="content-sent vocab-sent">それから<a onclick="show_vocab_data('しばらく')">しばらく</a>した、寒い冬のある日、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">One winter day some time later,</span>
+      </td>
+    </tr>
+
+    <tr id="14-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-009" class="fas fa-play"></i>
+        <audio id="audio_14-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんとおばあさんがこたつで外の雪をながめながら、お茶を飲んでいると、</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんとおばあさんがこたつで外の雪をながめながら、お茶を<a onclick="show_kanji_data('飲')">飲</a>んでいると、</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんとおばあさんがこたつで外の雪をながめながら、お茶を飲んでいると、</span>
+        <span class="content-sent vocab-sent">おじいさんとおばあさんが<a onclick="show_vocab_data('こたつ')">こたつ</a>で外の雪をながめながら、お茶を飲んでいると、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">as the old man and old woman were drinking tea while sitting in the kotatsu, watching the snow outside,</span>
+      </td>
+    </tr>
+
+    <tr id="14-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-010" class="fas fa-play"></i>
+        <audio id="audio_14-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">トントンと、だれかが戸をたたくのです。</span>
+        <span class="content-sent kanji-sent is-hidden">トントンと、だれかが戸をたたくのです。</span>
+        <span class="content-sent plain-sent is-hidden">トントンと、だれかが戸をたたくのです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('トントンと')">トントンと</a>、<a onclick="show_vocab_data('だれか')">だれか</a>が戸をた<a onclick="show_vocab_data('たく')">たく</a>のです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">someone knocked on their door.</span>
+      </td>
+    </tr>
+
+    <tr id="14-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-011" class="fas fa-play"></i>
+        <audio id="audio_14-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんが戸を開けてみると、きれいな女の人が雪の中に立っていました。</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんが戸を開けてみると、きれいな女の人が雪の中に立っていました。</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんが戸を開けてみると、きれいな女の人が雪の中に立っていました。</span>
+        <span class="content-sent vocab-sent">おじいさんが戸を開けてみると、きれいな女の人が雪の中に立っていました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the old man opened the door, there was a beautiful woman standing in the snow.</span>
+      </td>
+    </tr>
+
+    <tr id="14-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-012" class="fas fa-play"></i>
+        <audio id="audio_14-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「大雪で、この辺に宿もなく、旅ができなくて困っています。</span>
+        <span class="content-sent kanji-sent is-hidden">「大雪で、この<a onclick="show_kanji_data('辺')">辺</a>に<a onclick="show_kanji_data('宿')">宿</a>もなく、旅ができなくて困っています。</span>
+        <span class="content-sent plain-sent is-hidden">「大雪で、この辺に宿もなく、旅ができなくて困っています。</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('大雪')">大雪</a>で、この<a onclick="show_vocab_data('辺')">辺</a>に<a onclick="show_vocab_data('宿')">宿</a>もなく、旅ができなくて<a onclick="show_vocab_data('困って')">困って</a>います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;I&#39;m in trouble, since I can&#39;t continue my journey because of the heavy snow, and there&#39;s no inn around here.</span>
+      </td>
+    </tr>
+
+    <tr id="14-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-013" class="fas fa-play"></i>
+        <audio id="audio_14-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">どうか一晩とめてもらえませんでしょうか。」と、その女の人は、たのみました。</span>
+        <span class="content-sent kanji-sent is-hidden">どうか一晩とめてもらえませんでしょうか。」と、その女の人は、たのみました。</span>
+        <span class="content-sent plain-sent is-hidden">どうか一晩とめてもらえませんでしょうか。」と、その女の人は、たのみました。</span>
+        <span class="content-sent vocab-sent">どうか一晩とめてもらえませんでしょうか。」と、その女の人は、たのみました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Please, let me stay here one night,&quot; the woman asked.</span>
+      </td>
+    </tr>
+
+    <tr id="14-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-014" class="fas fa-play"></i>
+        <audio id="audio_14-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんとおばあさんは、喜んで承知し、</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんとおばあさんは、喜んで<a onclick="show_kanji_data('承')">承</a>知し、</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんとおばあさんは、喜んで承知し、</span>
+        <span class="content-sent vocab-sent">おじいさんとおばあさんは、喜んで<a onclick="show_vocab_data('承知し')">承知し</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The old man and the old woman gladly consented,</span>
+      </td>
+    </tr>
+
+    <tr id="14-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-015" class="fas fa-play"></i>
+        <audio id="audio_14-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">お風呂をたき、きがえを用意してあげたりして、めんどうを見てあげました。</span>
+        <span class="content-sent kanji-sent is-hidden">お風呂をたき、きがえを用意してあげたりして、めんどうを見てあげました。</span>
+        <span class="content-sent plain-sent is-hidden">お風呂をたき、きがえを用意してあげたりして、めんどうを見てあげました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('お風呂')">お風呂</a>をたき、<a onclick="show_vocab_data('きがえ')">きがえ</a>を用意してあげたりして、<a onclick="show_vocab_data('めんどうを見て')">めんどうを見て</a>あげました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and began heating the bath, preparing a change of clothes, and looked after her.</span>
+      </td>
+    </tr>
+
+    <tr id="14-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-016" class="fas fa-play"></i>
+        <audio id="audio_14-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">次の日、おじいさんとおばあさんが起きてびっくり。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('次')">次</a>の日、おじいさんとおばあさんが起きてびっくり。</span>
+        <span class="content-sent plain-sent is-hidden">次の日、おじいさんとおばあさんが起きてびっくり。</span>
+        <span class="content-sent vocab-sent">次の日、おじいさんとおばあさんが起きてびっくり。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The next day, the old man and old woman woke up and were surprised.</span>
+      </td>
+    </tr>
+
+    <tr id="14-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-017" class="fas fa-play"></i>
+        <audio id="audio_14-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この女の人がさっさと、こたつに火を入れて、朝御飯を準備しているのです。</span>
+        <span class="content-sent kanji-sent is-hidden">この女の人がさっさと、こたつに火を入れて、朝御<a onclick="show_kanji_data('飯')">飯</a>を<a onclick="show_kanji_data('準')">準</a><a onclick="show_kanji_data('備')">備</a>しているのです。</span>
+        <span class="content-sent plain-sent is-hidden">この女の人がさっさと、こたつに火を入れて、朝御飯を準備しているのです。</span>
+        <span class="content-sent vocab-sent">この女の人がさっさと、<a onclick="show_vocab_data('こたつ')">こたつ</a>に火を入れて、<a onclick="show_vocab_data('朝御飯')">朝御飯</a>を準備しているのです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This woman had quickly lit the kotatsu, and was preparing breakfast.</span>
+      </td>
+    </tr>
+
+    <tr id="14-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-018" class="fas fa-play"></i>
+        <audio id="audio_14-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「お客さんに働かせては・・・」と、おじいさんが引き止めようとすると、</span>
+        <span class="content-sent kanji-sent is-hidden">「お<a onclick="show_kanji_data('客')">客</a>さんに働かせては・・・」と、おじいさんが引き止めようとすると、</span>
+        <span class="content-sent plain-sent is-hidden">「お客さんに働かせては・・・」と、おじいさんが引き止めようとすると、</span>
+        <span class="content-sent vocab-sent">「お客さんに働かせては・・・」と、おじいさんが<a onclick="show_vocab_data('引き止めよう')">引き止めよう</a>とすると、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the old man said, &quot;It&#39;s not good to make a guest work...&quot; and tried to stop her,</span>
+      </td>
+    </tr>
+
+    <tr id="14-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-019" class="fas fa-play"></i>
+        <audio id="audio_14-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">女の人は、「昨晩、宿をお借りしたお礼に。」と言って、働くのをやめません。</span>
+        <span class="content-sent kanji-sent is-hidden">女の人は、「<a onclick="show_kanji_data('昨')">昨</a>晩、<a onclick="show_kanji_data('宿')">宿</a>をお<a onclick="show_kanji_data('借')">借</a>りしたお<a onclick="show_kanji_data('礼')">礼</a>に。」と言って、働くのをやめません。</span>
+        <span class="content-sent plain-sent is-hidden">女の人は、「昨晩、宿をお借りしたお礼に。」と言って、働くのをやめません。</span>
+        <span class="content-sent vocab-sent">女の人は、「<a onclick="show_vocab_data('昨晩')">昨晩</a>、<a onclick="show_vocab_data('宿')">宿</a>をお借りした<a onclick="show_vocab_data('お礼に')">お礼に</a>。」と言って、働くのをやめません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the woman said, &quot;This is to thank you for letting me stay here last night,&quot; and didn&#39;t stop working.</span>
+      </td>
+    </tr>
+
+    <tr id="14-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-020" class="fas fa-play"></i>
+        <audio id="audio_14-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その日、一日中、雪がしんしんとふり続きました。</span>
+        <span class="content-sent kanji-sent is-hidden">その日、一日中、雪がしんしんとふり続きました。</span>
+        <span class="content-sent plain-sent is-hidden">その日、一日中、雪がしんしんとふり続きました。</span>
+        <span class="content-sent vocab-sent">その日、一日中、雪が<a onclick="show_vocab_data('しんしんと')">しんしんと</a>ふり続きました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">That day, all day long, the snow continued to fall thick and fast.</span>
+      </td>
+    </tr>
+
+    <tr id="14-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-021" class="fas fa-play"></i>
+        <audio id="audio_14-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そこで、女の人はしかたなく、もう一晩とめてもらうことにしました。</span>
+        <span class="content-sent kanji-sent is-hidden">そこで、女の人はしかたなく、もう一晩とめてもらうことにしました。</span>
+        <span class="content-sent plain-sent is-hidden">そこで、女の人はしかたなく、もう一晩とめてもらうことにしました。</span>
+        <span class="content-sent vocab-sent">そこで、女の人はしかたなく、もう一晩とめてもらうことにしました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">So the woman, having no alternative, decided to stay one more night.</span>
+      </td>
+    </tr>
+
+    <tr id="14-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-022" class="fas fa-play"></i>
+        <audio id="audio_14-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、次の日も次の日も、その次の日も、雪は、いっこうに<a onclick="show_grammar_data('やみそうにありません')">やみそうにありません</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、<a onclick="show_kanji_data('次')">次</a>の日も<a onclick="show_kanji_data('次')">次</a>の日も、その<a onclick="show_kanji_data('次')">次</a>の日も、雪は、いっこうにやみそうにありません。</span>
+        <span class="content-sent plain-sent is-hidden">しかし、次の日も次の日も、その次の日も、雪は、いっこうにやみそうにありません。</span>
+        <span class="content-sent vocab-sent">しかし、次の日も次の日も、その次の日も、雪は、<a onclick="show_vocab_data('いっこうに')">いっこうに</a><a onclick="show_vocab_data('やみそう')">やみそう</a>にありません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, the next day, and the next day, and the day after that, the snow didn&#39;t even show signs of stopping.</span>
+      </td>
+    </tr>
+
+    <tr id="14-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-023" class="fas fa-play"></i>
+        <audio id="audio_14-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんとおばあさんに引き止められて、</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんとおばあさんに引き止められて、</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんとおばあさんに引き止められて、</span>
+        <span class="content-sent vocab-sent">おじいさんとおばあさんに引き止められて、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Held back by the old man and the old woman,</span>
+      </td>
+    </tr>
+
+    <tr id="14-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-024" class="fas fa-play"></i>
+        <audio id="audio_14-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この女の人は、しばらくいっしょに住み、お手伝いをすることにしました。</span>
+        <span class="content-sent kanji-sent is-hidden">この女の人は、しばらくいっしょに住み、お手伝いをすることにしました。</span>
+        <span class="content-sent plain-sent is-hidden">この女の人は、しばらくいっしょに住み、お手伝いをすることにしました。</span>
+        <span class="content-sent vocab-sent">この女の人は、<a onclick="show_vocab_data('しばらく')">しばらく</a><a onclick="show_vocab_data('いっしょに')">いっしょに</a>住み、<a onclick="show_vocab_data('お手伝い')">お手伝い</a>をすることにしました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the woman decided to live with them for a while and help them.</span>
+      </td>
+    </tr>
+
+    <tr id="14-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-025" class="fas fa-play"></i>
+        <audio id="audio_14-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">外の雪もすっかりとけて、草木が新しい芽を出し始めた、ある日のことです。</span>
+        <span class="content-sent kanji-sent is-hidden">外の雪もすっかりとけて、草木が新しい<a onclick="show_kanji_data('芽')">芽</a>を出し<a onclick="show_kanji_data('始')">始</a>めた、ある日のことです。</span>
+        <span class="content-sent plain-sent is-hidden">外の雪もすっかりとけて、草木が新しい芽を出し始めた、ある日のことです。</span>
+        <span class="content-sent vocab-sent">外の雪も<a onclick="show_vocab_data('すっかり')">すっかり</a><a onclick="show_vocab_data('とけて')">とけて</a>、<a onclick="show_vocab_data('草木')">草木</a>が新しい<a onclick="show_vocab_data('芽')">芽</a>を出し始めた、ある日のことです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On a certain day, when the snow had completely melted and the grass and trees had begun to put out new shoots,</span>
+      </td>
+    </tr>
+
+    <tr id="14-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-026" class="fas fa-play"></i>
+        <audio id="audio_14-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この女の人がおじいさんとおばあさんに、「機を織らせてください。」とたのみました。</span>
+        <span class="content-sent kanji-sent is-hidden">この女の人がおじいさんとおばあさんに、「機を織らせてください。」とたのみました。</span>
+        <span class="content-sent plain-sent is-hidden">この女の人がおじいさんとおばあさんに、「機を織らせてください。」とたのみました。</span>
+        <span class="content-sent vocab-sent">この女の人がおじいさんとおばあさんに、「機を織らせてください。」とたのみました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the woman asked the old mand and old woman, &quot;Please let me weave.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-027" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-027" class="fas fa-play"></i>
+        <audio id="audio_14-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-027.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんとおばあさんが、「お前がしたいことは何でもおやり。」と承知すると、女の人は、「もう一つお願いがあります。</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんとおばあさんが、「お前がしたいことは何でもおやり。」と<a onclick="show_kanji_data('承')">承</a>知すると、女の人は、「もう一つお願いがあります。</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんとおばあさんが、「お前がしたいことは何でもおやり。」と承知すると、女の人は、「もう一つお願いがあります。</span>
+        <span class="content-sent vocab-sent">おじいさんとおばあさんが、「お前がしたいことは何でもおやり。」と承知すると、女の人は、「もう一つお願いがあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the old man and old woman consented, saying, &quot;Do whatever you want,&quot; the woman said, &quot;I have one more request.</span>
+      </td>
+    </tr>
+
+    <tr id="14-028" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-028" class="fas fa-play"></i>
+        <audio id="audio_14-028" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-028.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('私が機を織っているところを、どんなことがあっても見ない')">私が機を織っているところを、どんなことがあっても見ない</a>と、約束してください。」とたのみました。</span>
+        <span class="content-sent kanji-sent is-hidden">私が機を織っているところを、どんなことがあっても見ないと、約束してください。」とたのみました。</span>
+        <span class="content-sent plain-sent is-hidden">私が機を織っているところを、どんなことがあっても見ないと、約束してください。」とたのみました。</span>
+        <span class="content-sent vocab-sent">私が機を織っているところを、どんなことがあっても見ないと、約束してください。」とたのみました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">No matter what happens, please promise not to look at me weaving.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-029" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-029" class="fas fa-play"></i>
+        <audio id="audio_14-029" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-029.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そうして、ひとり、部屋の中にこもって、機を織り始めました。</span>
+        <span class="content-sent kanji-sent is-hidden">そうして、ひとり、<a onclick="show_kanji_data('部')">部</a><a onclick="show_kanji_data('屋')">屋</a>の中にこもって、機を織り<a onclick="show_kanji_data('始')">始</a>めました。</span>
+        <span class="content-sent plain-sent is-hidden">そうして、ひとり、部屋の中にこもって、機を織り始めました。</span>
+        <span class="content-sent vocab-sent">そうして、ひとり、<a onclick="show_vocab_data('部屋')">部屋</a>の中に<a onclick="show_vocab_data('こもって')">こもって</a>、機を織り始めました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Doing this, she shut herself up in a room alone and began weaving.</span>
+      </td>
+    </tr>
+
+    <tr id="14-030" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-030" class="fas fa-play"></i>
+        <audio id="audio_14-030" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-030.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">一日、二日、三日…一週間とたちました。</span>
+        <span class="content-sent kanji-sent is-hidden">一日、二日、三日…一<a onclick="show_kanji_data('週')">週</a>間とたちました。</span>
+        <span class="content-sent plain-sent is-hidden">一日、二日、三日…一週間とたちました。</span>
+        <span class="content-sent vocab-sent">一日、二日、三日…一週間とたちました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">One day two days, three days... a week passed.</span>
+      </td>
+    </tr>
+
+    <tr id="14-031" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-031" class="fas fa-play"></i>
+        <audio id="audio_14-031" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-031.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">けれでも、その女の人は、部屋にこもったまま、機織りをやめません。</span>
+        <span class="content-sent kanji-sent is-hidden">けれでも、その女の人は、<a onclick="show_kanji_data('部')">部</a><a onclick="show_kanji_data('屋')">屋</a>にこもったまま、機織りをやめません。</span>
+        <span class="content-sent plain-sent is-hidden">けれでも、その女の人は、部屋にこもったまま、機織りをやめません。</span>
+        <span class="content-sent vocab-sent">けれでも、その女の人は、<a onclick="show_vocab_data('部屋')">部屋</a>にこもったまま、機織りをやめません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But the woman, still shut up in the room, didn&#39;t stop weaving.</span>
+      </td>
+    </tr>
+
+    <tr id="14-032" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-032" class="fas fa-play"></i>
+        <audio id="audio_14-032" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-032.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おじいさんとおばあさんは、だんだん心配になりました。</span>
+        <span class="content-sent kanji-sent is-hidden">おじいさんとおばあさんは、だんだん心配になりました。</span>
+        <span class="content-sent plain-sent is-hidden">おじいさんとおばあさんは、だんだん心配になりました。</span>
+        <span class="content-sent vocab-sent">おじいさんとおばあさんは、だんだん心配になりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The old man and old woman little by little began to worry.</span>
+      </td>
+    </tr>
+
+    <tr id="14-033" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-033" class="fas fa-play"></i>
+        <audio id="audio_14-033" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-033.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、<a onclick="show_grammar_data('約束を破るわけにはいきません。')">約束を破るわけにはいきません。</a></span>
+        <span class="content-sent kanji-sent is-hidden">しかし、約束を<a onclick="show_kanji_data('破')">破</a>るわけにはいきません。</span>
+        <span class="content-sent plain-sent is-hidden">しかし、約束を破るわけにはいきません。</span>
+        <span class="content-sent vocab-sent">しかし、約束を<a onclick="show_vocab_data('破る')">破る</a>わけにはいきません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, they just couldn&#39;t break their promise.</span>
+      </td>
+    </tr>
+
+    <tr id="14-034" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-034" class="fas fa-play"></i>
+        <audio id="audio_14-034" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-034.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「何を作っているのか分からんが、どんな衣でも<a onclick="show_grammar_data('まさか')">まさか</a>一週間は<a onclick="show_grammar_data('かかるまい')">かかるまい</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">「何を作っているのか分からんが、どんな衣でもまさか一<a onclick="show_kanji_data('週')">週</a>間はかかるまい。</span>
+        <span class="content-sent plain-sent is-hidden">「何を作っているのか分からんが、どんな衣でもまさか一週間はかかるまい。</span>
+        <span class="content-sent vocab-sent">「何を作っているのか分からんが、どんな<a onclick="show_vocab_data('衣')">衣</a>でも<a onclick="show_vocab_data('まさか')">まさか</a>一週間は<a onclick="show_vocab_data('かかる')">かかる</a><a onclick="show_vocab_data('まい')">まい</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;I don&#39;t know what she&#39;s making, but no kind of clothing should take a week.</span>
+      </td>
+    </tr>
+
+    <tr id="14-035" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-035" class="fas fa-play"></i>
+        <audio id="audio_14-035" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-035.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">病気にでもなっていたら・・・」と言って、中の様子をうかがうことにしました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('病')">病</a>気にでもなっていたら・・・」と言って、中の様子をうかがうことにしました。</span>
+        <span class="content-sent plain-sent is-hidden">病気にでもなっていたら・・・」と言って、中の様子をうかがうことにしました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('病気')">病気</a>にでもなっていたら・・・」と言って、中の<a onclick="show_vocab_data('様子')">様子</a>を<a onclick="show_vocab_data('うかがう')">うかがう</a>ことにしました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">If she&#39;s gotten sick or something...&quot; they said, and decided to look in on the situation in the room.</span>
+      </td>
+    </tr>
+
+    <tr id="14-036" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-036" class="fas fa-play"></i>
+        <audio id="audio_14-036" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-036.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しょうじをそっとあけて、中をのぞいて、おじいさんとおばあさんは、びっくり仰天。</span>
+        <span class="content-sent kanji-sent is-hidden">しょうじをそっとあけて、中をのぞいて、おじいさんとおばあさんは、びっくり仰天。</span>
+        <span class="content-sent plain-sent is-hidden">しょうじをそっとあけて、中をのぞいて、おじいさんとおばあさんは、びっくり仰天。</span>
+        <span class="content-sent vocab-sent">しょうじをそっとあけて、中をのぞいて、おじいさんとおばあさんは、びっくり仰天。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When they quietly opened the sliding door and peeked inside, the old man and old woman were flabbergasted.</span>
+      </td>
+    </tr>
+
+    <tr id="14-037" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-037" class="fas fa-play"></i>
+        <audio id="audio_14-037" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-037.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">部屋の中では、一羽のつるが、自分の羽を一本ずつとりながら、機を織っているではありませんか。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('部')">部</a><a onclick="show_kanji_data('屋')">屋</a>の中では、一<a onclick="show_kanji_data('羽')">羽</a>のつるが、自分の<a onclick="show_kanji_data('羽')">羽</a>を一本ずつとりながら、機を織っているではありませんか。</span>
+        <span class="content-sent plain-sent is-hidden">部屋の中では、一羽のつるが、自分の羽を一本ずつとりながら、機を織っているではありませんか。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('部屋')">部屋</a>の中では、<a onclick="show_vocab_data('一羽')">一羽</a>の<a onclick="show_vocab_data('つる')">つる</a>が、自分の羽を一本ずつとりながら、機を織っているではありませんか。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Isn&#39;t that the crane, pulling out its own feathers one by one, and weaving on the loom?</span>
+      </td>
+    </tr>
+
+    <tr id="14-038" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-038" class="fas fa-play"></i>
+        <audio id="audio_14-038" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-038.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「おじいさん、おばあさん、私は、おじいさんに命を助けられたつるです。</span>
+        <span class="content-sent kanji-sent is-hidden">「おじいさん、おばあさん、私は、おじいさんに命を<a onclick="show_kanji_data('助')">助</a>けられたつるです。</span>
+        <span class="content-sent plain-sent is-hidden">「おじいさん、おばあさん、私は、おじいさんに命を助けられたつるです。</span>
+        <span class="content-sent vocab-sent">「おじいさん、おばあさん、私は、おじいさんに命を助けられた<a onclick="show_vocab_data('つる')">つる</a>です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;Grandpa, Grandma, I am the crane whose life Grandpa saved.</span>
+      </td>
+    </tr>
+
+    <tr id="14-039" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-039" class="fas fa-play"></i>
+        <audio id="audio_14-039" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-039.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この御恩をお返しに、この反物を織りに来たのです。</span>
+        <span class="content-sent kanji-sent is-hidden">この御<a onclick="show_kanji_data('恩')">恩</a>をお<a onclick="show_kanji_data('返')">返</a>しに、この反物を織りに来たのです。</span>
+        <span class="content-sent plain-sent is-hidden">この御恩をお返しに、この反物を織りに来たのです。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('御恩')">御恩</a>をお返しに、この<a onclick="show_vocab_data('反物')">反物</a>を織りに来たのです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">To repay this debt of gratitude, I came to weave this cloth.</span>
+      </td>
+    </tr>
+
+    <tr id="14-040" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-040" class="fas fa-play"></i>
+        <audio id="audio_14-040" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-040.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これは、つるの千羽織りと言って、とてもめずらしいものです。</span>
+        <span class="content-sent kanji-sent is-hidden">これは、つるの千<a onclick="show_kanji_data('羽')">羽</a>織りと言って、とてもめずらしいものです。</span>
+        <span class="content-sent plain-sent is-hidden">これは、つるの千羽織りと言って、とてもめずらしいものです。</span>
+        <span class="content-sent vocab-sent">これは、<a onclick="show_vocab_data('つる')">つる</a>の千羽織りと言って、とても<a onclick="show_vocab_data('めずらしい')">めずらしい</a>ものです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This is called &quot;The Crane&#39;s Thousand-Feather Weave,&quot; and it is very rare.</span>
+      </td>
+    </tr>
+
+    <tr id="14-041" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-041" class="fas fa-play"></i>
+        <audio id="audio_14-041" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-041.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これからお二人で楽に暮らしていけるお金になるはずです。</span>
+        <span class="content-sent kanji-sent is-hidden">これからお二人で楽に暮らしていけるお金になるはずです。</span>
+        <span class="content-sent plain-sent is-hidden">これからお二人で楽に暮らしていけるお金になるはずです。</span>
+        <span class="content-sent vocab-sent">これからお二人で<a onclick="show_vocab_data('楽に')">楽に</a><a onclick="show_vocab_data('暮らして')">暮らして</a>いけるお金になるはずです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It should provide enough money for the two of you to live comfortably from now on.</span>
+      </td>
+    </tr>
+
+    <tr id="14-042" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-042" class="fas fa-play"></i>
+        <audio id="audio_14-042" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-042.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">私の本当の姿を見られたので、お別れしなくてはなりません。いつまでもお元気で。」</span>
+        <span class="content-sent kanji-sent is-hidden">私の本当の姿を見られたので、お別れしなくてはなりません。いつまでもお元気で。」</span>
+        <span class="content-sent plain-sent is-hidden">私の本当の姿を見られたので、お別れしなくてはなりません。いつまでもお元気で。」</span>
+        <span class="content-sent vocab-sent">私の本当の姿を見られたので、お別れしなくてはなりません。いつまでも<a onclick="show_vocab_data('お元気で')">お元気で</a>。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Since my true form has been seen, I must leave you.  Take care always.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-043" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-043" class="fas fa-play"></i>
+        <audio id="audio_14-043" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-043.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と言って、反物を手渡すと、空に向かって飛んでいってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">と言って、反物を手渡すと、空に向かって<a onclick="show_kanji_data('飛')">飛</a>んでいってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">と言って、反物を手渡すと、空に向かって飛んでいってしまいました。</span>
+        <span class="content-sent vocab-sent">と言って、<a onclick="show_vocab_data('反物')">反物</a>を<a onclick="show_vocab_data('手渡す')">手渡す</a>と、空に向かって飛んでいってし<a onclick="show_vocab_data('まい')">まい</a>ました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Upon saying this and handing over the cloth, the crane flew off into the sky and was gone.</span>
+      </td>
+    </tr>
+
+    <tr id="14-044" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-044" class="fas fa-play"></i>
+        <audio id="audio_14-044" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-044.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これは、「つるの恩返し」という話です。</span>
+        <span class="content-sent kanji-sent is-hidden">これは、「つるの<a onclick="show_kanji_data('恩')">恩</a><a onclick="show_kanji_data('返')">返</a>し」という話です。</span>
+        <span class="content-sent plain-sent is-hidden">これは、「つるの恩返し」という話です。</span>
+        <span class="content-sent vocab-sent">これは、「<a onclick="show_vocab_data('つる')">つる</a>の<a onclick="show_vocab_data('恩返し')">恩返し</a>」という話です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This is a story called &quot;The Crane&#39;s Repayment.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-045" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-045" class="fas fa-play"></i>
+        <audio id="audio_14-045" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-045.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本人なら小さいころ一度は、必ず聞いたことのある話です。</span>
+        <span class="content-sent kanji-sent is-hidden">日本人なら小さいころ一度は、必ず聞いたことのある話です。</span>
+        <span class="content-sent plain-sent is-hidden">日本人なら小さいころ一度は、必ず聞いたことのある話です。</span>
+        <span class="content-sent vocab-sent">日本人なら小さいころ一度は、必ず聞いたことのある話です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Any Japanese person has certainly heard this story at least once when they were young.</span>
+      </td>
+    </tr>
+
+    <tr id="14-046" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-046" class="fas fa-play"></i>
+        <audio id="audio_14-046" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-046.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、恩知らずは、鳥やけものにも劣ると言って、</span>
+        <span class="content-sent kanji-sent is-hidden">そして、<a onclick="show_kanji_data('恩')">恩</a>知らずは、鳥やけものにも劣ると言って、</span>
+        <span class="content-sent plain-sent is-hidden">そして、恩知らずは、鳥やけものにも劣ると言って、</span>
+        <span class="content-sent vocab-sent">そして、<a onclick="show_vocab_data('恩知らず')">恩知らず</a>は、鳥や<a onclick="show_vocab_data('けもの')">けもの</a>にも<a onclick="show_vocab_data('劣る')">劣る</a>と言って、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">And, with the phrase &quot;ingrates are lower than even the birds and beasts,&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-047" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-047" class="fas fa-play"></i>
+        <audio id="audio_14-047" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-047.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">恩を受けた人々に恩を返す大切さを教えられます。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('恩')">恩</a>を受けた人々に<a onclick="show_kanji_data('恩')">恩</a>を<a onclick="show_kanji_data('返')">返</a>す大切さを教えられます。</span>
+        <span class="content-sent plain-sent is-hidden">恩を受けた人々に恩を返す大切さを教えられます。</span>
+        <span class="content-sent vocab-sent">恩を受けた人々に恩を返す大切さを教えられます。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">they are taught the importance of returning favors to one from whom they&#39;re received favors.</span>
+      </td>
+    </tr>
+
+    <tr id="14-048" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-048" class="fas fa-play"></i>
+        <audio id="audio_14-048" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-048.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「父母の恩は、<a onclick="show_grammar_data('海よりも深く')">海よりも深く</a>、<a onclick="show_grammar_data('山よりも高い')">山よりも高い</a>。」</span>
+        <span class="content-sent kanji-sent is-hidden">「父母の<a onclick="show_kanji_data('恩')">恩</a>は、海よりも深く、山よりも高い。」</span>
+        <span class="content-sent plain-sent is-hidden">「父母の恩は、海よりも深く、山よりも高い。」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('父母')">父母</a>の恩は、海よりも深く、山よりも高い。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;The debt of gratitude towards parents is deeper that the oceans and higher than the mountains.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="14-049" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-049" class="fas fa-play"></i>
+        <audio id="audio_14-049" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-049.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">などという言葉は、むかしの寺子屋の時代の言葉として、</span>
+        <span class="content-sent kanji-sent is-hidden">などという言葉は、むかしの寺子<a onclick="show_kanji_data('屋')">屋</a>の時代の言葉として、</span>
+        <span class="content-sent plain-sent is-hidden">などという言葉は、むかしの寺子屋の時代の言葉として、</span>
+        <span class="content-sent vocab-sent">などという言葉は、むかしの<a onclick="show_vocab_data('寺子屋')">寺子屋</a>の時代の言葉として、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">While there may be those who say, as words from the era of the &quot;temple schools&quot; long ago,</span>
+      </td>
+    </tr>
+
+    <tr id="14-050" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-050" class="fas fa-play"></i>
+        <audio id="audio_14-050" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-050.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本人は忘れてしまったと言う人がいるかもしれませんが、</span>
+        <span class="content-sent kanji-sent is-hidden">日本人は忘れてしまったと言う人がいるかもしれませんが、</span>
+        <span class="content-sent plain-sent is-hidden">日本人は忘れてしまったと言う人がいるかもしれませんが、</span>
+        <span class="content-sent vocab-sent">日本人は忘れてしまったと言う人がいるかもしれませんが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">that the Japanese people have forgotten phrases like this,</span>
+      </td>
+    </tr>
+
+    <tr id="14-051" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-051" class="fas fa-play"></i>
+        <audio id="audio_14-051" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-051.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このむかし話に見られるような恩を<a onclick="show_grammar_data('忘れてはいけない')">忘れてはいけない</a>という考えは、</span>
+        <span class="content-sent kanji-sent is-hidden">このむかし話に見られるような<a onclick="show_kanji_data('恩')">恩</a>を忘れてはいけないという考えは、</span>
+        <span class="content-sent plain-sent is-hidden">このむかし話に見られるような恩を忘れてはいけないという考えは、</span>
+        <span class="content-sent vocab-sent">このむかし話に見られるような恩を忘れてはいけないという考えは、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the way of thinking in this story, that you must not forget debts of gratitude,</span>
+      </td>
+    </tr>
+
+    <tr id="14-052" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_14-052" class="fas fa-play"></i>
+        <audio id="audio_14-052" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-052.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">今でも日本人の心の中に深く残っているのです。</span>
+        <span class="content-sent kanji-sent is-hidden">今でも日本人の心の中に深く残っているのです。</span>
+        <span class="content-sent plain-sent is-hidden">今でも日本人の心の中に深く残っているのです。</span>
+        <span class="content-sent vocab-sent">今でも日本人の心の中に深く残っているのです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">remains deeply in the hearts of the Japanese people even now.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

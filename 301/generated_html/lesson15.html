@@ -1,0 +1,873 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>村八分</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u30ab\u30a6\u30dc\u30fc\u30a4": ["\u30ab\u30a6\u30dc\u30fc\u30a4", "", "cowboy"], "\u6620\u753b": ["\u6620\u753b", "\u3048\u3044\u304c", "movie"], "\u516c\u306e": ["\u516c", "\u304a\u304a\u3084\u3051", "public"], "\u30ef\u30a4\u30ef\u30a4": ["\u30ef\u30a4\u30ef\u30a4", "", "noisily; clamorously"], "\u3055\u308f\u3050": ["\u3055\u308f\u3050", "", "to make a commotion"], "\u3055\u308f\u3044\u3067": ["\u3055\u308f\u3050", "", "to make a commotion"], "\u60aa\u8005": ["\u60aa\u8005", "\u308f\u308b\u3082\u306e", "bad person"], "\u5211\u306b\u304b\u3051\u308b": ["\u5211\uff08\u306b\u304b\u3051\u308b\uff09", "\u3051\u3044\uff08\u306b\u304b\u3051\u308b\uff09", "punishment; sentence; (to pass judgment; to sentence)"], "\u4e0d\u516c\u5e73": ["\u4e0d\u516c\u5e73", "\u3075\u3053\u3046\u3078\u3044", "unfair"], "\u79c1\u5211": ["\u79c1\u5211", "\u3057\u3051\u3044", "lynching; vigilante punishment"], "\u98a8\u7fd2": ["\u98a8\u7fd2", "\u3075\u3046\u3057\u3085\u3046", "customs"], "\u53cd\u6620\u3059\u308b": ["\u53cd\u6620\uff08\u3059\u308b\uff09", "\u306f\u3093\u3048\u3044\uff1b\u3059\u308b\uff09", "reflection; (to reflect)"], "\u6b8b\u9177": ["\u6b8b\u9177", "\u3056\u3093\u3053\u304f", "cruel; brutal"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "extremely; very"], "\u306f\u3084\u308b": ["\u306f\u3084\u308b", "", "to be popular"], "\u306f\u3084\u308a\u307e\u3057\u305f": ["\u306f\u3084\u308b", "", "to be popular"], "\u5225\u306b": ["\u5225\u306b", "\u3079\u3064\u306b", "not really"], "\u8a18\u9332": ["\u8a18\u9332", "\u304d\u308d\u304f", "records"], "\u81ea\u7136\u306b": ["\u81ea\u7136\u306b", "\u3057\u305c\u3093\u306b", "naturally"], "\u8fb2\u6751": ["\u8fb2\u6751", "\u306e\u3046\u305d\u3093", "rural"], "\u5730\u5e2f": ["\u5730\u5e2f", "\u3061\u305f\u3044", "region"], "\u5171\u540c": ["\u5171\u540c", "\u304d\u3087\u3046\u3069\u3046", "cooperative"], "\u3046\u307e\u304f": ["\u3046\u307e\u304f", "", "well; skillfully"], "\u4fdd\u305f\u308c\u308b": ["\u4fdd\u3064", "\u305f\u3082\u3064", "to preserve"], "\u4fdd\u3064": ["\u4fdd\u3064", "\u305f\u3082\u3064", "to preserve"], "\u304a\u304d\u3066": ["\u304a\u304d\u3066", "", "rule(s); law(s)"], "\u3057\u3044\u305f\u3051": ["\u3057\u3044\u305f\u3051", "", "a kind of mushroom"], "\u308f\u3089\u3073": ["\u308f\u3089\u3073", "", "a kind of edible bracken"], "\u304f\u308a": ["\u304f\u308a", "", "chestnut"], "\u305f\u304d\u304e": ["\u305f\u304d\u304e", "", "firewood"], "\u62fe\u3046": ["\u62fe\u3046", "\u3072\u308d\u3046", "to pick up"], "\u62fe\u3044": ["\u62fe\u3046", "\u3072\u308d\u3046", "to pick up"], "\u671f\u9593": ["\u671f\u9593", "\u304d\u304b\u3093", "time period"], "\u304b\u3093\u304c\u3044": ["\u304b\u3093\u304c\u3044", "", "irrigation ditch"], "\u79e9\u5e8f": ["\u79e9\u5e8f", "\u3061\u3064\u3058\u3087", "(public) order"], "\u9055\u53cd\u3059\u308b": ["\u9055\u53cd\uff08\u3059\u308b\uff09", "\u3044\u306f\u3093\uff08\u3059\u308b\uff09", "against; (to go against; to break)"], "\u4ea4\u969b": ["\u4ea4\u969b", "\u3053\u3046\u3055\u3044", "association with"], "\u7d76\u3064": ["\u7d76\u3064", "\u305f\u3064", "to cut off"], "\u7d76\u305f\u308c\u308b": ["\u7d76\u3064", "\u305f\u3064", "to cut off"], "\u5bb6\u65cf": ["\u5bb6\u65cf", "\u304b\u305e\u304f", "family"], "\u6b7b\u306c": ["\u6b7b\u306c", "\u3057\u306c", "to die"], "\u6b7b\u3093\u3067": ["\u6b7b\u306c", "\u3057\u306c", "to die"], "\u846c\u5100": ["\u846c\u5100", "\u305d\u3046\u304e", "funeral"], "\u5834\u5408": ["\u5834\u5408", "\u3070\u3042\u3044", "case; situation; circumstance"], "\u706b\u4e8b": ["\u706b\u4e8b", "\u304b\u3058", "fire"], "\u4f8b\u5916": ["\u4f8b\u5916", "\u308c\u3044\u304c\u3044", "exception"], "\u516b\u5206": ["\u516b\u5206", "\u306f\u305f\u3076", "eight tenths; eighty percent"], "\u5b8c\u5168": ["\u5b8c\u5168", "\u304b\u3093\u305c\u3093", "complete; perfect"], "\u7d76\u4ea4\u3059\u308b": ["\u7d76\u4ea4\uff08\u3059\u308b\uff09", "\u305c\u3063\u3053\u3046\uff08\u3059\u308b\uff09", "break ties; (to cut off association with)"], "\u7d76\u4ea4\u3055\u308c\u308b": ["\u7d76\u4ea4\uff08\u3059\u308b\uff09", "\u305c\u3063\u3053\u3046\uff08\u3059\u308b\uff09", "break ties; (to cut off association with)"], "\u5354\u529b": ["\u5354\u529b\uff08\u3059\u308b\uff09", "\u304d\u3087\u3046\u308a\u3087\u304f\uff08\u3059\u308b\uff09", "cooperation; collaboration; (to cooperate)"], "\u5f37\u8abf\u3059\u308b": ["\u5f37\u8abf\uff08\u3059\u308b\uff09", "\u304d\u3087\u3046\u3061\u3087\u3046\uff08\u3059\u308b\uff09", "emphasis; (to emphasize)"], "\u4e0d\u53ef\u80fd": ["\u4e0d\u53ef\u80fd", "\u3075\u304b\u306e\u3046", "impossible"], "\u3064\u3089\u3044": ["\u3064\u3089\u3044", "", "difficult; painful; trying"], "\u3064\u3089\u304b\u3063\u305f": ["\u3064\u3089\u3044", "", "difficult; painful; trying"], "\u3086\u308b\u3059": ["\u3086\u308b\u3059", "", "to forgive; to allow"], "\u3086\u308b\u3057\u3066": ["\u3086\u308b\u3059", "", "to forgive; to allow"], "\u91cd\u52b4\u50cd": ["\u91cd\u52b4\u50cd", "\u3058\u3085\u3046\u308d\u3046\u3069\u3046", "hard labor"], "\u9003\u3052\u51fa\u3059": ["\u9003\u3052\u51fa\u3059", "\u306b\u3052\u3060\u3059", "to run away"], "\u9003\u3052\u51fa\u3057\u305f\u308a": ["\u9003\u3052\u51fa\u3059", "\u306b\u3052\u3060\u3059", "to run away"], "\u4eba\u6a29": ["\u4eba\u6a29", "\u3058\u3093\u3051\u3093", "human rights"], "\u53cd\u3059\u308b": ["\u53cd\u3059\u308b", "\u306f\u3093\u3059\u308b", "to oppose; to go against"], "\u6cd5\u5f8b": ["\u6cd5\u5f8b", "\u307b\u3046\u308a\u3064", "law"], "\u90fd\u4f1a": ["\u90fd\u4f1a", "\u3068\u304b\u3044", "metropolis"], "\u4ed8\u304d\u5408\u3044": ["\u4ed8\u304d\u5408\u3044", "\u3064\u304d\u3042\u3044", "association; fellowship"], "\u4ef2\u9593": ["\u4ef2\u9593", "\u306a\u304b\u307e", "colleagues"]};
+  var grammar_json = {"\u516c\u306e\u88c1\u5224\u306a\u3057\u306b": ["X \u306a\u3057", "without X", [["\u516c\u306e\u88c1\u5224\u306a\u3057\u306b\u3001\u60aa\u8005\u3092\u5211\u306b\u304b\u3051\u308b\u3002", "They sentence bad men without a public trial."], ["\u305d\u308c\u306a\u3057\u306b\u751f\u304d\u3066\u3044\u304f\u3002", "He'll go on living without it."], ["\u76ee\u7684\u306a\u3057\u306e\u751f\u6d3b\u306f\u3001\u30ec\u30fc\u30c0\u30fc\u306a\u3057\u306e\u8239\u3068\u5909\u308f\u3089\u306a\u3044\u3002", "A life without goals is no different than a ship without radar."]]], "\u898b\u308b\u3053\u3068\u304c\u3088\u304f\u3042\u308a\u307e\u3059": ["V<SUB>3</SUB> + \u3053\u3068\u304c (\u3088\u304f) \u3042\u308b", "to sometimes (to often) V", [["\u60aa\u8005\u3068\u30ea\u30f3\u30c1\u3068\u3044\u3046\u5211\u306b\u304b\u3051\u308b\u306e\u3092\u307f\u308b\u3053\u3068\u304c\u3088\u304f\u3042\u308a\u307e\u3059\u3002", "One often seens the sentencing of criminals to a punishment called lynching."], ["\u8033\u306b\u3059\u308b\u3053\u3068\u304c\u3042\u308b\u3002", "I sometimes hear that."], ["\u5c71\u306b\u3057\u3044\u305f\u3051\u3092\u53d6\u308a\u306b\u884c\u304f\u3053\u3068\u304c\u3042\u3063\u305f\u3002", "(There have been occasions when) I have gone to the mountains to gather mushrooms."]]], "\u3088\u304f\u8033\u306b\u3059\u308b\u3053\u3068\u304c\u3042\u308a\u307e\u3059": ["V<SUB>3</SUB> + \u3053\u3068\u304c (\u3088\u304f) \u3042\u308b", "to sometimes (to often) V", [["\u60aa\u8005\u3068\u30ea\u30f3\u30c1\u3068\u3044\u3046\u5211\u306b\u304b\u3051\u308b\u306e\u3092\u307f\u308b\u3053\u3068\u304c\u3088\u304f\u3042\u308a\u307e\u3059\u3002", "One often seens the sentencing of criminals to a punishment called lynching."], ["\u8033\u306b\u3059\u308b\u3053\u3068\u304c\u3042\u308b\u3002", "I sometimes hear that."], ["\u5c71\u306b\u3057\u3044\u305f\u3051\u3092\u53d6\u308a\u306b\u884c\u304f\u3053\u3068\u304c\u3042\u3063\u305f\u3002", "(There have been occasions when) I have gone to the mountains to gather mushrooms."]]], "\u5c71\u306b\u5165\u3063\u3066\u3082\u3088\u3044": ["V<SUB>\u3066</SUB> + \u3082\u3088\u3044<br>V<SUB>1</SUB> + \u306a\u304f\u3066\u3082\u3088\u3044", "It is all right to V; may V<br>It is all right if [one does] not V", [["\u5c71\u306b\u5165\u3063\u3066\u3082\u3088\u3044\u671f\u9593\u304c\u3042\u308a\u307e\u3059\u3002", "There is a period when it's all right to go into the mountains."], ["\u98df\u3079\u3066\u3082\u3044\u3044\u3067\u3059\u304b\u3002", "May I eat?"], ["\u30bf\u30a4\u30d7\u304c\u3046\u3066\u306a\u304f\u3066\u3082\u3044\u3044\u3067\u3059\u304b\u3002", "Is it all right if I can't type?"]]], "\u3042\u308c\u3070": ["V<SUB>4</SUB> + \u3070<br>TA + \u3051\u308c\u3070", "if V/Adj", [["\u305d\u308c\u306b\u9055\u53cd\u3059\u308b\u3082\u306e\u304c\u3042\u308c\u3070\u3001\u305d\u306e\u4eba\u305f\u3061\u306f\u3001\u4eba\u3005\u304b\u3089\u6751\u516b\u5206\u306b\u3055\u308c\u305f\u3002", "If there were some who violated this, they were ostracized by the people."], ["\u96e8\u304c\u3075\u308c\u3070\u5ddd\u304c\u3067\u304d\u3001\u98a8\u304c\u3075\u3051\u3070\u5c71\u304c\u3067\u304d\u308b\u3002", "If it rains, rivers are formed; if the wind blows, mountains are formed."], ["\u90fd\u5408\u304c\u60aa\u3051\u308c\u3070\u3001\u307e\u305f\u660e\u65e5\u6765\u307e\u3059\u3002", "If it is inconvenient for you, I will come again tomorrow."]]], "\u7d76\u305f\u308c\u308b\u3053\u3068\u3092\u8a00\u3044\u307e\u3059": ["X\u3068\u306f\u3001 + V/N\u306e + \u3053\u3068\u3092\u3044\u3046", "X means V/N", [["\u6751\u516b\u5206\u3068\u306f\u3001\u6751\u306e\u4eba\u3005\u304b\u3089\u307b\u3068\u3093\u3069\u4ea4\u969b\u3092\u305f\u305f\u308c\u308b\u3053\u3068\u3092\u3044\u3044\u307e\u3059\u3002", "<i>Murahachibu</i> means to be nearly cut off from asociation with the people of the village."], ["\u6210\u91d1\u3068\u306f\u3001\u6025\u306b\u91d1\u6301\u3061\u306b\u306a\u3063\u305f\u4eba\u306e\u3053\u3068\u3092\u3044\u3044\u307e\u3059\u3002", "The <i>nouveau riche</i> are those people who have suddenly made it rich."], ["\u963f\u6ce2\u8e0a\u308a\u3068\u306f\u3001\u56db\u56fd\u72ec\u7279\u306e\u76c6\u8e0a\u308a\u306e\u3053\u3068\u3092\u3044\u3044\u307e\u3059\u3002", "<i>Awaodori</i> is a <i>bon</i> dance peculiar to Shikoku."]]], "\u6cd5\u5f8b\u3067\u306f\u3044\u3051\u306a\u3044\u3053\u3068\u306b\u306a\u3063\u3066\u3044\u307e\u3059": ["S\u3053\u3068\u306b\u306a\u3063\u3066\u3044\u308b", "It has been decided/arranged that S", [["\u6cd5\u5f8b\u3067\u306f\u3044\u3051\u306a\u3044\u3053\u3068\u306b\u306a\u3063\u3066\u3044\u308b\u3002", "That is illegal. / It has been decided that that is illegal."], ["\u4e16\u754c\u306e\u56fd\u3005\u304c\u5354\u529b\u3059\u308b\u3053\u3068\u306b\u306a\u3063\u3066\u3044\u308b\u3002", "It has been arranged that all the countries in the world will cooperate."], ["\u56fd\u969b\u7684\u306a\u4f1a\u5408\u304c\u958b\u304b\u308c\u308b\u3053\u3068\u306b\u306a\u3063\u3066\u3044\u308b\u3002", "An international meeting will be held."]]]};
+  var kanji_json = {"\u516c": ["\u304a\u304a\u3084\u3051", "\u30b3\u30a6", "public", [["\u516c\u5712\uff08\u3053\u3046\u3048\u3093\uff09", "a park"], ["\u516c\u5171\uff08\u3053\u3046\u304d\u3087\u3046\uff09", "public"], ["\u516c\u5e73\u306a\uff08\u3053\u3046\u3078\u3044\u306a\uff09", "fair, impartial"], ["\u516c\u5bb3\uff08\u3053\u3046\u304c\u3044\uff09", "pollution"], ["\u516c\u7acb\uff08\u3053\u3046\u308a\u3064\uff09", "public, municipal, prefectural"]]], "\u5dde": ["\u3059", "\u30b7\u30e5\u30a6", "sandbank; state (U.S.); continent; province", [["\u4e5d\u5dde\uff08\u304d\u3085\u3046\u3057\u3085\u3046\uff09", "Kyushu"], ["\u672c\u5dde\uff08\u307b\u3093\u3057\u3085\u3046\uff09", "Honshu"], ["\u30e6\u30bf\u5dde\uff08\u3086\u305f\u3057\u3085\u3046\uff09", "The State of Utah"], ["\u30a2\u30b8\u30a2\u5dde\uff08\u3042\u3058\u3042\u3057\u3085\u3046\uff09", "Asia"], ["\u4e09\u89d2\u5dde\uff08\u3055\u3093\u304b\u304f\u3059\uff09", "a delta"]]], "\u5e73": ["\u305f\u3044\uff08\u3089\uff09\u30fb\u3072\u3089", "\u30d8\u30a4\u30fb\u30d3\u30e7\u30a6", "flat; normal; even; calm", [["\u5e73\u548c\uff08\u3078\u3044\u308f\uff09", "peace"], ["\u5e73\u7b49\uff08\u3073\u3087\u3046\u3069\u3046\uff09", "equality"], ["\u5e73\u5747\uff08\u3078\u3044\u304d\u3093\uff09", "an average"], ["\u5e73\u5b89\uff08\u3078\u3044\u3042\u3093\uff09", "peace"]]], "\u547c": ["\u3088\uff08\u3076\uff09", "\u30b3", "call; summn; invite", [["\u547c\u5438\uff08\u3053\u304d\u3085\u3046\uff09", "breathing, respiration"], ["\u70b9\u547c\uff08\u3066\u3093\u3053\uff09", "roll call"], ["\u547c\u3073\u58f0\uff08\u3088\u3073\u3054\u3048\uff09", "a call, a shout, a yell"]]], "\u53cd": ["\u305d\uff08\u308b\uff09\u30fb\u305d\uff08\u3089\u3059\uff09", "\u30d8\u30f3\u30fb\uff3b\u30db\u30f3\uff3d\u30fb\uff3b\u30bf\u30f3\uff3d", "oppose; go against; anti-; disobey; look back/backwards", [["\u53cd\u5bfe\uff08\u306f\u3093\u305f\u3044\uff09", "opposition"], ["\u53cd\u7701\uff08\u306f\u3093\u305b\u3044\uff09", "reflection"], ["\u53cd\u52d5\uff08\u306f\u3093\u3069\u3046\uff09", "reaction, recoil"], ["\u9055\u53cd\uff08\u3044\u306f\u3093\uff09", "violation, infraction"], ["\u53cd\u611f\uff08\u306f\u3093\u304b\u3093\uff09", "antipathy, antagonism"]]], "\u9332": ["", "\u30ed\u30af", "to record; written records", [["\u8a18\u9332\uff08\u304d\u308d\u304f\uff09", "a record, a document"], ["\u9332\u97f3\uff08\u308d\u304f\u304a\u3093\uff09", "recording"], ["\u767b\u9332\uff08\u3068\u3046\u308d\u304f\uff09", "registration"], ["\u4ed8\u9332\uff08\u3075\u308d\u304f\uff09", "an appendix, a supplement"]]], "\u8fb2": ["", "\u30ce\u30a6", "agriculture", [["\u8fb2\u6c11\uff08\u306e\u3046\u307f\u3093\uff09", "a peasant, a farmer"], ["\u8fb2\u6751\uff08\u306e\u3046\u305d\u3093\uff09", "a farming village"], ["\u8fb2\u696d\uff08\u306e\u3046\u304e\u3087\u3046\uff09", "agriculture, farming"], ["\u8fb2\u5bb6\uff08\u306e\u3046\u304b\uff09", "a farm house"], ["\u8fb2\u5730\uff08\u306e\u3046\u3061\uff09", "farm land"]]], "\u6163": ["\u306a\uff08\u308c\u308b\uff09\u30fb\u306a\uff08\u3089\u3059\uff09", "\u30ab\u30f3", "to become accustomed to; to tame; custom; as is", [["\u7fd2\u6163\uff08\u3057\u3085\u3046\u304b\u3093\uff09", "a custom, a habit"], ["\u6163\u7528\u53e5\uff08\u304b\u3093\u3088\u3046\u304f\uff09", "an idiomatic expression, an idiom"], ["\u6163\u884c\uff08\u304b\u3093\u3053\u3046\uff09", "a habitual practice"]]], "\u7684": ["\u3082\u3068", "\u30c6\u30ad", "target; -like; as...", [["\u76ee\u7684\uff08\u3082\u304f\u3066\u304d\uff09", "purpose"], ["\u7684\u4e2d\uff08\u3066\u304d\u3061\u3085\u3046\uff09", "hit (the mark)"], ["\u7684\u78ba\uff08\u3066\u304d\u304b\u304f\uff09", "precise, exact"], ["\u4e00\u822c\u7684\u306a\uff08\u3044\u3063\u3071\u3093\u3066\u304d\u306a\uff09", "general, universal"], ["\u65e5\u672c\u7684\u306a\uff08\u306b\u307b\u3093\u3066\u304d\u306a\uff09", "Japanese-ish"]]], "\u5171": ["\u3068\u307e", "\u30ad\u30e7\u30a6", "together", [["\u5171\u7523\uff08\u304d\u3087\u3046\u3055\u3093\uff09", "common property"], ["\u5171\u540c\uff08\u304d\u3087\u3046\u3069\u3046\uff09", "cooperation"], ["\u516c\u5171\uff08\u3053\u3046\u304d\u3087\u3046\uff09", "the community"], ["\u5171\u901a\uff08\u304d\u3087\u3046\u3064\u3046\uff09", "common"], ["\u5171\u548c\uff08\u304d\u3087\u3046\u308f\uff09", "republic"]]], "\u6d3b": ["", "\u30ab\u30c4", "active", [["\u751f\u6d3b\uff08\u305b\u3044\u304b\u3064\uff09", "life"], ["\u6d3b\u52d5\uff08\u304b\u3064\u3069\u3046\uff09", "activity"], ["\u6d3b\u8e8d\uff08\u304b\u3064\u3084\u304f\uff09", "activity"], ["\u5fa9\u6d3b\uff08\u3075\u3063\u304b\u3064\uff09", "revival, restoration"]]], "\u4fdd": ["\u305f\u3082\uff08\u3064\uff09", "\u30db", "to preserve; to raise (a child); to provide support", [["\u4fdd\u5b88\uff08\u307b\u3057\u3085\uff09", "conservative"], ["\u4fdd\u8a3c\uff08\u307b\u3057\u3087\u3046\uff09", "guarantee"], ["\u4fdd\u8b77\uff08\u307b\u3054\uff09", "protection"], ["\u4fdd\u5b58\uff08\u307b\u305e\u3093\uff09", "preservation"], ["\u4fdd\u967a\uff08\u307b\u3051\u3093\uff09", "insurance"]]], "\u53d6": ["\u3068\uff08\u308b\uff09", "\u30b7\u30e5", "to take, seize, catch, get", [["\u53d6\u6750\uff08\u3057\u3085\u3056\u3044\uff09", "gathering data"], ["\u53d6\u5f15\uff08\u3068\u308a\u3072\u304d\uff09", "transactions"], ["\u53d6\u5f97\uff08\u3057\u3085\u3068\u304f\uff09", "acquire"], ["\u53d7\u3051\u53d6\u308b\uff08\u3046\u3051\u3068\u308b\uff09", "receive"]]], "\u62fe": ["\u3072\u308d\uff08\u3046\uff09", "\u30b7\u30e5\u30a6\u30fb\u30b8\u30e5\u30a6", "to pick up, gather; ten", [["\u62fe\u5f97\uff08\u3057\u3085\u3046\u3068\u304f\uff09", "find"], ["\u62fe\u96c6\uff08\u3057\u3085\u3046\u3057\u3085\u3046\uff09", "a collection"], ["\u53ce\u62fe\uff08\u3057\u3085\u3046\u3057\u3085\u3046\uff09", "get under control"]]], "\u5e8f": ["", "\u30b8\u30e7", "order; beginning", [["\u9806\u5e8f\uff08\u3058\u3085\u3093\u3058\u3087\uff09", "order, sequence"], ["\u5e8f\u5217\uff08\u3058\u3087\u308c\u3064\uff09", "rank, order"], ["\u79e9\u5e8f\uff08\u3061\u3064\u3058\u3087\uff09", "order, discipline"]]], "\u969b": ["\u304d\u308f", "\u30b5\u30a4", "edge, side; to mix, associate; circumstance", [["\u56fd\u969b\uff08\u3053\u304f\u3055\u3044\uff09", "international"], ["\u5b9f\u969b\uff08\u3058\u3063\u3055\u3044\uff09", "actually"], ["\u4ea4\u969b\uff08\u3053\u3046\u3055\u3044\uff09", "associate"]]], "\u65cf": ["", "\u30be\u30af", "race; tribe; family", [["\u6c11\u65cf\uff08\u307f\u3093\u305e\u304f\uff09", "a race, a nation"], ["\u5bb6\u65cf\uff08\u304b\u305e\u304f\uff09", "a family"], ["\u4e00\u65cf\uff08\u3044\u3061\u305e\u304f\uff09", "the whole family, the clan"], ["\u8cb4\u65cf\uff08\u304d\u305e\u304f\uff09", "aristocrat, nobility"]]], "\u6b7b": ["\u3057\uff08\u306c\uff09", "\u30b7", "to die; death", [["\u6b7b\u4ea1\uff08\u3057\u307c\u3046\uff09", "death"], ["\u751f\u6b7b\uff08\u305b\u3044\u3057\uff09", "life and death"], ["\u5fc5\u6b7b\uff08\u3072\u3063\u3057\uff09", "desperate"]]], "\u4f8b": ["\u305f\u3068\uff08\u3048\u308b\uff09", "\u30ec\u30a4", "to compare; to liken; to resemble; example; always", [["\u4f8b\u5916\uff08\u308c\u3044\u304c\u3044\uff09", "exception"], ["\u4f8b\u6587\uff08\u308c\u3044\u3076\u3093\uff09", "an example sentence"], ["\u4f8b\u984c\uff08\u308c\u3044\u3060\u3044\uff09", "an exercise"], ["\u524d\u4f8b\uff08\u305c\u3093\u308c\u3044\uff09", "a precedent"]]], "\u5b8c": ["", "\u30ab\u30f3", "complete; perfect", [["\u5b8c\u5168\u306a\uff08\u304b\u3093\u305c\u3093\u306a\uff09", "perfect"], ["\u5b8c\u6210\uff08\u304b\u3093\u305b\u3044\uff09", "completion"], ["\u5b8c\u4e86\uff08\u304b\u3093\u308a\u3087\u3046\uff09", "completion"], ["\u5b8c\u6557\uff08\u304b\u3093\u3071\u3044\uff09", "a complete defeat"]]], "\u7d76": ["\u305f\uff08\u3048\u308b\uff09\u30fb\u305f\uff08\u3084\u3059\uff09\u30fb\u305f\uff08\u3064\uff09", "\u30bc\u30c4", "to stop; to exterminate; to cut off; partition; no comparison", [["\u7d76\u5bfe\uff08\u305c\u3063\u305f\u3044\uff09", "absolute"], ["\u6c17\u7d76\uff08\u304d\u305c\u3064\uff09", "faint"], ["\u7d76\u671b\uff08\u305c\u3064\u307c\u3046\uff09", "despair"], ["\u65ad\u7d76\uff08\u3060\u3093\u305c\u3064\uff09", "severance; interruption"], ["\u7d76\u4ea4\uff08\u305c\u3063\u3053\u3046\uff09", "break off relation"]]], "\u5354": ["", "\u30ad\u30e7\u30a6", "to cooperate", [["\u5354\u5b9a\uff08\u304d\u3087\u3046\u3066\u3044\uff09", "an agreement"], ["\u5354\u529b\uff08\u304d\u3087\u3046\u308a\u3087\u304f\uff09", "cooperation"], ["\u59a5\u5354\uff08\u3060\u304d\u3087\u3046\uff09", "a compromise"], ["\u5354\u8b70\uff08\u304d\u3087\u3046\u304e\uff09", "a conference, a consultation"], ["\u6559\u4f1a\uff08\u304d\u3087\u3046\u304b\u3044\uff09", "a society, an association"]]], "\u8abf": ["\u3057\u3089\uff08\u3079\u308b\uff09\u30fb\u3068\u3068\u306e\uff08\u3046\uff09\u30fb\u3068\u3068\u306e\uff08\u3048\u308b\uff09", "\u30c1\u30e7\u30a6", "to investigate; to be arranged; to arrange; balance, harmony; in order; investigation", [["\u8abf\u67fb\uff08\u3061\u3087\u3046\u3055\uff09", "an investigation, a survey"], ["\u8abf\u5b50\uff08\u3061\u3087\u3046\u3057\uff09", "a tune"], ["\u5f37\u8abf\uff08\u304d\u3087\u3046\u3061\u3087\u3046\uff09", "emphasis"], ["\u8abf\u548c\uff08\u3061\u3087\u3046\u308f\uff09", "harmony"]]], "\u7279": ["", "\u30c8\u30af", "special; especially; one", [["\u7279\u5225\u306a\uff08\u3068\u304f\u3079\u3064\u306a\uff09", "special"], ["\u7279\u6b8a\uff08\u3068\u304f\u3057\u3085\uff09", "unique"], ["\u7279\u6a29\uff08\u3068\u3063\u3051\u3093\uff09", "a privilege"], ["\u7279\u5b9a\uff08\u3068\u304f\u3066\u3044\uff09", "specific"]]], "\u4e0d": ["", "\u30d5\u30fb\u30d6", "(negative prefix)", [["\u4e0d\u8db3\uff08\u3075\u305d\u304f\uff09", "lack"], ["\u4e0d\u6e80\uff08\u3075\u307e\u3093\uff09", "dissatisfaction"], ["\u4e0d\u5b89\uff08\u3075\u3042\u3093\uff09", "uneasiness, anxiety"], ["\u4e0d\u5e78\uff08\u3075\u3053\u3046\uff09", "unhappiness"], ["\u4e0d\u601d\u8b70\uff08\u3075\u3057\u304e\u306a\uff09", "mysterious, strange"]]], "\u80fd": ["", "\u30ce\u30a6", "ability; talent; to work; can do; Noh play", [["\u53ef\u80fd\uff08\u304b\u306e\u3046\uff09", "possibility"], ["\u80fd\u529b\uff08\u306e\u3046\u308a\u3087\u304f\uff09", "ability, capacity"], ["\u624d\u80fd\uff08\u3055\u3044\u306e\u3046\uff09", "talent, a gift, an ability"], ["\u6a5f\u80fd\uff08\u304d\u306e\u3046\uff09", "a function"]]], "\u91cd": ["\u3048\u30fb\u304a\u3082\uff08\u3044\uff09\u30fb\u304b\u3055\uff08\u306d\u308b\uff09\u30fb\u304b\u3055\uff08\u306a\u308b\uff09", "\u30b8\u30e5\u30a6\u30fb\u30c1\u30e7\u30a6", "layer; heavy; to repeat; to pile", [["\u91cd\u8981\u306a\uff08\u3058\u3085\u3046\u3088\u3046\u306a\uff09", "important, principal"], ["\u91cd\u5927\u306a\uff08\u3058\u3085\u3046\u3060\u3044\u306a\uff09", "grave, serious, important"], ["\u8cb4\u91cd\u306a\uff08\u304d\u3061\u3087\u3046\u306a\uff09", "precious"], ["\u5c0a\u91cd\uff08\u305d\u3093\u3061\u3087\u3046\uff09", "respect, esteem, value"], ["\u91cd\u52b4\u50cd\uff08\u3058\u3085\u3046\u308d\u3046\u3069\u3046\uff09", "heavy labor"]]], "\u52b4": ["", "\u30ed\u30a6", "to work hard", [["\u52b4\u50cd\uff08\u308d\u3046\u3069\u3046\uff09", "labor"], ["\u82e6\u52b4\uff08\u304f\u308d\u3046\uff09", "troubles, toil, hardships"], ["\u52e4\u52b4\uff08\u304d\u3093\u308d\u3046\uff09", "labor, work"]]], "\u53d7": ["\u3046\uff08\u3051\u308b\uff09\u30fb\u3046\uff08\u304b\u308b\uff09", "\u30b8\u30e5", "to receive; to succeed to", [["\u53d7\u9a13\uff08\u3058\u3085\u3051\u3093\uff09", "take an examination"], ["\u53d7\u8afe\uff08\u3058\u3085\u3060\u304f\uff09", "acceptance"], ["\u53d7\u4ed8\uff08\u3046\u3051\u3064\u3051\uff09", "an information desk"], ["\u53d7\u53d6\uff08\u3046\u3051\u3068\u308a\uff09", "a receipt"]]], "\u6cd5": ["", "\u30db\u30a6\u30fb\uff3b\u30cf\u30c3\uff3d\u30fb\uff3b\u30db\u30c3\uff3d", "law; model; Buddhism", [["\u61b2\u6cd5\uff08\u3051\u3093\u307d\u3046\uff09", "a constitution"], ["\u65b9\u6cd5\uff08\u307b\u3046\u307b\u3046\uff09", "a way, a method"], ["\u6cd5\u5f8b\uff08\u307b\u3046\u308a\u3064\uff09", "a law"], ["\u6cd5\u6848\uff08\u307b\u3046\u3042\u3093\uff09", "a bill"]]], "\u90fd": ["\u307f\u3084\u3053", "\u30c8\u30fb\uff3b\u30c4\uff3d", "metropolis; capital", [["\u90fd\u5e02\uff08\u3068\u3057\uff09", "a city, a town"], ["\u6771\u4eac\u90fd\uff08\u3068\u3046\u304d\u3087\u3046\u3068\uff09", "to city of Tokyo"], ["\u90fd\u4f1a\uff08\u3068\u304b\u3044\uff09", "city, urban"], ["\u9996\u90fd\uff08\u3057\u3085\u3068\uff09", "a capital"], ["\u4eac\u90fd\uff08\u304d\u3087\u3046\u3068\uff09", "Kyoto"], ["\u203b\u90fd\u5408\uff08\u3064\u3054\u3046\uff09", "circumstances, convenience"]]], "\u4ed8": ["\u3064\uff08\u3051\u308b\uff09\u30fb\u3064\uff08\u304f\uff09", "\u30d5", "to attach; to be attached; to give", [["\u4ed8\u52a0\uff08\u3075\u304b\uff09", "add"], ["\u4ed8\u5c5e\uff08\u3075\u305e\u304f\uff09", "belong (to)"], ["\u4ed8\u8fd1\uff08\u3075\u304d\u3093\uff09", "the neighborhood"], ["\u65e5\u4ed8\uff08\u3072\u3065\u3051\uff09", "a date"]]]};
+  </script>
+  <div class="block title">村八分</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/15-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="15-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-001" class="fas fa-play"></i>
+        <audio id="audio_15-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">アメリカのカウボーイ映画などで、<a onclick="show_grammar_data('公の裁判なしに')">公の裁判なしに</a>、人々が、ワイワイさわいで、</span>
+        <span class="content-sent kanji-sent is-hidden">アメリカのカウボーイ映画などで、<a onclick="show_kanji_data('公')">公</a>の裁判なしに、人々が、ワイワイさわいで、</span>
+        <span class="content-sent plain-sent is-hidden">アメリカのカウボーイ映画などで、公の裁判なしに、人々が、ワイワイさわいで、</span>
+        <span class="content-sent vocab-sent">アメリカの<a onclick="show_vocab_data('カウボーイ')">カウボーイ</a><a onclick="show_vocab_data('映画')">映画</a>などで、<a onclick="show_vocab_data('公の')">公の</a>裁判なしに、人々が、<a onclick="show_vocab_data('ワイワイ')">ワイワイ</a><a onclick="show_vocab_data('さわいで')">さわいで</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In American cowboy movies, you often see people making a big commotion and, without a public trial,</span>
+      </td>
+    </tr>
+
+    <tr id="15-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-002" class="fas fa-play"></i>
+        <audio id="audio_15-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">悪者と思われる者を、リンチという刑にかけるのを<a onclick="show_grammar_data('見ることがよくあります')">見ることがよくあります</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">悪者と思われる者を、リンチという刑にかけるのを見ることがよくあります。</span>
+        <span class="content-sent plain-sent is-hidden">悪者と思われる者を、リンチという刑にかけるのを見ることがよくあります。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('悪者')">悪者</a>と思われる者を、リンチという<a onclick="show_vocab_data('刑にかける')">刑にかける</a>のを見ることがよくあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">inflicting on those who are thought to be bad a punishment called &quot;lynching.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="15-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-003" class="fas fa-play"></i>
+        <audio id="audio_15-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これは、十八世紀の中頃、バージニア州で、不公平な裁判をしたので有名なチャールズ・リンチという人の名をとって、</span>
+        <span class="content-sent kanji-sent is-hidden">これは、十八世紀の中頃、バージニア<a onclick="show_kanji_data('州')">州</a>で、<a onclick="show_kanji_data('不')">不</a><a onclick="show_kanji_data('公')">公</a><a onclick="show_kanji_data('平')">平</a>な裁判をしたので有名なチャールズ・リンチという人の名をとって、</span>
+        <span class="content-sent plain-sent is-hidden">これは、十八世紀の中頃、バージニア州で、不公平な裁判をしたので有名なチャールズ・リンチという人の名をとって、</span>
+        <span class="content-sent vocab-sent">これは、十八世紀の中頃、バージニア州で、<a onclick="show_vocab_data('不公平')">不公平</a>な裁判をしたので有名なチャールズ・リンチという人の名をとって、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">About the middle of the eighteenth century in the state of Virginia, Charles Lynch was famous for making unfair judgments, and his name was used</span>
+      </td>
+    </tr>
+
+    <tr id="15-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-004" class="fas fa-play"></i>
+        <audio id="audio_15-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">こう呼ばれるようになったもので、アメリカの風習を反映しています。</span>
+        <span class="content-sent kanji-sent is-hidden">こう<a onclick="show_kanji_data('呼')">呼</a>ばれるようになったもので、アメリカの風習を<a onclick="show_kanji_data('反')">反</a>映しています。</span>
+        <span class="content-sent plain-sent is-hidden">こう呼ばれるようになったもので、アメリカの風習を反映しています。</span>
+        <span class="content-sent vocab-sent">こう呼ばれるようになったもので、アメリカの<a onclick="show_vocab_data('風習')">風習</a>を反映しています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">to call this practice, and it reflects American customs.</span>
+      </td>
+    </tr>
+
+    <tr id="15-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-005" class="fas fa-play"></i>
+        <audio id="audio_15-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">丁度同じころ、日本でも、これほど残酷ではありませんが、</span>
+        <span class="content-sent kanji-sent is-hidden">丁度同じころ、日本でも、これほど残酷ではありませんが、</span>
+        <span class="content-sent plain-sent is-hidden">丁度同じころ、日本でも、これほど残酷ではありませんが、</span>
+        <span class="content-sent vocab-sent">丁度同じころ、日本でも、これほど<a onclick="show_vocab_data('残酷')">残酷</a>ではありませんが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">About the same time, there was also in Japan, though not as cruel as lynching,</span>
+      </td>
+    </tr>
+
+    <tr id="15-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-006" class="fas fa-play"></i>
+        <audio id="audio_15-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本の風習を反映する、非常におもしろい私刑が、はやりました。</span>
+        <span class="content-sent kanji-sent is-hidden">日本の風習を<a onclick="show_kanji_data('反')">反</a>映する、非常におもしろい私刑が、はやりました。</span>
+        <span class="content-sent plain-sent is-hidden">日本の風習を反映する、非常におもしろい私刑が、はやりました。</span>
+        <span class="content-sent vocab-sent">日本の<a onclick="show_vocab_data('風習')">風習</a>を<a onclick="show_vocab_data('反映する')">反映する</a>、<a onclick="show_vocab_data('非常に')">非常に</a>おもしろい<a onclick="show_vocab_data('私刑')">私刑</a>が、<a onclick="show_vocab_data('はやりました')">はやりました</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">a common, very interesting private punishment which reflects Japanese customs.</span>
+      </td>
+    </tr>
+
+    <tr id="15-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-007" class="fas fa-play"></i>
+        <audio id="audio_15-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それは、村八分と呼ばれています。</span>
+        <span class="content-sent kanji-sent is-hidden">それは、村八分と<a onclick="show_kanji_data('呼')">呼</a>ばれています。</span>
+        <span class="content-sent plain-sent is-hidden">それは、村八分と呼ばれています。</span>
+        <span class="content-sent vocab-sent">それは、村<a onclick="show_vocab_data('八分')">八分</a>と呼ばれています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This was called &quot;murahachibu&quot; (&quot;village eight parts&quot;).</span>
+      </td>
+    </tr>
+
+    <tr id="15-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-008" class="fas fa-play"></i>
+        <audio id="audio_15-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分は、別に公の記録に残っておらず、自然に、農村地帯に広がっていった、習慣的な私刑です。</span>
+        <span class="content-sent kanji-sent is-hidden">村八分は、別に<a onclick="show_kanji_data('公')">公</a>の記<a onclick="show_kanji_data('録')">録</a>に残っておらず、自然に、<a onclick="show_kanji_data('農')">農</a>村地帯に広がっていった、習<a onclick="show_kanji_data('慣')">慣</a><a onclick="show_kanji_data('的')">的</a>な私刑です。</span>
+        <span class="content-sent plain-sent is-hidden">村八分は、別に公の記録に残っておらず、自然に、農村地帯に広がっていった、習慣的な私刑です。</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>は、<a onclick="show_vocab_data('別に')">別に</a><a onclick="show_vocab_data('公の')">公の</a><a onclick="show_vocab_data('記録')">記録</a>に残っておらず、<a onclick="show_vocab_data('自然に')">自然に</a>、<a onclick="show_vocab_data('農村')">農村</a><a onclick="show_vocab_data('地帯')">地帯</a>に広がっていった、習慣的な<a onclick="show_vocab_data('私刑')">私刑</a>です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Murahachibu was a customary private punishment which does not remain on public records, but spread naturally throughout the rural farming areas.</span>
+      </td>
+    </tr>
+
+    <tr id="15-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-009" class="fas fa-play"></i>
+        <audio id="audio_15-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">農村の共同生活がうまく保たれるように、色々なおきてが、人々の間にありました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('農')">農</a>村の<a onclick="show_kanji_data('共')">共</a>同生<a onclick="show_kanji_data('活')">活</a>がうまく<a onclick="show_kanji_data('保')">保</a>たれるように、色々なおきてが、人々の間にありました。</span>
+        <span class="content-sent plain-sent is-hidden">農村の共同生活がうまく保たれるように、色々なおきてが、人々の間にありました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('農村')">農村</a>の<a onclick="show_vocab_data('共同')">共同</a>生活が<a onclick="show_vocab_data('うまく')">うまく</a><a onclick="show_vocab_data('保たれる')">保たれる</a>ように、色々な<a onclick="show_vocab_data('おきて')">おきて</a>が、人々の間にありました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In order for the cooperative lifestyle of the farming village to be preserved, there were various rules among the people.</span>
+      </td>
+    </tr>
+
+    <tr id="15-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-010" class="fas fa-play"></i>
+        <audio id="audio_15-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">例えば、山にできるしいたけとかわらびなどを取ったり、</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('例')">例</a>えば、山にできるしいたけとかわらびなどを<a onclick="show_kanji_data('取')">取</a>ったり、</span>
+        <span class="content-sent plain-sent is-hidden">例えば、山にできるしいたけとかわらびなどを取ったり、</span>
+        <span class="content-sent vocab-sent">例えば、山にできる<a onclick="show_vocab_data('しいたけ')">しいたけ</a>とか<a onclick="show_vocab_data('わらび')">わらび</a>などを取ったり、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">For example, they would do things like decide times when it was okay to go into the mountains to pick up firewood or gather mushrooms or edible bracken that grows there,</span>
+      </td>
+    </tr>
+
+    <tr id="15-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-011" class="fas fa-play"></i>
+        <audio id="audio_15-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">くりやたきぎを拾いに行くのに、<a onclick="show_grammar_data('山に入ってもよい')">山に入ってもよい</a>期間を決めたり、</span>
+        <span class="content-sent kanji-sent is-hidden">くりやたきぎを<a onclick="show_kanji_data('拾')">拾</a>いに行くのに、山に入ってもよい期間を決めたり、</span>
+        <span class="content-sent plain-sent is-hidden">くりやたきぎを拾いに行くのに、山に入ってもよい期間を決めたり、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('くり')">くり</a>や<a onclick="show_vocab_data('たきぎ')">たきぎ</a>を<a onclick="show_vocab_data('拾い')">拾い</a>に行くのに、山に入ってもよい<a onclick="show_vocab_data('期間')">期間</a>を決めたり、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">For example, they would do things like decide times when it was okay to go into the mountains to pick up firewood or gather mushrooms or edible bracken that grows there,</span>
+      </td>
+    </tr>
+
+    <tr id="15-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-012" class="fas fa-play"></i>
+        <audio id="audio_15-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また、かんがいから水を引いてもよい時間を決めたりして、村の秩序を保っていました。</span>
+        <span class="content-sent kanji-sent is-hidden">また、かんがいから水を引いてもよい時間を決めたりして、村の秩<a onclick="show_kanji_data('序')">序</a>を<a onclick="show_kanji_data('保')">保</a>っていました。</span>
+        <span class="content-sent plain-sent is-hidden">また、かんがいから水を引いてもよい時間を決めたりして、村の秩序を保っていました。</span>
+        <span class="content-sent vocab-sent">また、<a onclick="show_vocab_data('かんがい')">かんがい</a>から水を引いてもよい時間を決めたりして、村の<a onclick="show_vocab_data('秩序')">秩序</a>を保っていました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">or decide times when it was okay to take water from the ditches, and the preserve the order of the village.</span>
+      </td>
+    </tr>
+
+    <tr id="15-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-013" class="fas fa-play"></i>
+        <audio id="audio_15-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">もし、それに違反する者が<a onclick="show_grammar_data('あれば')">あれば</a>、その人たちは、村の人々から村八分にされたわけです。</span>
+        <span class="content-sent kanji-sent is-hidden">もし、それに違<a onclick="show_kanji_data('反')">反</a>する者があれば、その人たちは、村の人々から村八分にされたわけです。</span>
+        <span class="content-sent plain-sent is-hidden">もし、それに違反する者があれば、その人たちは、村の人々から村八分にされたわけです。</span>
+        <span class="content-sent vocab-sent">もし、それに<a onclick="show_vocab_data('違<a onclick="show_vocab_data('反する')">反する</a>')">違<a onclick="show_vocab_data('反する')">反する</a></a>者があれば、その人たちは、村の人々から村<a onclick="show_vocab_data('八分')">八分</a>にされたわけです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">If there was someone who broke these rules, that person had &quot;murahachibu&quot; done to them by the people of the village.</span>
+      </td>
+    </tr>
+
+    <tr id="15-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-014" class="fas fa-play"></i>
+        <audio id="audio_15-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分とは、村の人々からほとんど交際を<a onclick="show_grammar_data('絶たれることを言います')">絶たれることを言います</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">村八分とは、村の人々からほとんど交<a onclick="show_kanji_data('際')">際</a>を<a onclick="show_kanji_data('絶')">絶</a>たれることを言います。</span>
+        <span class="content-sent plain-sent is-hidden">村八分とは、村の人々からほとんど交際を絶たれることを言います。</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>とは、村の人々からほとんど<a onclick="show_vocab_data('交際')">交際</a>を<a onclick="show_vocab_data('絶たれる')">絶たれる</a>ことを言います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Murahachibu means to have relations with the villagers almost cut completely off.</span>
+      </td>
+    </tr>
+
+    <tr id="15-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-015" class="fas fa-play"></i>
+        <audio id="audio_15-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分にされた家族の者が死んで、葬儀が必要になった場合と、</span>
+        <span class="content-sent kanji-sent is-hidden">村八分にされた家<a onclick="show_kanji_data('族')">族</a>の者が<a onclick="show_kanji_data('死')">死</a>んで、葬儀が必要になった場合と、</span>
+        <span class="content-sent plain-sent is-hidden">村八分にされた家族の者が死んで、葬儀が必要になった場合と、</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>にされた<a onclick="show_vocab_data('家族')">家族</a>の者が<a onclick="show_vocab_data('死んで')">死んで</a>、<a onclick="show_vocab_data('葬儀')">葬儀</a>が必要になった<a onclick="show_vocab_data('場合')">場合</a>と、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">With the only exceptions being when someone under murahachibu died and needed a funeral,</span>
+      </td>
+    </tr>
+
+    <tr id="15-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-016" class="fas fa-play"></i>
+        <audio id="audio_15-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">火事が起こった場合だけは例外とし、その残りの八分は完全に絶交されるので、</span>
+        <span class="content-sent kanji-sent is-hidden">火事が起こった場合だけは<a onclick="show_kanji_data('例')">例</a>外とし、その残りの八分は<a onclick="show_kanji_data('完')">完</a>全に<a onclick="show_kanji_data('絶')">絶</a>交されるので、</span>
+        <span class="content-sent plain-sent is-hidden">火事が起こった場合だけは例外とし、その残りの八分は完全に絶交されるので、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('火事')">火事</a>が起こった<a onclick="show_vocab_data('場合')">場合</a>だけは<a onclick="show_vocab_data('例外')">例外</a>とし、その残りの<a onclick="show_vocab_data('八分')">八分</a>は<a onclick="show_vocab_data('完全')">完全</a>に<a onclick="show_vocab_data('絶交される')">絶交される</a>ので、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">or when a fire broke out, in the remaining &quot;eight parts&quot; they were completely cut off from association --</span>
+      </td>
+    </tr>
+
+    <tr id="15-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-017" class="fas fa-play"></i>
+        <audio id="audio_15-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分と呼ばれるようになったと言われています。</span>
+        <span class="content-sent kanji-sent is-hidden">村八分と<a onclick="show_kanji_data('呼')">呼</a>ばれるようになったと言われています。</span>
+        <span class="content-sent plain-sent is-hidden">村八分と呼ばれるようになったと言われています。</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>と呼ばれるようになったと言われています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">it&#39;s said that this is how it came to be &quot;murahachibu,&quot; or &quot;village eight parts.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="15-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-018" class="fas fa-play"></i>
+        <audio id="audio_15-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">協力、共同を非常に強調する日本の社会において、</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('協')">協</a>力、<a onclick="show_kanji_data('共')">共</a>同を非常に強<a onclick="show_kanji_data('調')">調</a>する日本の社会において、</span>
+        <span class="content-sent plain-sent is-hidden">協力、共同を非常に強調する日本の社会において、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('協力')">協力</a>、<a onclick="show_vocab_data('共同')">共同</a>を<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('強調する')">強調する</a>日本の社会において、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In Japanese society which heavily emphasizes cooperation,</span>
+      </td>
+    </tr>
+
+    <tr id="15-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-019" class="fas fa-play"></i>
+        <audio id="audio_15-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">特に、それなしに生きていくのが、不可能に近かったその当時の日本社会において、村八分にされることは、とてもつらかったらしく、</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('特')">特</a>に、それなしに生きていくのが、<a onclick="show_kanji_data('不')">不</a>可<a onclick="show_kanji_data('能')">能</a>に近かったその当時の日本社会において、村八分にされることは、とてもつらかったらしく、</span>
+        <span class="content-sent plain-sent is-hidden">特に、それなしに生きていくのが、不可能に近かったその当時の日本社会において、村八分にされることは、とてもつらかったらしく、</span>
+        <span class="content-sent vocab-sent">特に、それなしに生きていくのが、<a onclick="show_vocab_data('不可能')">不可能</a>に近かったその当時の日本社会において、村<a onclick="show_vocab_data('八分')">八分</a>にされることは、とても<a onclick="show_vocab_data('つらかった')">つらかった</a>らしく、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and particularly in the Japanese society of the day where it was nearly impossible to live without it,</span>
+      </td>
+    </tr>
+
+    <tr id="15-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-020" class="fas fa-play"></i>
+        <audio id="audio_15-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分の刑をゆるしてもらえるように、村の重労働を受け持ったり、</span>
+        <span class="content-sent kanji-sent is-hidden">村八分の刑をゆるしてもらえるように、村の<a onclick="show_kanji_data('重')">重</a><a onclick="show_kanji_data('労')">労</a>働を<a onclick="show_kanji_data('受')">受</a>け持ったり、</span>
+        <span class="content-sent plain-sent is-hidden">村八分の刑をゆるしてもらえるように、村の重労働を受け持ったり、</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>の刑を<a onclick="show_vocab_data('ゆるして')">ゆるして</a>もらえるように、村の<a onclick="show_vocab_data('重労働')">重労働</a>を受け持ったり、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">it seems that it was extremely difficult for those under the punishment of murahachibu, and to be forgiven from this punishment, they would take on the heavy burdens of the village,</span>
+      </td>
+    </tr>
+
+    <tr id="15-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-021" class="fas fa-play"></i>
+        <audio id="audio_15-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その村から逃げ出したりする者がいたと伝えられています。</span>
+        <span class="content-sent kanji-sent is-hidden">その村から逃げ出したりする者がいたと伝えられています。</span>
+        <span class="content-sent plain-sent is-hidden">その村から逃げ出したりする者がいたと伝えられています。</span>
+        <span class="content-sent vocab-sent">その村から<a onclick="show_vocab_data('逃げ出したり')">逃げ出したり</a>する者がいたと伝えられています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">or even run away from the village, it is reported.</span>
+      </td>
+    </tr>
+
+    <tr id="15-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-022" class="fas fa-play"></i>
+        <audio id="audio_15-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">現在では、村八分にすることは、人権に反すると言って、<a onclick="show_grammar_data('法律ではいけないことになっています')">法律ではいけないことになっています</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">現在では、村八分にすることは、人権に<a onclick="show_kanji_data('反')">反</a>すると言って、<a onclick="show_kanji_data('法')">法</a>律ではいけないことになっています。</span>
+        <span class="content-sent plain-sent is-hidden">現在では、村八分にすることは、人権に反すると言って、法律ではいけないことになっています。</span>
+        <span class="content-sent vocab-sent">現在では、村<a onclick="show_vocab_data('八分')">八分</a>にすることは、<a onclick="show_vocab_data('人権')">人権</a>に<a onclick="show_vocab_data('反する')">反する</a>と言って、<a onclick="show_vocab_data('法律')">法律</a>ではいけないことになっています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nowadays, it&#39;s said that murahachibu violates human rights, so it is prohibited by law.</span>
+      </td>
+    </tr>
+
+    <tr id="15-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-023" class="fas fa-play"></i>
+        <audio id="audio_15-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">でも、農村だけではなく、都会でも、近所の付き合いや、会社の仲間の付き合いや、友達付き合いの中で、</span>
+        <span class="content-sent kanji-sent is-hidden">でも、<a onclick="show_kanji_data('農')">農</a>村だけではなく、<a onclick="show_kanji_data('都')">都</a>会でも、近所の<a onclick="show_kanji_data('付')">付</a>き合いや、会社の仲間の<a onclick="show_kanji_data('付')">付</a>き合いや、友達<a onclick="show_kanji_data('付')">付</a>き合いの中で、</span>
+        <span class="content-sent plain-sent is-hidden">でも、農村だけではなく、都会でも、近所の付き合いや、会社の仲間の付き合いや、友達付き合いの中で、</span>
+        <span class="content-sent vocab-sent">でも、<a onclick="show_vocab_data('農村')">農村</a>だけではなく、<a onclick="show_vocab_data('都会')">都会</a>でも、近所の<a onclick="show_vocab_data('付き合い')">付き合い</a>や、会社の<a onclick="show_vocab_data('仲間')">仲間</a>の<a onclick="show_vocab_data('付き合い')">付き合い</a>や、友達<a onclick="show_vocab_data('付き合い')">付き合い</a>の中で、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, not only in farming villages, but even in the city, in association in the neighborhood, among colleagues at work, or among friends,</span>
+      </td>
+    </tr>
+
+    <tr id="15-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_15-024" class="fas fa-play"></i>
+        <audio id="audio_15-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/15-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">村八分にするケースを<a onclick="show_grammar_data('よく耳にすることがあります')">よく耳にすることがあります</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">村八分にするケースをよく耳にすることがあります。</span>
+        <span class="content-sent plain-sent is-hidden">村八分にするケースをよく耳にすることがあります。</span>
+        <span class="content-sent vocab-sent">村<a onclick="show_vocab_data('八分')">八分</a>にするケースをよく耳にすることがあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">you often hear of cases of murahachibu occurring.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

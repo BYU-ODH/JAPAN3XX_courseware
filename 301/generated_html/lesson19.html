@@ -1,0 +1,1008 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>横浜の港</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u5883": ["\u5883", "\u3055\u304b\u3044", "boundary; border"], "\u304b\u3059\u304b\u306b": ["\u304b\u3059\u304b\u306b", "", "faintly; dimly; hazily"], "\u6c34\u5e73\u7dda": ["\u6c34\u5e73\u7dda", "\u3059\u3044\u3078\u3044\u305b\u3093", "horizon"], "\u6d88\u3048\u308b": ["\u6d88\u3048\u308b", "\u304d\u3048\u308b", "to disappear"], "\u6d88\u3048\u3066": ["\u6d88\u3048\u308b", "\u304d\u3048\u308b", "to disappear"], "\u4e09\u89d2": ["\u4e09\u89d2", "\u3055\u3093\u304b\u304f", "triangle"], "\u5e06": ["\u5e06", "\u307b", "sail"], "\u3075\u304f\u308a\u307e\u305b\u308b": ["\u3075\u304f\u308a\u307e\u305b\u308b", "", "to cause to swell out; to expand"], "\u3075\u304f\u3089\u307e\u305b": ["\u3075\u304f\u308a\u307e\u305b\u308b", "", "to cause to swell out; to expand"], "\u540d\u6b8b\u60dc\u3057\u3044": ["\u540d\u6b8b\u60dc\u3057\u3044", "\u306a\u3054\u308a\u304a\u3057\u3044", "sorry to part"], "\u540d\u6b8b\u60dc\u3057\u305d\u3046": ["\u540d\u6b8b\u60dc\u3057\u3044", "\u306a\u3054\u308a\u304a\u3057\u3044", "sorry to part"], "\u8fd4\u4e8b": ["\u8fd4\u4e8b", "\u3078\u3093\u3058", "reply"], "\u6c7d\u7b1b": ["\u6c7d\u7b1b", "\u304d\u3066\u304d", "steam whistle"], "\u6cf0\u5e73": ["\u6cf0\u5e73", "\u305f\u3044\u3078\u3044", "peace; tranquility"], "\u4e0a\u7b49\u306a": ["\u4e0a\u7b49\u306a", "\u3058\u3087\u3046\u3068\u3046\u306a", "high class; good; superior"], "\u84b8\u6c7d\u8239": ["\u84b8\u6c7d\u8239", "\u3058\u3087\u3046\u304d\u305b\u3093", "steamship"], "\u304b\u3051\u308b": ["\u304b\u3051\u308b", "", "to make a pun"], "\u304b\u3051\u305f": ["\u304b\u3051\u308b", "", "to make a pun"], "\u96bb": ["\u301c\u96bb", "\u301c\u305b\u304d", "(counter for ship)"], "\u9ed2\u8239": ["\u9ed2\u8239", "\u304f\u308d\u3075\u306d", "Black ship"], "\u7b11\u3046": ["\u7b11\u3046", "\u308f\u3089\u3046", "to laugh (at)"], "\u7b11\u3063\u3066": ["\u7b11\u3046", "\u308f\u3089\u3046", "to laugh (at)"], "\u72c2\u6b4c": ["\u72c2\u6b4c", "\u304d\u3087\u3046\u304b", "comic Tanka (thirty-one-syllable poem)"], "\u8f38\u51fa\u5165\u54c1": ["\u8f38\u51fa\u5165\u54c1", "\u3086\u3057\u3085\u3064\u306b\u3085\u3046\u3072\u3093", "import and export commodities"], "\u65c5\u7acb\u3064": ["\u65c5\u7acb\u3064", "\u305f\u3073\u305f\u3064", "to leave on a trip"], "\u307f\u308b\u307f\u308b": ["\u307f\u308b\u307f\u308b", "", "in a moment; in an instant"], "\u98db\u884c\u6a5f": ["\u98db\u884c\u6a5f", "\u3072\u3053\u3046\u304d", "airplane"], "\u767a\u9054": ["\u767a\u9054", "\u306f\u3063\u305f\u3064", "development; progress"], "\u552f\u4e00": ["\u552f\u4e00", "\u3086\u3044\u3044\u3064", "only; sole"], "\u8f38\u9001\u6a5f\u95a2": ["\u8f38\u9001\u6a5f\u95a2", "\u3086\u305d\u3046\u304d\u304b\u3093", "transportation; facilities"], "\u8a2a\u308c\u308b": ["\u8a2a\u308c\u308b", "\u304a\u3068\u305a\u308c\u308b", "to visit"], "\u51fa\u8fce\u3048\u308b": ["\u51fa\u8fce\u3048\u308b", "\u3067\u3080\u304b\u3048\u308b", "to meet; to receive; to welcome"], "\u51fa\u8fce\u3048\u3057": ["\u51fa\u8fce\u3048\u308b", "\u3067\u3080\u304b\u3048\u308b", "to meet; to receive; to welcome"], "\u544a\u3052\u308b": ["\u544a\u3052\u308b", "\u3064\u3052\u308b", "to tell; to inform; to announce"], "\u3044\u308f\u3086\u308b": ["\u3044\u308f\u3086\u308b", "", "so-called"], "\u7384\u95a2": ["\u7384\u95a2", "\u3052\u3093\u304b\u3093", "entrance hall"], "\u8272\u3068\u308a\u3069\u308a": ["\u8272\u3068\u308a\u3069\u308a", "\u3044\u308d\u3068\u308a\u3069\u308a", "various colors"], "\u3057\u3063\u304b\u308a": ["\u3057\u3063\u304b\u308a", "", "tightly"], "\u63e1\u308b": ["\u63e1\u308b", "\u306b\u304e\u308b", "to grasp"], "\u63e1\u308a": ["\u63e1\u308b", "\u306b\u304e\u308b", "to grasp"], "\u307b\u304a": ["\u307b\u304a", "", "cheek"], "\u306c\u3050\u3044": ["\u306c\u3050\u3046", "", "to wipe (away)"], "\u3075\u308a\u3075\u308a": ["\u3075\u308a\u3075\u308a", "", "waving"], "\u60dc\u3057\u3080": ["\u60dc\u3057\u3080", "", "to be reluctant; to regret"], "\u685f\u6a4b": ["\u685f\u6a4b", "\u3055\u3093\u3070\u3057", "pier"], "\u60c5\u7dd2": ["\u60c5\u7dd2", "\u3058\u3087\u3046\u3061\u3087", "emotion; feeling"], "\u6e2f\u753a": ["\u6e2f\u753a", "\u307f\u306a\u3068\u307e\u3061", "port town"], "\u53d6\u308a\u6271\u3046": ["\u53d6\u308a\u6271\u3046", "\u3068\u308a\u3042\u3064\u304b\u3046", "to handle"], "\u8ca8\u7269\u8239": ["\u8ca8\u7269\u8239", "\u304b\u3082\u3064\u305b\u3093", "cargo ship; freighter"], "\u57cb\u3081\u7acb\u3066\u5730": ["\u57cb\u3081\u7acb\u3066\u5730", "\u3046\u3081\u305f\u3066\u3061", "reclaimed land"], "\u5009\u5eab": ["\u5009\u5eab", "\u305d\u3046\u3053", "storehouse"], "\u9762\u3059\u308b": ["\u9762\u3059\u308b", "\u3081\u3093\u3059\u308b", "to face; to look out on"], "\u9762\u3057\u3066": ["\u9762\u3059\u308b", "\u3081\u3093\u3059\u308b", "to face; to look out on"], "\u7acb\u3061\u4e26\u3076": ["\u7acb\u3061\u4e26\u3076", "\u305f\u3061\u306a\u3089\u3076", "to stand in a row"], "\u7acb\u3061\u4e26\u3093\u3067": ["\u7acb\u3061\u4e26\u3076", "\u305f\u3061\u306a\u3089\u3076", "to stand in a row"], "\u5893\u5730": ["\u5893\u5730", "\u307c\u3061", "cemetery"], "\u4e2d\u83ef\u8857": ["\u4e2d\u83ef\u8857", "\u3061\u3085\u3046\u304b\u304c\u3044", "Chinatown"], "\u958b\u6e2f": ["\u958b\u6e2f", "\u304b\u3044\u3053\u3046", "opening of the port"], "\u9762\u5f71": ["\u9762\u5f71", "\u304a\u3082\u304b\u3052", "image; trace"], "\u3057\u306e\u3070\u3059": ["\u3057\u306e\u3070\u3059", "", "to cause; to recall"], "\u8de1": ["\u8de1", "\u3042\u3068", "trace; vestige; remnant"], "\u5c71\u306e\u624b": ["\u5c71\u306e\u624b", "\u3084\u307e\u306e\u3066", "foothills"], "\u706f\u53f0": ["\u706f\u53f0", "\u3068\u3046\u3060\u3044", "lighthouse"], "\u306f\u3066\u3057\u306a\u3044": ["\u306f\u3066\u3057\u306a\u3044", "", "endless; boundless"], "\u672a\u77e5": ["\u672a\u77e5", "\u307f\u3061", "unknown"], "\u5e0c\u671b": ["\u5e0c\u671b", "\u304d\u307c\u3046", "hope"], "\u597d\u5947\u5fc3": ["\u597d\u5947\u5fc3", "\u3053\u3046\u304d\u3057\u3093", "curiosity"], "\u5bc4\u305b\u308b": ["\u5bc4\u305b\u308b", "\u3088\u305b\u308b", "to come near; to roll in (e.g., waves)"], "\u5bc4\u305b\u3066": ["\u5bc4\u305b\u308b", "\u3088\u305b\u308b", "to come near; to roll in (e.g., waves)"]};
+  var grammar_json = {"\u304b\u306e\u3088\u3046\u306b": ["V<SUB>3</SUB> + \u304b\u306e\u3088\u3046 + \u306bS/\u306aN", "S/N as if V", [["\u8fd4\u4e8b\u3092\u3059\u308b\u304b\u306e\u3046\u3088\u3046\u306b\u3001\u6c7d\u7b1b\u304c\u805e\u3053\u3048\u308b\u3002", "You can hear the steam whistles as if they were answering."], ["\u3042\u306e\u7537\u306f\u3001\u308f\u305f\u3057\u304c\u4f55\u3067\u3082\u3059\u308b\u304b\u306e\u3088\u3046\u306b\u601d\u3063\u3066\u3044\u308b\u3002", "That guy thinks as if I would do anything."], ["\u304b\u308c\u306f\u3001\u307e\u308b\u3067\u4f55\u3067\u3082\u77e5\u3063\u3066\u3044\u308b\u304b\u306e\u3088\u3046\u306b\u8a71\u3057\u3076\u308a\u3092\u3059\u308b\u3002", "He has a way of talking as if he completely knew everything."]]], "\u3057\u305f\u3082\u306e\u3067\u3059": ["V<SUB>\u305f</SUB> + \u3082\u306e\u3060", "used to V", [["\u3088\u304f\u76ee\u306b\u3057\u305f\u3082\u306e\u3067\u3059\u3002", "We used to see that often."], ["\u305d\u306e\u5ddd\u3067\u3001\u3088\u304f\u9b5a\u3064\u308a\u3092\u3057\u305f\u3082\u306e\u3067\u3059\u3002", "We used to go fishing in that river."], ["\u5b50\u3069\u3082\u306e\u3053\u308d\u3001\u6bcd\u306b\u3088\u304f\u3042\u307e\u3048\u305f\u3082\u306e\u3060\u3002", "I was indulged a lot by my mother when I was a child."]]], "\u8a00\u3063\u305f\u65b9\u304c\u3088\u3044": ["V<SUB>\u305f</SUB> + \u65b9\u304c\u3044\u3044", "it would be better to V<br>ought to V<br>had better V", [["\u6a2a\u6d5c\u306f\u3001\u6e2f\u753a\u3068\u3044\u3046\u3088\u3046\u306b\u3001\u8cbf\u6613\u6e2f\u3068\u8a00\u3063\u305f\u65b9\u304c\u3044\u3044\u3002", "It would be better to call Yokohama a trade port rather than a harbor town."], ["\u3082\u3046\u305d\u308d\u305d\u308d\u5bb6\u306b\u5e30\u3063\u305f\u65b9\u304c\u3044\u3044\u3002", "We ought to be going home."], ["\u3082\u3063\u3068\u52c9\u5f37\u3057\u305f\u65b9\u304c\u3044\u3044\u3002", "You had better study some more."]]]};
+  var kanji_json = {"\u6e2f": ["\u307f\u306a\u3068", "\u30b3\u30a6", "harbor, port", [["\u6e2f\u753a\uff08\u307f\u306a\u3068\u307e\u3061\uff09", "a port town"], ["\u6e2f\u5185\uff08\u3053\u3046\u306a\u3044\uff09", "inside the harbor"], ["\u51fa\u6e2f\uff08\u3057\u3085\u3063\u3053\u3046\uff09", "departure"], ["\u7a7a\u6e2f\uff08\u304f\u3046\u3053\u3046\uff09", "an airport"]]], "\u5883": ["\u3055\u304b\u3044", "\u30ad\u30e7\u30a6\u30fb\uff3b\u30b1\u30a4\uff3d", "border, boundary; fortune, fate; situation", [["\u56fd\u5883\uff08\u3053\u3063\u304d\u3087\u3046\uff09", "the border"], ["\u5883\u76ee\uff08\u3055\u304b\u3044\u3081\uff09", "a borderline"], ["\u5883\u5185\uff08\u3051\u3044\u3060\u3044\uff09", "precincts, grounds"]]], "\u7dda": ["", "\u30bb\u30f3", "line; route; something long and narrow", [["\u767d\u7dda\uff08\u306f\u304f\u305b\u3093\uff09", "a white line"], ["\u7dda\u8def\uff08\u305b\u3093\u308d\uff09", "a railroad track"], ["\u672c\u7dda\uff08\u307b\u3093\u305b\u3093\uff09", "the main line"], ["\u6c34\u5e73\u7dda\uff08\u3059\u3044\u3078\u3044\u305b\u3093\uff09", "the horizon"], ["\u96fb\u7dda\uff08\u3067\u3093\u305b\u3093\uff09", "an electric wire, cord or telephone line"]]], "\u6d88": ["\u304d\uff08\u3048\u308b\uff09\u30fb\u3051\uff08\u308b\uff09", "\u30b7\u30e7\u30a6", "to disappear; to extinguish (fire)", [["\u6d88\u706b\uff08\u3057\u3087\u3046\u304b\uff09", "fire extinguishing"], ["\u6d88\u9632\uff08\u3057\u3087\u3046\u307c\u3046\uff09", "fire department"], ["\u6d88\u6975\u7684\u306a\uff08\u3057\u3087\u3046\u304d\u3087\u304f\u3066\u304d\u306a\uff09", "negative, passive"], ["\u6d88\u8cbb\uff08\u3057\u3087\u3046\u3072\uff09", "consumption"], ["\u6d88\u5316\uff08\u3057\u3087\u3046\u304b\uff09", "digestion"]]], "\u548c": ["\u3084\u308f\uff08\u3089\u3050\uff09\u30fb\u3084\u308f\uff08\u3089\u3052\u308b\uff09\u30fb\u306a\u3054\uff08\u3080\uff09\u30fb\u306a\u3054\uff08\u3084\u304b\uff09", "\u30ef\u30fb\uff3b\u30aa\uff3d", "to become soft; to soften; to get along well; calm, peaceful; Japan", [["\u5e73\u548c\uff08\u3078\u3044\u308f\uff09", "peace"], ["\u662d\u548c\uff08\u3057\u3087\u3046\u308f\uff09", "the Showa era"], ["\u548c\u98df\uff08\u308f\u3057\u3087\u304f\uff09", "Japanese cuisine"], ["\u8abf\u548c\uff08\u3061\u3087\u3046\u308f\uff09", "harmony"], ["\u548c\u670d\uff08\u308f\u3075\u304f\uff09", "Japanese clothes"]]], "\u7b49": ["\u3072\u3068\uff08\u3057\u3044\uff09", "\u30c8\u30a6", "equal; even; classification; grade, order, ranking", [["\u9ad8\u7b49\uff08\u3053\u3046\u3068\u3046\uff09", "high-grade, advanced"], ["\u7b49\u3005\uff08\u3068\u3046\u3068\u3046\uff09", "and so on, etc."], ["\u5e73\u7b49\uff08\u3073\u3087\u3046\u3069\u3046\uff09", "equality"], ["\u4e0a\u7b49\u306a\uff08\u3058\u3087\u3046\u3068\u3046\u306a\uff09", "good, superior, first-rate"]]], "\u8f38": ["", "\u30e6", "to send; to carry/transport", [["\u8f38\u51fa\uff08\u3086\u3057\u3085\u3064\uff09", "export"], ["\u8f38\u5165\uff08\u3086\u306b\u3085\u3046\uff09", "import"], ["\u8f38\u8840\uff08\u3086\u3051\u3064\uff09", "blood transfusion"], ["\u8f38\u9001\uff08\u3086\u305d\u3046\uff09", "transport"]]], "\u95a2": ["\u305b\u304d", "\u30ab\u30f3", "barrier; related to; device, facility, means", [["\u95a2\u4fc2\uff08\u304b\u3093\u3051\u3044\uff09", "relation, connection"], ["\u6a5f\u95a2\uff08\u304d\u304b\u3093\uff09", "a machine, facilities"], ["\u95a2\u5fc3\uff08\u304b\u3093\u3057\u3093\uff09", "concern, interest"], ["\u95a2\u6771\uff08\u304b\u3093\u3068\u3046\uff09", "the Kanto area"], ["\u7384\u95a2\uff08\u3052\u3093\u304b\u3093\uff09", "the front door, the hall"]]], "\u53bb": ["\u3055\uff08\u308b\uff09", "\u30ad\u30e7\u30fb\u30b3", "to leave, go away; past", [["\u904e\u53bb\uff08\u304b\u3053\uff09", "the past"], ["\u53bb\u5e74\uff08\u304d\u3087\u306d\u3093\uff09", "last year"]]], "\u544a": ["\u3064\uff08\u3052\u308b\uff09", "\u30b3\u30af", "to tell/inform, to announce", [["\u5831\u544a\uff08\u307b\u3046\u3053\u304f\uff09", "a report"], ["\u544a\u767d\uff08\u3053\u304f\u306f\u304f\uff09", "a confession"], ["\u5fe0\u544a\uff08\u3061\u3085\u3046\u3053\u304f\uff09", "advice"], ["\u5e83\u544a\uff08\u3053\u3046\u3053\u304f\uff09", "an advertisement"]]], "\u6295": ["\u306a\uff08\u3052\u308b\uff09", "\u30c8\u30a6", "to throw; to give/bestow", [["\u66b4\u6295\uff08\u307c\u3046\u3068\u3046\uff09", "a wild pitch"], ["\u6295\u624b\uff08\u3068\u3046\u3057\u3085\uff09", "a pitcher"], ["\u6295\u7968\uff08\u3068\u3046\u3072\u3087\u3046\uff09", "vote"], ["\u6295\u8cc7\uff08\u3068\u3046\u3057\uff09", "an investment"]]], "\u7dd1": ["\u307f\u3069\u308a", "\u30ea\u30e7\u30af\u30fb\uff3b\u30ed\u30af\uff3d", "green", [["\u7dd1\u8336\uff08\u308a\u3087\u304f\u3061\u3083\uff09", "green tea"], ["\u7dd1\u8349\uff08\u308a\u3087\u304f\u305d\u3046\uff09", "green grass"], ["\u7dd1\u5730\u5e2f\uff08\u308a\u3087\u304f\u3061\u305f\u3044\uff09", "a green belt"], ["\u7dd1\u8272\uff08\u307f\u3069\u308a\u3044\u308d\uff09", "a green colour"]]], "\u6d41": ["\u306a\u304c\uff08\u308c\u308b\uff09\u30fb\u306a\u304c\uff08\u3059\uff09", "\u30ea\u30e5\u30a6\u30fb\uff3b\u30eb\uff3d", "to flow; to drain; to pour", [["\u6d41\u884c\uff08\u308a\u3085\u3046\u3053\u3046\uff09", "fashion, popularity"], ["\u6d41\u611f\uff08\u308a\u3085\u3046\u304b\u3093\uff09", "influenza"], ["\u5bd2\u6d41\uff08\u304b\u3093\u308a\u3085\u3046\uff09", "a cold current"], ["\u6d41\u8a00\uff08\u308a\u3085\u3046\u3052\u3093\uff09", "a rumor"], ["\u6d41\u6c37\uff08\u308a\u3085\u3046\u3072\u3087\u3046\uff09", "an ice drift"]]], "\u60b2": ["\u304b\u306a\uff08\u3057\u3044\uff09\u30fb\u304b\u306a\uff08\u3057\u3080\uff09", "\u30d2", "sad, sorrowful; to grieve; against one's will", [["\u60b2\u60e8\u306a\uff08\u3072\u3055\u3093\u306a\uff09", "miserable, sad"], ["\u6148\u60b2\uff08\u3058\u3072\uff09", "benevolence, mercy, charity"], ["\u60b2\u9cf4\uff08\u3072\u3081\u3044\uff09", "a scream"]]], "\u7d4c": ["\u3078\uff08\u308b\uff09", "\u30b1\u30a4\u30fb\u30ad\u30e7\u30a6", "to pass by, to trace; vertical lines; sutra, scriptures", [["\u7d4c\u6e08\uff08\u3051\u3044\u3056\u3044\uff09", "economics, finance"], ["\u7d4c\u9a13\uff08\u3051\u3044\u3051\u3093\uff09", "an experience"], ["\u7d4c\u55b6\uff08\u3051\u3044\u3048\u3044\uff09", "management"], ["\u7d4c\u904e\uff08\u3051\u3044\u304b\uff09", "progress, develpment"], ["\u7d4c\u6b74\uff08\u3051\u3044\u308c\u304d\uff09", "a career"]]], "\u6e08": ["\u3059\uff08\u3080\uff09\u30fb\u3059\uff08\u307e\u3059\uff09", "\u30b5\u30a4", "end; finish; settle; rescue", [["\u8fd4\u6e08\uff08\u3078\u3093\u3055\u3044\uff09", "payment, reimbursement"], ["\u7d4c\u6e08\uff08\u3051\u3044\u3056\u3044\uff09", "economics"]]], "\u8cbf": ["", "\u30dc\u30a6", "to change; buying and selling; to trade", [["\u8cbf\u6613\uff08\u307c\u3046\u3048\u304d\uff09", "trade, commerce"]]], "\u6613": ["\u3084\u3055\uff08\u3057\u3044\uff09", "\u30a8\u30ad\u30fb\u30a4", "easy; to replace; fortune telling", [["\u5bb9\u6613\u306a\uff08\u3088\u3046\u3044\u306a\uff09", "easy, simple"], ["\u6613\u8005\uff08\u3048\u304d\u3057\u3083\uff09", "a fortune-teller"]]], "\u8ca8": ["", "\u30ab", "treasure; goods, commodities; money", [["\u91d1\u8ca8\uff08\u304d\u3093\u304b\uff09", "a gold coin"], ["\u8ca8\u8eca\uff08\u304b\u3057\u3083\uff09", "a freight car"], ["\u786c\u8ca8\uff08\u3053\u3046\u304b\uff09", "hard money, a coin"], ["\u8ca8\u7269\uff08\u304b\u3082\u3064\uff09", "freight"]]], "\u5009": ["\u304f\u308b", "\u30bd\u30a6", "storehouse", [["\u5009\u5eab\uff08\u305d\u3046\u3053\uff09", "a warehouse, a storehouse"], ["\u5009\u6577\uff08\u304f\u3089\u3057\u304d\uff09", "Kurashiki "]]], "\u5eab": ["", "\u30b3\u30fb\uff3b\u30af\uff3d", "storage place; garage", [["\u8eca\u5eab\uff08\u3057\u3083\u3053\uff09", "a garage"], ["\u51b7\u8535\u5eab\uff08\u308c\u3044\u305e\u3046\u3053\uff09", "a refrigerator"], ["\u91d1\u5eab\uff08\u304d\u3093\u3053\uff09", "a safe, a vault"], ["\u5b9d\u5eab\uff08\u307b\u3046\u3053\uff09", "a treasure, a treasure house"]]], "\u5893": ["\u306f\u304b", "\u30dc", "grave", [["\u5893\u53c2\u308a\uff08\u306f\u304b\u307e\u3044\u308a\uff09", "visit someone's grave"], ["\u5893\u77f3\uff08\u306f\u304b\u3044\u3057\uff09", "a tombstone"], ["\u5893\u5730\uff08\u307c\u3061\uff09", "a graveyard"]]], "\u52e2": ["\u3044\u304d\u304a\uff08\u3044\uff09", "\u30bb\u30a4", "power, force/energy, vigor; situation", [["\u5927\u52e2\uff08\u304a\u304a\u305c\u3044\uff09", "a large number"], ["\u653b\u52e2\uff08\u3053\u3046\u305b\u3044\uff09", "the offense"], ["\u60c5\u52e2\uff08\u3058\u3087\u3046\u305b\u3044\uff09", "circumstances"], ["\u52e2\u529b\uff08\u305b\u3044\u308a\u3087\u304f\uff09", "influence, power"]]], "\u706f": ["\u3072", "\u30c8\u30a6", "light, lamp", [["\u4f1d\u7d71\uff08\u3067\u3093\u3068\u3046\uff09", "an electric light"], ["\u706f\u53f0\uff08\u3068\u3046\u3060\u3044\uff09", "a lighthouse"], ["\u706f\u6cb9\uff08\u3068\u3046\u3086\uff09", "lamp oil, kerosene"]]], "\u5e0c": ["", "\u30ad", "to be uncommon; to request, desire", [["\u5e0c\u671b\uff08\u304d\u307c\u3046\uff09", "a hope, a desire"], ["\u5e0c\u8584\u306a\uff08\u304d\u306f\u304f\u306a\uff09", "rare, rarefied"]]], "\u671b": ["\u306e\u305e\uff08\u3080\uff09", "\u30dc\u30a6\u30fb\u30e2\u30a6", "to hope for, desire; full moon", [["\u5931\u671b\uff08\u3057\u3064\u307c\u3046\uff09", "disappointment"], ["\u8981\u671b\uff08\u3088\u3046\u307c\u3046\uff09", "a demand, a request"], ["\u6b32\u671b\uff08\u3088\u304f\u307c\u3046\uff09", "desire, pasion, ambition"]]], "\u672a": ["", "\u30df", "not; not yet", [["\u672a\u77e5\uff08\u307f\u3061\uff09", "unknown"], ["\u672a\u6765\uff08\u307f\u3089\u3044\uff09", "the future"], ["\u672a\u6e80\uff08\u307f\u307e\u3093\uff09", "below, less than, not full"], ["\u672a\u7136\uff08\u307f\u305c\u3093\uff09", "beforehand"], ["\u672a\u958b\uff08\u307f\u304b\u3044\uff09", "undeveloped, primitive"]]], "\u5bc4": ["\u3088\uff08\u308b\uff09\u30fb\u3088\uff08\u305b\u308b\uff09", "\u30ad", "to drop in; to come near; to depend on; send to", [["\u5bc4\u5bbf\uff08\u304d\u3057\u3085\u304f\uff09", "lodge, boarding"], ["\u5bc4\u4ed8\uff08\u304d\u3075\uff09", "donation, contribution"], ["\u203b\u5bc4\u5e2d\uff08\u3088\u305b\uff09", "a vaudeville theater"], ["\u203b\u6700\u5bc4\u308a\uff08\u3082\u3088\u308a\uff09", "the nearest, nearby"], ["\u203b\u6570\u5947\u5c4b\uff08\u3059\u304d\u3084\uff09", "a tea-ceremony room"]]], "\u6d5c": ["\u306f\u307e", "\u30d2\u30f3", "beach, seashore", [["\u6d77\u6d5c\uff08\u304b\u3044\u3072\u3093\uff09", "the seashore"], ["\u6d5c\u8fba\uff08\u306f\u307e\u3079\uff09", "a beach, the seaside"], ["\u7802\u6d5c\uff08\u3059\u306a\u306f\u307e\uff09", "a sandy beach"]]]};
+  </script>
+  <div class="block title">横浜の港</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/19-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="19-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-001" class="fas fa-play"></i>
+        <audio id="audio_19-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">空と海の境がかすかにしか見えない水平線から、ゆっくりと向だってくる大きな船。</span>
+        <span class="content-sent kanji-sent is-hidden">空と海の<a onclick="show_kanji_data('境')">境</a>がかすかにしか見えない水平<a onclick="show_kanji_data('線')">線</a>から、ゆっくりと向だってくる大きな船。</span>
+        <span class="content-sent plain-sent is-hidden">空と海の境がかすかにしか見えない水平線から、ゆっくりと向だってくる大きな船。</span>
+        <span class="content-sent vocab-sent">空と海の<a onclick="show_vocab_data('境')">境</a>が<a onclick="show_vocab_data('かすかに')">かすかに</a>しか見えない<a onclick="show_vocab_data('水平線')">水平線</a>から、ゆっくりと向だってくる大きな船。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">A large ship coming slowly from the horizon, where the boudary between ocean and sky can only dimly be seen.</span>
+      </td>
+    </tr>
+
+    <tr id="19-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-002" class="fas fa-play"></i>
+        <audio id="audio_19-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">だんだん、だんだんと、その水平線に向かって消えていく小さな船。</span>
+        <span class="content-sent kanji-sent is-hidden">だんだん、だんだんと、その水平<a onclick="show_kanji_data('線')">線</a>に向かって<a onclick="show_kanji_data('消')">消</a>えていく小さな船。</span>
+        <span class="content-sent plain-sent is-hidden">だんだん、だんだんと、その水平線に向かって消えていく小さな船。</span>
+        <span class="content-sent vocab-sent">だんだん、だんだんと、その<a onclick="show_vocab_data('水平線')">水平線</a>に向かって<a onclick="show_vocab_data('消えて')">消えて</a>いく小さな船。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">A small ship, which slowly heads towards the horizon and disappears.</span>
+      </td>
+    </tr>
+
+    <tr id="19-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-003" class="fas fa-play"></i>
+        <audio id="audio_19-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">夏の風に、三角の真白な帆をふくらませと行き来するヨット。</span>
+        <span class="content-sent kanji-sent is-hidden">夏の風に、三角の真白な帆をふくらませと行き来するヨット。</span>
+        <span class="content-sent plain-sent is-hidden">夏の風に、三角の真白な帆をふくらませと行き来するヨット。</span>
+        <span class="content-sent vocab-sent">夏の風に、<a onclick="show_vocab_data('三角')">三角</a>の真白な<a onclick="show_vocab_data('帆')">帆</a>を<a onclick="show_vocab_data('ふくらませ')">ふくらませ</a>と行き来するヨット。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">A yacht coming and going, filling its triangular, pure-white sail with the summer breeze.</span>
+      </td>
+    </tr>
+
+    <tr id="19-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-004" class="fas fa-play"></i>
+        <audio id="audio_19-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">名残惜しそうに、青い空を飛び回るかもめたち。</span>
+        <span class="content-sent kanji-sent is-hidden">名残惜しそうに、青い空を飛び回るかもめたち。</span>
+        <span class="content-sent plain-sent is-hidden">名残惜しそうに、青い空を飛び回るかもめたち。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('名残惜しそう')">名残惜しそう</a>に、青い空を飛び回るかもめたち。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Seagulls, flying around the blue sky as if sorry to leave.</span>
+      </td>
+    </tr>
+
+    <tr id="19-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-005" class="fas fa-play"></i>
+        <audio id="audio_19-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それに返事をする<a onclick="show_grammar_data('かのように')">かのように</a>、ボーッ、ボーッと汽笛が聞こえる横浜の港。</span>
+        <span class="content-sent kanji-sent is-hidden">それに返事をするかのように、ボーッ、ボーッと汽笛が聞こえる横<a onclick="show_kanji_data('浜')">浜</a>の<a onclick="show_kanji_data('港')">港</a>。</span>
+        <span class="content-sent plain-sent is-hidden">それに返事をするかのように、ボーッ、ボーッと汽笛が聞こえる横浜の港。</span>
+        <span class="content-sent vocab-sent">それに<a onclick="show_vocab_data('返事')">返事</a>をするかのように、ボーッ、ボーッと<a onclick="show_vocab_data('汽笛')">汽笛</a>が聞こえる横浜の港。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">As if in answer, the &quot;boh, boh&quot; sound of the steam whistles can be heard -- the Yokohama Harbor.</span>
+      </td>
+    </tr>
+
+    <tr id="19-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-006" class="fas fa-play"></i>
+        <audio id="audio_19-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「泰平のねむりを覚ますじょうきませんたった四はいで夜もねられず。」</span>
+        <span class="content-sent kanji-sent is-hidden">「泰平のねむりを覚ますじょうきませんたった四はいで夜もねられず。」</span>
+        <span class="content-sent plain-sent is-hidden">「泰平のねむりを覚ますじょうきませんたった四はいで夜もねられず。」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('泰平')">泰平</a>のねむりを覚ますじょうきませんたった四はいで夜もねられず。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;Joukisen, which awakens the peaceful sleep; just four (cups), and you can&#39;t even sleep at night.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="19-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-007" class="fas fa-play"></i>
+        <audio id="audio_19-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">（「泰平」とは、平和という意味で、</span>
+        <span class="content-sent kanji-sent is-hidden">（「泰平」とは、平<a onclick="show_kanji_data('和')">和</a>という意味で、</span>
+        <span class="content-sent plain-sent is-hidden">（「泰平」とは、平和という意味で、</span>
+        <span class="content-sent vocab-sent">（「<a onclick="show_vocab_data('泰平')">泰平</a>」とは、平和という意味で、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">(&quot;Taihei&quot; means &quot;peace,&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="19-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-008" class="fas fa-play"></i>
+        <audio id="audio_19-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「じょうきせん」とは、とても上等なお茶、上喜撰とアメリカの蒸汽船とをかけたことば。）</span>
+        <span class="content-sent kanji-sent is-hidden">「じょうきせん」とは、とても上<a onclick="show_kanji_data('等')">等</a>なお茶、上喜撰とアメリカの蒸汽船とをかけたことば。）</span>
+        <span class="content-sent plain-sent is-hidden">「じょうきせん」とは、とても上等なお茶、上喜撰とアメリカの蒸汽船とをかけたことば。）</span>
+        <span class="content-sent vocab-sent">「じょうきせん」とは、とても<a onclick="show_vocab_data('上等な')">上等な</a>お茶、上喜撰とアメリカの<a onclick="show_vocab_data('蒸汽船')">蒸汽船</a>とを<a onclick="show_vocab_data('かけた')">かけた</a>ことば。）</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and &quot;joukisen&quot; is a pun on a very high quality tea called &quot;joukisen,&quot; and American steamships, &quot;joukisen&quot; in Japanese.)</span>
+      </td>
+    </tr>
+
+    <tr id="19-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-009" class="fas fa-play"></i>
+        <audio id="audio_19-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">1853年、横浜の近くの浦賀にやって来た四隻の黒船を見て、日本中が大さわぎになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">1853年、横<a onclick="show_kanji_data('浜')">浜</a>の近くの浦賀にやって来た四隻の黒船を見て、日本中が大さわぎになりました。</span>
+        <span class="content-sent plain-sent is-hidden">1853年、横浜の近くの浦賀にやって来た四隻の黒船を見て、日本中が大さわぎになりました。</span>
+        <span class="content-sent vocab-sent">1853年、横浜の近くの浦賀にやって来た四<a onclick="show_vocab_data('隻')">隻</a>の<a onclick="show_vocab_data('黒船')">黒船</a>を見て、日本中が大さわぎになりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Seeing the four &quot;Black Ships&quot; which came in 1853 to Uraga, near Yokohama, all Japan was in an uproar.</span>
+      </td>
+    </tr>
+
+    <tr id="19-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-010" class="fas fa-play"></i>
+        <audio id="audio_19-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そんな世の中を笑って歌った、こんな狂歌がはやったのも、もう百数十年も前のことです。</span>
+        <span class="content-sent kanji-sent is-hidden">そんな世の中を笑って歌った、こんな狂歌がはやったのも、もう百数十年も前のことです。</span>
+        <span class="content-sent plain-sent is-hidden">そんな世の中を笑って歌った、こんな狂歌がはやったのも、もう百数十年も前のことです。</span>
+        <span class="content-sent vocab-sent">そんな世の中を<a onclick="show_vocab_data('笑って')">笑って</a>歌った、こんな<a onclick="show_vocab_data('狂歌')">狂歌</a>がはやったのも、もう百数十年も前のことです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The time when humorous &quot;tanka&quot; like the above (which makes fun of that kind of society) were popular was a hundred and tens of years ago.</span>
+      </td>
+    </tr>
+
+    <tr id="19-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-011" class="fas fa-play"></i>
+        <audio id="audio_19-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この百数十年の間に、横浜は、遠い外国からやって来る観光客、輸出入品、</span>
+        <span class="content-sent kanji-sent is-hidden">この百数十年の間に、横<a onclick="show_kanji_data('浜')">浜</a>は、遠い外国からやって来る観光客、<a onclick="show_kanji_data('輸')">輸</a>出入品、</span>
+        <span class="content-sent plain-sent is-hidden">この百数十年の間に、横浜は、遠い外国からやって来る観光客、輸出入品、</span>
+        <span class="content-sent vocab-sent">この百数十年の間に、横浜は、遠い外国からやって来る観光客、<a onclick="show_vocab_data('輸出入品')">輸出入品</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In this past hundred and tens of years, Yokohama has seen continual, rapid development due to tourists coming from faraway foreign countries, import and export goods,</span>
+      </td>
+    </tr>
+
+    <tr id="19-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-012" class="fas fa-play"></i>
+        <audio id="audio_19-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、まだ見たこたもない国々へ旅立つ人々で、みるみる発展を続けてきました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして、まだ見たこたもない国々へ旅立つ人々で、みるみる発展を続けてきました。</span>
+        <span class="content-sent plain-sent is-hidden">そして、まだ見たこたもない国々へ旅立つ人々で、みるみる発展を続けてきました。</span>
+        <span class="content-sent vocab-sent">そして、まだ見たこたもない国々へ<a onclick="show_vocab_data('旅立つ')">旅立つ</a>人々で、<a onclick="show_vocab_data('みるみる')">みるみる</a>発展を続けてきました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and people setting off for countries they haven&#39;t seen.</span>
+      </td>
+    </tr>
+
+    <tr id="19-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-013" class="fas fa-play"></i>
+        <audio id="audio_19-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">特に、まだ飛行機が現在のように発達していなかったころは、</span>
+        <span class="content-sent kanji-sent is-hidden">特に、まだ飛行機が現在のように発達していなかったころは、</span>
+        <span class="content-sent plain-sent is-hidden">特に、まだ飛行機が現在のように発達していなかったころは、</span>
+        <span class="content-sent vocab-sent">特に、まだ<a onclick="show_vocab_data('飛行機')">飛行機</a>が現在のように<a onclick="show_vocab_data('発達')">発達</a>していなかったころは、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In particular, during the time when airplanes were not as advanced as they are now,</span>
+      </td>
+    </tr>
+
+    <tr id="19-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-014" class="fas fa-play"></i>
+        <audio id="audio_19-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">船が日本と外国を結ぶ、唯一の輸送機関でした。</span>
+        <span class="content-sent kanji-sent is-hidden">船が日本と外国を結ぶ、唯一の<a onclick="show_kanji_data('輸')">輸</a>送機<a onclick="show_kanji_data('関')">関</a>でした。</span>
+        <span class="content-sent plain-sent is-hidden">船が日本と外国を結ぶ、唯一の輸送機関でした。</span>
+        <span class="content-sent vocab-sent">船が日本と外国を結ぶ、<a onclick="show_vocab_data('唯一')">唯一</a>の<a onclick="show_vocab_data('輸送機関')">輸送機関</a>でした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">ships were the only transportation facility linking Japan and foreign countries.</span>
+      </td>
+    </tr>
+
+    <tr id="19-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-015" class="fas fa-play"></i>
+        <audio id="audio_19-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">最近、船で行き来する旅行者は、少なくなってきましたが、</span>
+        <span class="content-sent kanji-sent is-hidden">最近、船で行き来する旅行者は、少なくなってきましたが、</span>
+        <span class="content-sent plain-sent is-hidden">最近、船で行き来する旅行者は、少なくなってきましたが、</span>
+        <span class="content-sent vocab-sent">最近、船で行き来する旅行者は、少なくなってきましたが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Recently, travelers coming and going by ship have become few,</span>
+      </td>
+    </tr>
+
+    <tr id="19-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-016" class="fas fa-play"></i>
+        <audio id="audio_19-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むかしは、この横浜が、日本を訪れる人を出迎えし、日本を去って行く人々に別れを告げる、</span>
+        <span class="content-sent kanji-sent is-hidden">むかしは、この横<a onclick="show_kanji_data('浜')">浜</a>が、日本を訪れる人を出迎えし、日本を<a onclick="show_kanji_data('去')">去</a>って行く人々に別れを<a onclick="show_kanji_data('告')">告</a>げる、</span>
+        <span class="content-sent plain-sent is-hidden">むかしは、この横浜が、日本を訪れる人を出迎えし、日本を去って行く人々に別れを告げる、</span>
+        <span class="content-sent vocab-sent">むかしは、この横浜が、日本を<a onclick="show_vocab_data('訪れる')">訪れる</a>人を<a onclick="show_vocab_data('出迎えし')">出迎えし</a>、日本を去って行く人々に別れを<a onclick="show_vocab_data('告げる')">告げる</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">but long ago, this Yokohama, greeting people who visited Japan and bidding farewell to those who left,</span>
+      </td>
+    </tr>
+
+    <tr id="19-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-017" class="fas fa-play"></i>
+        <audio id="audio_19-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">いわゆる、日本の玄関のようなものでした。</span>
+        <span class="content-sent kanji-sent is-hidden">いわゆる、日本の玄<a onclick="show_kanji_data('関')">関</a>のようなものでした。</span>
+        <span class="content-sent plain-sent is-hidden">いわゆる、日本の玄関のようなものでした。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('いわゆる')">いわゆる</a>、日本の<a onclick="show_vocab_data('玄関')">玄関</a>のようなものでした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">was like a so-called &quot;doorstep of Japan,&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="19-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-018" class="fas fa-play"></i>
+        <audio id="audio_19-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">デッキから投げられた赤、白、緑、黄色などの色とりどりのテープをしっかり握り、</span>
+        <span class="content-sent kanji-sent is-hidden">デッキから<a onclick="show_kanji_data('投')">投</a>げられた赤、白、<a onclick="show_kanji_data('緑')">緑</a>、黄色などの色とりどりのテープをしっかり握り、</span>
+        <span class="content-sent plain-sent is-hidden">デッキから投げられた赤、白、緑、黄色などの色とりどりのテープをしっかり握り、</span>
+        <span class="content-sent vocab-sent">デッキから投げられた赤、白、緑、黄色などの<a onclick="show_vocab_data('色とりどり')">色とりどり</a>のテープを<a onclick="show_vocab_data('しっかり')">しっかり</a><a onclick="show_vocab_data('握り')">握り</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Grasping tightly the red, white, green, and yellow various-colored tapes thrown to them from the deck,</span>
+      </td>
+    </tr>
+
+    <tr id="19-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-019" class="fas fa-play"></i>
+        <audio id="audio_19-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ほおを流れる悲しい涙をぬぐいながら、</span>
+        <span class="content-sent kanji-sent is-hidden">ほおを<a onclick="show_kanji_data('流')">流</a>れる<a onclick="show_kanji_data('悲')">悲</a>しい涙をぬぐいながら、</span>
+        <span class="content-sent plain-sent is-hidden">ほおを流れる悲しい涙をぬぐいながら、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ほお')">ほお</a>を流れる悲しい涙を<a onclick="show_vocab_data('ぬぐい')">ぬぐい</a>ながら、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">wiping away the sad tears running down their cheeks,</span>
+      </td>
+    </tr>
+
+    <tr id="19-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-020" class="fas fa-play"></i>
+        <audio id="audio_19-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ハンカチをふりふり別れを惜しむ人々の姿を大桟橋でよく目に<a onclick="show_grammar_data('したものです')">したものです</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">ハンカチをふりふり別れを惜しむ人々の姿を大桟橋でよく目にしたものです。</span>
+        <span class="content-sent plain-sent is-hidden">ハンカチをふりふり別れを惜しむ人々の姿を大桟橋でよく目にしたものです。</span>
+        <span class="content-sent vocab-sent">ハンカチを<a onclick="show_vocab_data('ふりふり')">ふりふり</a>別れを<a onclick="show_vocab_data('惜しむ')">惜しむ</a>人々の姿を大<a onclick="show_vocab_data('桟橋')">桟橋</a>でよく目にしたものです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">a form of people reluctant to part, waving handkerchiefs, could be often seen on the large pier.</span>
+      </td>
+    </tr>
+
+    <tr id="19-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-021" class="fas fa-play"></i>
+        <audio id="audio_19-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">今は、日本経済の発展と共に、情緒あふれる港町と言うよりも、</span>
+        <span class="content-sent kanji-sent is-hidden">今は、日本<a onclick="show_kanji_data('経')">経</a><a onclick="show_kanji_data('済')">済</a>の発展と共に、情緒あふれる<a onclick="show_kanji_data('港')">港</a>町と言うよりも、</span>
+        <span class="content-sent plain-sent is-hidden">今は、日本経済の発展と共に、情緒あふれる港町と言うよりも、</span>
+        <span class="content-sent vocab-sent">今は、日本経済の発展と共に、<a onclick="show_vocab_data('情緒')">情緒</a>あふれる<a onclick="show_vocab_data('港町')">港町</a>と言うよりも、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Now, with the progress of the Japanese economy, rather than a port town overflowing with emotion,</span>
+      </td>
+    </tr>
+
+    <tr id="19-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-022" class="fas fa-play"></i>
+        <audio id="audio_19-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">輸出入品を取り扱う貿易港と<a onclick="show_grammar_data('言った方がよい')">言った方がよい</a>ようで、</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('輸')">輸</a>出入品を取り扱う<a onclick="show_kanji_data('貿')">貿</a><a onclick="show_kanji_data('易')">易</a><a onclick="show_kanji_data('港')">港</a>と言った方がよいようで、</span>
+        <span class="content-sent plain-sent is-hidden">輸出入品を取り扱う貿易港と言った方がよいようで、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('輸出入品')">輸出入品</a>を<a onclick="show_vocab_data('取り扱う')">取り扱う</a>貿易港と言った方がよいようで、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">it seems as though it&#39;s better to call it a trading port which handles import and export goods,</span>
+      </td>
+    </tr>
+
+    <tr id="19-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-023" class="fas fa-play"></i>
+        <audio id="audio_19-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">貨物船が多く、また港の回りの埋め立て地には、大きな工場、倉庫、石油タンクが太平洋に面して立ち並んでいます。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('貨')">貨</a>物船が多く、また<a onclick="show_kanji_data('港')">港</a>の回りの埋め立て地には、大きな工場、<a onclick="show_kanji_data('倉')">倉</a><a onclick="show_kanji_data('庫')">庫</a>、石油タンクが太平洋に面して立ち並んでいます。</span>
+        <span class="content-sent plain-sent is-hidden">貨物船が多く、また港の回りの埋め立て地には、大きな工場、倉庫、石油タンクが太平洋に面して立ち並んでいます。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('貨物船')">貨物船</a>が多く、また港の回りの<a onclick="show_vocab_data('埋め立て地')">埋め立て地</a>には、大きな工場、<a onclick="show_vocab_data('倉庫')">倉庫</a>、石油タンクが太平洋に<a onclick="show_vocab_data('面して')">面して</a><a onclick="show_vocab_data('立ち並んで')">立ち並んで</a>います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">as there are many cargo ships, and on the land around the harbor, large factories, storehouses, and petroleum tanks are lined up facing the Pacific Ocean.</span>
+      </td>
+    </tr>
+
+    <tr id="19-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-024" class="fas fa-play"></i>
+        <audio id="audio_19-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">でも、外人墓地、中華街、伊勢崎町などのように、</span>
+        <span class="content-sent kanji-sent is-hidden">でも、外人<a onclick="show_kanji_data('墓')">墓</a>地、中華街、伊<a onclick="show_kanji_data('勢')">勢</a>崎町などのように、</span>
+        <span class="content-sent plain-sent is-hidden">でも、外人墓地、中華街、伊勢崎町などのように、</span>
+        <span class="content-sent vocab-sent">でも、外人<a onclick="show_vocab_data('墓地')">墓地</a>、<a onclick="show_vocab_data('中華街')">中華街</a>、伊勢崎町などのように、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, like the Foreigners&#39; Cemetery, Chinatown, and Isezaki-chou,</span>
+      </td>
+    </tr>
+
+    <tr id="19-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-025" class="fas fa-play"></i>
+        <audio id="audio_19-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">開港のあとに訪れた外国人の面影をしのばす跡をあちらこちらに残しているのが横浜の町です。</span>
+        <span class="content-sent kanji-sent is-hidden">開<a onclick="show_kanji_data('港')">港</a>のあとに訪れた外国人の面影をしのばす跡をあちらこちらに残しているのが横<a onclick="show_kanji_data('浜')">浜</a>の町です。</span>
+        <span class="content-sent plain-sent is-hidden">開港のあとに訪れた外国人の面影をしのばす跡をあちらこちらに残しているのが横浜の町です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('開港')">開港</a>のあとに訪れた外国人の<a onclick="show_vocab_data('面影')">面影</a>を<a onclick="show_vocab_data('しのばす')">しのばす</a><a onclick="show_vocab_data('跡')">跡</a>をあちらこちらに残しているのが横浜の町です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the town of Yokohama has left behind many traces here and there which bring to mind the image of the foreigners who visited after the opening of the port.</span>
+      </td>
+    </tr>
+
+    <tr id="19-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-026" class="fas fa-play"></i>
+        <audio id="audio_19-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">横浜の山の手か港湾の灯台の上に上り、はてしない太平洋を見ていると、</span>
+        <span class="content-sent kanji-sent is-hidden">横<a onclick="show_kanji_data('浜')">浜</a>の山の手か<a onclick="show_kanji_data('港')">港</a>湾の<a onclick="show_kanji_data('灯')">灯</a>台の上に上り、はてしない太平洋を見ていると、</span>
+        <span class="content-sent plain-sent is-hidden">横浜の山の手か港湾の灯台の上に上り、はてしない太平洋を見ていると、</span>
+        <span class="content-sent vocab-sent">横浜の<a onclick="show_vocab_data('山の手')">山の手</a>か港湾の<a onclick="show_vocab_data('灯台')">灯台</a>の上に上り、<a onclick="show_vocab_data('はてしない')">はてしない</a>太平洋を見ていると、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When you climb the foothills of Yokohama or the harbor lighthouse and are looking out at the boundless Pacific Ocean,</span>
+      </td>
+    </tr>
+
+    <tr id="19-027" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-027" class="fas fa-play"></i>
+        <audio id="audio_19-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-027.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">こうして未知の国々へ、大きな希望をもって飛び立って行った日本人、</span>
+        <span class="content-sent kanji-sent is-hidden">こうして<a onclick="show_kanji_data('未')">未</a>知の国々へ、大きな<a onclick="show_kanji_data('希')">希</a><a onclick="show_kanji_data('望')">望</a>をもって飛び立って行った日本人、</span>
+        <span class="content-sent plain-sent is-hidden">こうして未知の国々へ、大きな希望をもって飛び立って行った日本人、</span>
+        <span class="content-sent vocab-sent">こうして<a onclick="show_vocab_data('未知')">未知</a>の国々へ、大きな<a onclick="show_vocab_data('希望')">希望</a>をもって飛び立って行った日本人、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">thoughts of the Japanese who set off with great hopes for yet unknown countries,</span>
+      </td>
+    </tr>
+
+    <tr id="19-028" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-028" class="fas fa-play"></i>
+        <audio id="audio_19-028" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-028.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また好奇心いっぱいで、東洋の島国にやって来た外国人たちのことが、</span>
+        <span class="content-sent kanji-sent is-hidden">また好奇心いっぱいで、東洋の島国にやって来た外国人たちのことが、</span>
+        <span class="content-sent plain-sent is-hidden">また好奇心いっぱいで、東洋の島国にやって来た外国人たちのことが、</span>
+        <span class="content-sent vocab-sent">また<a onclick="show_vocab_data('好奇心')">好奇心</a>いっぱいで、東洋の島国にやって来た外国人たちのことが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and the foreigners who came to this Oriental island country full of curiosity,</span>
+      </td>
+    </tr>
+
+    <tr id="19-029" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_19-029" class="fas fa-play"></i>
+        <audio id="audio_19-029" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/19-029.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">寄せてくる波のように思い出されてきます。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('寄')">寄</a>せてくる波のように思い出されてきます。</span>
+        <span class="content-sent plain-sent is-hidden">寄せてくる波のように思い出されてきます。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('寄せて')">寄せて</a>くる波のように思い出されてきます。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">wash over your mind like the waves coming in.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

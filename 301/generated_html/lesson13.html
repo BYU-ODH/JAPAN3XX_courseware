@@ -1,0 +1,954 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>七夕</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u7e54\u308a\u59eb": ["\u7e54\u308a\u59eb", "\u3042\u308a\u3072\u3081", "Vega, the brightest star in the constellation Lyra (lit., Weaving Princess)"], "\u5f66\u661f": ["\u5f66\u661f", "\u3072\u304f\u307c\u3057", "Altair, a bright star in Aqiula"], "\u7f8e\u7537\u5b50": ["\u7f8e\u7537\u5b50", "\u3073\u3060\u3093\u3057", "handsome man"], "\u50cd\u304d\u8005": ["\u50cd\u304d\u8005", "\u306f\u305f\u3089\u304d\u3082\u306e", "hard worker"], "\u7e54\u7269": ["\u7e54\u7269", "\u304a\u308a\u3082\u306e", "textiles; cloth"], "\u5fe0\u5b9f\u306a": ["\u5fe0\u5b9f\u306a", "\u3061\u3085\u3046\u3058\u3064\u306a", "faithful"], "\u7f8a\u98fc\u3044": ["\u7f8a\u98fc\u3044", "\u3072\u3064\u3058\u304b\u3044", "shepherd"], "\u604b\u3092\u3057": ["\u604b\uff08\u3092\u3059\u308b\uff09", "\u3053\u3044\uff08\u3092\u3059\u308b\uff09", "love; to love"], "\u6a5f": ["\u6a5f", "\u306f\u305f", "loom"], "\u653e\u308a\u51fa\u3059": ["\u653e\u308a\u51fa\u3059", "\u307b\u3046\u308a\u3060\u3059", "to abandon; to lay aside"], "\u653e\u308a\u51fa\u3057": ["\u653e\u308a\u51fa\u3059", "\u307b\u3046\u308a\u3060\u3059", "to abandon; to lay aside"], "\u4e16\u8a71": ["\u4e16\u8a71", "\u305b\u308f", "care"], "\u5168\u304f": ["\u5168\u304f", "\u307e\u3063\u305f\u304f", "completely"], "\u738b\u69d8": ["\u738b\u69d8", "\u304a\u3046\u3055\u307e", "king"], "\u4e00\u756a": ["\u4e00\u756a", "\u3044\u3061\u3070\u3093", "most; number one"], "\u96e2\u308c\u3070\u306a\u308c": ["\u96e2\u308c\u3070\u306a\u308c", "\u306f\u306a\u308c\u3070\u306a\u308c", "separated; remote"], "\u604b\u4eba": ["\u604b\u4eba", "\u3053\u3044\u3073\u3068", "lover"], "\u306a\u307f\u3060": ["\u6d99", "\u306a\u307f\u3060", "tear (of the eye)"], "\u6d41\u3059": ["\u6d41\u3059", "\u306a\u304c\u3059", "to shed; to pour"], "\u6d41\u3057\u3066": ["\u6d41\u3059", "\u306a\u304c\u3059", "to shed; to pour"], "\u624b\u306b\u3064\u304b\u306a\u3044": ["\u624b\u306b\u3064\u304b\u306a\u3044", "\u3066\u306b\u3064\u304b\u306a\u3044", "cannot bring oneself to do"], "\u624b\u306b\u3064\u304d\u307e\u305b\u3093": ["\u624b\u306b\u3064\u304b\u306a\u3044", "\u3066\u306b\u3064\u304b\u306a\u3044", "cannot bring oneself to do"], "\u4e00\u751f\u61f8\u547d": ["\u4e00\u751f\u61f8\u547d", "\u3044\u3057\u3087\u3046\u3051\u3093\u3081\u3044", "diligently; with all one's might"], "\u5929\u306e\u5ddd": ["\u5929\u306e\u5ddd", "\u3042\u307e\u306e\u304c\u308f", "Milky Way"], "\u307b\u3068\u308a": ["\u307b\u3068\u308a", "", "area; vicinity"], "\u304a\u4e92\u3044\u306b": ["\u304a\u4e92\u3044\u306b", "\u304a\u305f\u304c\u3044\u306b", "with each other"], "\u6c7a\u3081\u308b": ["\u6c7a\u3081\u308b", "\u304d\u3081\u308b", "to decide; to resolve"], "\u6c7a\u3081\u307e\u3057\u305f": ["\u6c7a\u3081\u308b", "\u304d\u3081\u308b", "to decide; to resolve"], "\u6d6e\u3079\u308b": ["\u6d6e\u3079\u308b", "\u3046\u304b\u3079\u308b", "to float up"], "\u6d6e\u3079\u3066": ["\u6d6e\u3079\u308b", "\u3046\u304b\u3079\u308b", "to float up"], "\u661f\u7a7a": ["\u661f\u7a7a", "\u307b\u3057\u305e\u3089", "starlit sky"], "\u306a\u304c\u3081\u308b": ["\u306a\u304c\u3081\u308b", "", "to gaze at"], "\u306a\u304c\u3081\u3066": ["\u306a\u304c\u3081\u308b", "", "to gaze at"], "\u3046\u308c\u3057\u3044": ["\u3046\u308c\u3057\u3044", "", "merry; happy"], "\u3046\u308c\u3057\u305d\u3046": ["\u3046\u308c\u3057\u3044", "", "merry; happy"], "\u304d\u3089\u304d\u3089": ["\u304d\u3089\u304d\u3089", "", "brightly; glitteringly"], "\u304a\u796d\u308a": ["\uff08\u304a\uff09\u796d\u308a", "\uff08\u304a\uff09\u307e\u3064\u308a", "festival"], "\u5730\u65b9": ["\u5730\u65b9", "\u3061\u307b\u3046", "region; the country"], "\u304a\u795d\u3044": ["\uff08\u304a\uff09\u795d\u3044", "\uff08\u304a\uff09\u3044\u308f\u3044", "celebration"], "\u7b39": ["\u7b39", "\u3055\u3055", "bamboo, bamboo grass"], "\u8449": ["\u8449", "\u306f", "leaf"], "\u307c\u3046": ["\u307c\u3046", "", "pole"], "\u6298\u308a\u7d19": ["\u6298\u308a\u7d19", "\u304a\u308a\u304c\u307f", "folded paper items; origami"], "\u88c5\u98fe\u54c1": ["\u88c5\u98fe\u54c1", "\u305d\u3046\u3057\u3087\u304f\u3072\u3093", "ornament; decoration"], "\u7b46": ["\u7b46", "\u3075\u3067", "brush"], "\u304b\u3056\u308b": ["\u304b\u3056\u308b", "", "to decorate"], "\u308f\u3093\u3071\u304f": ["\u308f\u3093\u3071\u304f", "", "mischievous; naughty"], "\u610f\u5730\u60aa": ["\u610f\u5730\u60aa", "\u3044\u3058\u308f\u308b\u306a", "mean; perverse"], "\u3059\u3066\u304d\u306a": ["\u3059\u3066\u304d\u306a", "", "fine; wonderful; splendid"], "\u7fd2\u5b57": ["\u7fd2\u5b57", "\u3057\u3085\u3046\u3058", "penmanship; calligraphy"], "\u3055\u3044\u307b\u3046": ["\u3055\u3044\u307b\u3046", "", "sewing; needlework"], "\u3057\u3070\u308b": ["\u3057\u3070\u308b", "", "to tie; to fasten"], "\u884c\u4e8b": ["\u884c\u4e8b", "\u304e\u3087\u3046\u3058", "ceremony, event, function"], "\u307e\u308b\u3063\u304d\u308a": ["\u307e\u308b\u3063\u304d\u308a", "", "completely; entirely"], "\u9055\u3046": ["\u9055\u3046", "\u3061\u304c\u3046", "to be different"], "\u9055\u3044\u307e\u3059": ["\u9055\u3046", "\u3061\u304c\u3046", "to be different"], "\u4f1d\u8aac": ["\u4f1d\u8aac", "\u3067\u3093\u305b\u3064", "legend"], "\u5834\u6240": ["\u5834\u6240", "\u3070\u3057\u3087", "place"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3055\u3044", "nowadays"], "\u30f5": ["\u301c\u30f5\u301c", "", "(counter for various items)"], "\u4ed9\u53f0\u5e02": ["\u4ed9\u53f0\u5e02", "\u305b\u3093\u3060\u3044\u3057", "(city in Miyagi Prefecture)"]};
+  var grammar_json = {"\u3053\u306e\u4e8c\u3064\u306e\u661f\u306e\u305f\u3081\u306b": ["N\u306e\u305f\u3081\u306b", "for N<br>because of N", [["\u3053\u306e\u4e8c\u3064\u306e\u661f\u306e\u305f\u3081\u306b\u3001\u4e03\u5915\u3068\u3044\u3046\u304a\u796d\u308a\u3092\u3057\u307e\u3059\u3002", "The festival called <i>Tanabata</i> is celebrated in honor of these two stars."], ["\u304a\u795e\uff8c\u305f\u3081\u306b\u3001\u5927\u305c\u3044\u306e\u4eba\u304c\u547d\u3092\u3059\u3066\u305f\u3002", "Many people gave their lives for their country."], ["\u6bcd\u306e\u305f\u3081\u306b\u3001\u4e00\u751f\u61f8\u547d\u4ed5\u4e8b\u3092\u3057\u305f\u3002", "I worked hard for my mother's sake."], ["\u96e8\u306e\u305f\u3081\u306b\u3001\u30d1\u30fc\u30c6\u30a3\u30fc\u306f\u3001\u4e2d\u6b62\u306b\u306a\u3063\u3066\u3057\u307e\u3063\u305f\u3002", "The party was canceled on account of rain."], ["\u304b\u305c\u306e\u305f\u3081\u306b\u5b66\u6821\u3092\u4f11\u3093\u3060\u3002", "I stayed home from school because of a cold."], ["\u4ed5\u4e8b\u306e\u305f\u3081\u306b\u65e9\u304f\u5e30\u308c\u306a\u3044\u3002", "Due to my job, I won't be able to return home early."]]], "\u304b\u3056\u308b\u306e\u304c\u666e\u901a\u3067\u3059": ["V<SUB>3</SUB>\u306e\u304c\u666e\u901a\u3060", "It is common to V", [["\u7af9\u306e\u307c\u3046\u306b\u6298\u308a\u7d19\u3092\u3064\u3051\u3066\u304b\u3056\u308b\u306e\u304c\u666e\u901a\u3067\u3059\u3002", "It is common to decorate bamboo poles with folded paper."], ["\u65e5\u672c\u8a9e\u306f\u3001\u7b46\u3067\u66f8\u304f\u306e\u304c\u666e\u901a\u3067\u3057\u305f\u3002", "It was common to write Japanese with a brush."], ["\u3069\u3093\u306a\u54c1\u7269\u3067\u3082\u3001\u3064\u3064\u3080\u306e\u304c\u666e\u901a\u3067\u3059\u3002", "It is common to wrap all goods, no matter what they are."]]], "\u3069\u3093\u306a\u306b\u308f\u3093\u3071\u304f\u3067\u3082\u3001\u610f\u5730\u60aa\u3067\u3082": ["\u3069\u3093\u306a\u306b N/QA/TA + \u3067\u3082", "no matter how N/Adj", [["\u3069\u3093\u306a\u306b\u7f8e\u4eba\u3067\u3082\u3001\u3057\u3042\u308f\u305b\u306b\u306a\u308c\u308b\u3068\u306f\u304b\u304e\u3089\u306a\u3044\u3002", "No matter how much of a beauty she is, she won't necessarily become happy."], ["\u3069\u3093\u306a\u306b\u308f\u3093\u3071\u304f\u3067\u3082\u610f\u5730\u60aa\u3067\u3082\u3001\u3088\u3044\u5b50\u306e\u3088\u3046\u306a\u9854\u3092\u3059\u308b\u3002", "No matter how naughty of mean he may be, he puts on the look of a good child."], ["\u305d\u306e\u4eba\u304c\u3069\u3093\u306a\u306b\u3084\u3055\u3057\u304f\u3066\u3082\u3001\u3059\u3050\u306b\u4fe1\u7528\u3057\u3066\u306f\u3044\u3051\u307e\u305b\u3093\u3002", "No matter how kind he may be, you must not trust him right away."]]], "\u7e54\u7269\u304c\u4e0a\u624b": ["N\u304c\u4e0a\u624b\u3060", "to be good at N", [["\u304a\u3055\u3044\u307b\u3046\u306a\u3069\u304c\u4e0a\u624b\u3060\u3002", "She is good at things like sewing."], ["\u65e5\u672c\u8a9e\u304c\u4e0a\u624b\u306b\u306a\u3063\u3066\u304d\u307e\u3057\u305f\u3002", "My Japanese has started to improve."], ["\u65e9\u304f\u3001\u30d4\u30a2\u30ce\u304c\u4e0a\u624b\u306b\u306a\u308a\u305f\u3044\u3002", "I hope that I'll soon be able to play the piano well."]]], "\u304a\u3055\u3044\u307b\u3046\u306a\u3069\u304c\u4e0a\u624b": ["N\u304c\u4e0a\u624b\u3060", "to be good at N", [["\u304a\u3055\u3044\u307b\u3046\u306a\u3069\u304c\u4e0a\u624b\u3060\u3002", "She is good at things like sewing."], ["\u65e5\u672c\u8a9e\u304c\u4e0a\u624b\u306b\u306a\u3063\u3066\u304d\u307e\u3057\u305f\u3002", "My Japanese has started to improve."], ["\u65e9\u304f\u3001\u30d4\u30a2\u30ce\u304c\u4e0a\u624b\u306b\u306a\u308a\u305f\u3044\u3002", "I hope that I'll soon be able to play the piano well."]]], "\u5730\u65b9\u306b\u3088\u3063\u3066": ["N\u306b\u3088\u3063\u3066", "according to N<br>depending upon N", [["\u4e03\u5915\u306e\u4f1d\u8aac\u306f\u3001\u5834\u6240\u3068\u6642\u4ee3\u306b\u3088\u3063\u3066\u5927\u5206\u9055\u3044\u307e\u3059\u3002", "The legend of the star festival varies according to the era and place."], ["\u7269\u306e\u898b\u65b9\u306f\u3001\u4eba\u306b\u3088\u3063\u3066\u9055\u3046\u3002", "The way you look at things varies from person to person."], ["\u54c1\u7269\u306b\u3088\u3063\u3066\u306f\u3001\u5341\u65e5\u3082\u304b\u304b\u308b\u306e\u304c\u3042\u308b\u3002", "It may take as long as ten days depending on the goods."]]], "\u5834\u6240\u3068\u6642\u4ee3\u306b\u3088\u3063\u3066": ["N\u306b\u3088\u3063\u3066", "according to N<br>depending upon N", [["\u4e03\u5915\u306e\u4f1d\u8aac\u306f\u3001\u5834\u6240\u3068\u6642\u4ee3\u306b\u3088\u3063\u3066\u5927\u5206\u9055\u3044\u307e\u3059\u3002", "The legend of the star festival varies according to the era and place."], ["\u7269\u306e\u898b\u65b9\u306f\u3001\u4eba\u306b\u3088\u3063\u3066\u9055\u3046\u3002", "The way you look at things varies from person to person."], ["\u54c1\u7269\u306b\u3088\u3063\u3066\u306f\u3001\u5341\u65e5\u3082\u304b\u304b\u308b\u306e\u304c\u3042\u308b\u3002", "It may take as long as ten days depending on the goods."]]]};
+  var kanji_json = {"\u7e54": ["\u304a\uff08\u308b\uff09", "\u30b7\u30e7\u30af\u30fb\u30b7\u30ad", "to weave; to assemble", [["\u7e54\u7269\uff08\u304a\u308a\u3082\u306e\uff09", "cloth, tixtile goods"], ["\u7d44\u7e54\uff08\u305d\u3057\u304d\uff09", "a formation, an organization"]]], "\u6a5f": ["\u306f\u305f", "\u30ad", "a loom/machine; important point; time", [["\u6a5f\u68b0\uff08\u304d\u304b\u3044\uff09", "a machine, machinery"], ["\u6a5f\u4f1a\uff08\u304d\u304b\u3044\uff09", "an opportunity"], ["\u5371\u6a5f\uff08\u304d\u304d\uff09", "a crisis"], ["\u52d5\u6a5f\uff08\u3069\u3046\u304d\uff09", "a motive"], ["\u671f\u9593\uff08\u304d\u304b\u3093\uff09", "a machine, an organ"]]], "\u7269": ["\u3082\u306e", "\u30d6\u30c4\u30fb\u30e2\u30c4", "thing; appearance", [["\u52d5\u7269\uff08\u3069\u3046\u3076\u3064\uff09", "an animal"], ["\u7269\u4fa1\uff08\u3076\u3063\u304b\uff09", "prices"], ["\u7269\u8cea\uff08\u3076\u3063\u3057\u3064\uff09", "prices"], ["\u7269\u8cc7\uff08\u3076\u3063\u3057\uff09", "goods, materials"], ["\u7740\u7269\uff08\u304d\u3082\u306e\uff09", "a kimono; clothing"]]], "\u7f8e": ["\u3046\u3064\u3059\uff08\u3057\u3044\uff09", "\u30d3", "beautiful; delicious; good", [["\u7f8e\u8853\uff08\u3073\u3058\u3085\u3064\uff09", "art, the fine arts"], ["\u7f8e\u4eba\uff08\u3073\u3058\u3093\uff09", "a beautiful woman"], ["\u7f8e\u5bb9\u9662\uff08\u3073\u3088\u3046\u3044\u3093\uff09", "a beauty salon"]]], "\u50cd": ["\u306f\u305f\u3089\uff08\u304f\uff09", "\u30c9\u30a6", "to work", [["\u52b4\u50cd\uff08\u308d\u3046\u3069\u3046\uff09", "labor"], ["\u50cd\u304d\u8005\uff08\u306f\u305f\u3089\u304d\u3082\u306e\uff09", "a hard worker"]]], "\u8005": ["\u3082\u306e", "\u30b7\u30e3", "person", [["\u5b66\u8005\uff08\u304c\u304f\u3057\u3083\uff09", "a scholar"], ["\u8aad\u8005\uff08\u3069\u304f\u3057\u3083\uff09", "a reader"], ["\u8a18\u8005\uff08\u304d\u3057\u3083\uff09", "a journalist; a newspaper man"], ["\u60a3\u8005\uff08\u304b\u3093\u3058\u3083\uff09", "a patient"], ["\u533b\u8005\uff08\u3044\u3057\u3083\uff09", "a doctor"]]], "\u653e": ["\u306f\u306a\uff08\u3059\uff09\u30fb\u306f\u306a\uff08\u3064\uff09\u30fb\u306f\u306a\uff08\u308c\u308b\uff09", "\u30db\u30a6", "to set free; to let go, to transmit; to leave; to drive someone away", [["\u653e\u68c4\uff08\u307b\u3046\u304d\uff09", "abandonment"], ["\u653e\u9001\uff08\u307b\u3046\u305d\u3046\uff09", "broadcast"], ["\u653e\u5c04\uff08\u307b\u3046\u3057\u3083\uff09", "radiation"], ["\u91c8\u653e\uff08\u3057\u3083\u304f\u307b\u3046\uff09", "release, acquital"]]], "\u5168": ["\u307e\u3063\u305f\uff08\u304f\uff09", "\u30bc\u30f3", "completely perfect; all", [["\u5b8c\u5168\u306a\uff08\u304b\u3093\u305c\u3093\u306a\uff09", "perfect"], ["\u5b89\u5168\uff08\u3042\u3093\u305c\u3093\uff09", "safety"], ["\u5168\u90e8\uff08\u305c\u3093\u3076\uff09", "all, the whole"], ["\u5168\u56fd\uff08\u305c\u3093\u3053\u304f\uff09", "the whole country"], ["\u5168\u4f53\uff08\u305c\u3093\u305f\u3044\uff09", "the whole"]]], "\u69d8": ["\u3055\u307e", "\u30e8\u30a6", "Mr., Mrs., Miss., Ms.; appearance, manner/model; to imitate", [["\u540c\u69d8\uff08\u3069\u3046\u3088\u3046\uff09", "the same"], ["\u69d8\u5b50\uff08\u3088\u3046\u3059\uff09", "the situation, the state of affairs"], ["\u6a21\u69d8\uff08\u3082\u3088\u3046\uff09", "a pattern, a design"]]], "\u4ed5": ["\u3064\u304b\uff08\u3048\u308b\uff09", "\u30b7\u30fb\uff3b\u30b8\uff3d", "to serve; to help", [["\u4ed5\u4e8b\uff08\u3057\u3054\u3068\uff09", "work"], ["\u5949\u4ed5\uff08\u307b\u3046\u3057\uff09", "service"], ["\u7d66\u4ed5\uff08\u304d\u3085\u3046\u3058\uff09", "an office boy; a waiter"]]], "\u7136": ["", "\u30bc\u30f3\u30fb\u30cd\u30f3", "yes; as is; appearance; nature", [["\u5f53\u7136\uff08\u3068\u3046\u305c\u3093\uff09", "just, right, natural"], ["\u5168\u7136\uff08\u305c\u3093\u305c\u3093\uff09", "quite, not at all"], ["\u7a81\u7136\uff08\u3068\u3064\u305c\u3093\uff09", "suddenly"], ["\u5076\u7136\uff08\u3050\u3046\u305c\u3093\uff09", "by chance"], ["\u5929\u7136\uff08\u3066\u3093\u306d\u3093\uff09", "nature, natural"], ["\u81ea\u7136\uff08\u3057\u305c\u3093\uff09", "nature"]]], "\u7d04": ["", "\u30e4\u30af", "approximately; to shrink; to arrange; to refrain; to promise", [["\u6761\u7d04\uff08\u3058\u3087\u3046\u3084\u304f\uff09", "a treaty"], ["\u7d04\u675f\uff08\u3084\u304f\u305d\u304f\uff09", "a promise"], ["\u5951\u7d04\uff08\u3051\u3044\u3084\u304f\uff09", "a contract"], ["\u5236\u7d04\uff08\u305b\u3044\u3084\u304f\uff09", "a restriction"]]], "\u6c7a": ["\u304d\uff08\u3081\u308b\uff09\u30fb\u304d\uff08\u307e\u308b\uff09", "\u30b1\u30c4", "to decide; to be decided", [["\u89e3\u6c7a\uff08\u304b\u3044\u3051\u3064\uff09", "solution, settlement"], ["\u6c7a\u5b9a\uff08\u3051\u3063\u3066\u3044\uff09", "a decision"], ["\u5224\u6c7a\uff08\u306f\u3093\u3051\u3064\uff09", "a judgement"], ["\u6c7a\u610f\uff08\u3051\u3064\u3044\uff09", "determination"], ["\u6c7a\u5fc3\uff08\u3051\u3063\u3057\u3093\uff09", "determination"]]], "\u796d": ["\u307e\u3064\uff08\u308b\uff09\u30fb\u307e\u3064\uff08\u308a\uff09", "\u30b5\u30a4", "to enshrine; to celebrate; festival, religious services", [["\u796d\u65e5\uff08\u3055\u3044\u3058\u3064\uff09", "a national holiday"], ["\u795d\u796d\uff08\u3057\u3085\u304f\u3055\u3044\uff09", "a national holiday"]]], "\u8449": ["\u306f", "\u30e8\u30a6", "leaves", [["\u9752\u8449\uff08\u3042\u304a\u3070\uff09", "green leaves"], ["\u8a00\u8449\uff08\u3053\u3068\u3070\uff09", "a word; language"], ["\u7d05\u8449\uff08\u3053\u3046\u3088\u3046\uff09", "autumn leaves"], ["\u203b\u7d05\u8449\uff08\u3082\u307f\u3058\uff09", "autumn leaves"]]], "\u54c1": ["\u3057\u306a", "\u30d2\u30f3", "goods/quality", [["\u4f5c\u54c1\uff08\u3055\u304f\u3072\u3093\uff09", "a work"], ["\u5546\u54c1\uff08\u3057\u3087\u3046\u3072\u3093\uff09", "merchandise"], ["\u88fd\u54c1\uff08\u305b\u3044\u3072\u3093\uff09", "manufactured goods"], ["\u54c1\u7269\uff08\u3057\u306a\u3082\u306e\uff09", "goods, articles"]]], "\u7b46": ["\u3075\u3067", "\u30d2\u30c4", "brush; to draw characters or pictures", [["\u7b46\u9806\uff08\u3072\u3064\u3058\u3085\u3093\uff09", "the stroke order"], ["\u925b\u7b46\uff08\u3048\u3093\u3074\u3064\uff09", "a pencil"], ["\u7b46\u6cd5\uff08\u3072\u3063\u307d\u3046\uff09", "penmanship; a way, a method"]]], "\u4e01": ["", "\u30c1\u30e7\u30a6\u30fb\u30c6\u30a3", "counter fo guns, knives, tools; block; back of a page", [["\u985e\u4f3c\uff08\u308b\u3044\u3058\uff09", "resemblance, similarity"], ["\u9177\u4f3c\uff08\u3053\u304f\u3058\uff09", "resemble closely"], ["\u4f3c\u9854\u7d75\uff08\u306b\u304c\u304a\u3048\uff09", "a portrait"]]], "\u4f3c": ["\u306b\uff08\u308b\uff09", "\u30b8", "to resemble, to liik like", [["example", ""], ["example", ""], ["example", ""], ["example", ""], ["example", ""]]], "\u60aa": ["\u308f\u308b\uff08\u3044\uff09", "\u30a2\u30af", "bad", [["\u60aa\u5316\uff08\u3042\u3063\u304b\uff09", "grow worse"], ["\u7f6a\u60aa\uff08\u3056\u3044\u3042\u304f\uff09", "a crime"], ["\u60aa\u6027\uff08\u3042\u304f\u305b\u3044\uff09", "malignant; virulent"], ["\u51f6\u60aa\u306a\uff08\u304d\u3087\u3046\u3042\u304f\u306a\uff09", "atrocious"]]], "\u6301": ["\u3082\uff08\u3064\uff09", "\u30b8", "to hold, to have", [["\u6c17\u6301\u3061\uff08\u304d\u3082\u3061\uff09", "a feeling"], ["\u652f\u6301\uff08\u3057\u3058\uff09", "support"], ["\u6301\u53c2\uff08\u3058\u3055\u3093\uff09", "take with one"], ["\u6301\u7d9a\uff08\u3058\u305e\u304f\uff09", "continuance"]]], "\u7fd2": ["\u306a\u3089\uff08\u3046\uff09", "\u30b7\u30e5\u30a6", "to learn; custom", [["\u7fd2\u5b57\uff08\u3057\u3085\u3046\u3058\uff09", "penmanship"], ["\u7df4\u7fd2\uff08\u308c\u3093\u3057\u3085\u3046\uff09", "practice"], ["\u5b66\u7fd2\uff08\u304c\u304f\u3057\u3085\u3046\uff09", "study, learn"], ["\u7fd2\u6163\uff08\u3057\u3085\u3046\u304b\u3093\uff09", "a custom\uff1ba habit"]]], "\u547d": ["\u3044\u306e\u3061", "\u30e1\u30a4\u30fb\u30df\u30e7\u30a6", "life; command; fate", [["\u9769\u547d\uff08\u304b\u304f\u3081\u3044\uff09", "a revolution"], ["\u751f\u547d\uff08\u305b\u3044\u3081\u3044\uff09", "life"], ["\u904b\u547d\uff08\u3046\u3093\u3081\u3044\uff09", "fate, destiny"], ["\u547d\u4ee4\uff08\u3081\u3044\u308c\u3044\uff09", "a command"]]], "\u5b63": ["", "\u30ad", "season", [["\u56db\u5b63\uff08\u3057\u304d\uff09", "the four seasons"], ["\u590f\u5b63\uff08\u304b\u304d\uff09", "summertime"], ["\u4e7e\u5b63\uff08\u304b\u3093\u304d\uff09", "the dry season"], ["\u96e8\u5b63\uff08\u3046\u304d\uff09", "the rainy season"]]], "\u7bc0": ["\u3075\u3057", "\u30bb\u30c4\u30fb\uff3b\u30bb\u30c1\uff3d", "joint, knuckle; link; turning point; beginning; opportunity; punctuation", [["\u5b63\u7bc0\uff08\u304d\u305b\u3064\uff09", "a season"], ["\u7bc0\u7d04\uff08\u305b\u3064\u3084\u304f\uff09", "economy, saving"], ["\u7bc0\u5206\uff08\u305b\u3064\u3076\u3093\uff09", "the eve of the beginning of spring"]]], "\u8aac": ["\u3068\uff08\u304f\uff09", "\u30bb\u30c4\u30fb\uff3b\u30bc\u30a4\uff3d", "to persuade; explanation; theory", [["\u6f14\u8aac\uff08\u3048\u3093\u305c\u3064\uff09", "a speech; public speaking"], ["\u5c0f\u8aac\uff08\u3057\u3087\u3046\u305b\u3064\uff09", "a novel"], ["\u8aac\u660e\uff08\u305b\u3064\u3081\u3044\uff09", "an explanation"], ["\u203b\u904a\u8aac\uff08\u3086\u3046\u305c\u3044\uff09", "go canvassing"]]], "\u6240": ["\u3068\u3053\u308d", "\u30b7\u30e7", "place", [["\u4f4f\u6240\uff08\u3058\u3085\u3046\u3057\u3087\uff09", "the present"], ["\u5834\u6240\uff08\u3070\u3057\u3087\uff09", "a place"], ["\u8fd1\u6240\uff08\u304d\u3093\u3058\u3087\uff09", "the neighborhood, vicinity"], ["\u6240\u5f97\uff08\u3057\u3087\u3068\u304f\uff09", "income"]]], "\u5728": ["\u304a\uff08\u308b\uff09", "\u30b6\u30a4", "to exist in a place, to be", [["\u73fe\u5728\uff08\u3052\u3093\u3056\u3044\uff09", "the present"], ["\u5b58\u5728\uff08\u305d\u3093\u3056\u3044\uff09", "existence"], ["\u4e0d\u5728\uff08\u3075\u3056\u3044\uff09", "absence"], ["\u5065\u5728\uff08\u3051\u3093\u3056\u3044\uff09", "good health"], ["\u99d0\u5728\uff08\u3061\u3085\u3046\u3056\u3044\uff09", "stationed (at, in)"]]], "\u6709": ["\u3042\uff08\u308b\uff09", "\u30e6\u30a6\u30fb\u30a6", "to exist, to have", [["\u6709\u540d\u306a\uff08\u3086\u3046\u3081\u3044\u306a\uff09", "famous"], ["\u6709\u52b9\uff08\u3086\u3046\u3053\u3046\uff09", "be effective"], ["\u6240\u6709\uff08\u3057\u3087\u3086\u3046\uff09", "possession"], ["\u6709\u5229\u306a\uff08\u3086\u3046\u308a\u306a\uff09", "profitable"], ["\u6709\u6599\uff08\u3086\u3046\u308a\u3087\u3046\uff09", "charged, fee-charging; toll, pay"]]]};
+  </script>
+  <div class="block title">七夕</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/13-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="13-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-001" class="fas fa-play"></i>
+        <audio id="audio_13-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むかしむかし、遠い星の国に、織り姫という美しい星と、彦星といって、美男子で、働き者の星がいました。</span>
+        <span class="content-sent kanji-sent is-hidden">むかしむかし、遠い星の国に、<a onclick="show_kanji_data('織')">織</a>り姫という<a onclick="show_kanji_data('美')">美</a>しい星と、彦星といって、<a onclick="show_kanji_data('美')">美</a>男子で、<a onclick="show_kanji_data('働')">働</a>き<a onclick="show_kanji_data('者')">者</a>の星がいました。</span>
+        <span class="content-sent plain-sent is-hidden">むかしむかし、遠い星の国に、織り姫という美しい星と、彦星といって、美男子で、働き者の星がいました。</span>
+        <span class="content-sent vocab-sent">むかしむかし、遠い星の国に、<a onclick="show_vocab_data('織り姫')">織り姫</a>という美しい星と、<a onclick="show_vocab_data('彦星')">彦星</a>といって、<a onclick="show_vocab_data('美男子')">美男子</a>で、<a onclick="show_vocab_data('働き者')">働き者</a>の星がいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Once upon a time, in a faraway star country, there was a beautiful star called the Weaving Princess, and a hard-working, handsome star called Hikoboshi.</span>
+      </td>
+    </tr>
+
+    <tr id="13-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-002" class="fas fa-play"></i>
+        <audio id="audio_13-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">織り姫は、<a onclick="show_grammar_data('織物が上手')">織物が上手</a>で、彦星は、忠実な羊飼いで、二人ともとてもよく働きました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫は、<a onclick="show_kanji_data('織')">織</a><a onclick="show_kanji_data('物')">物</a>が上手で、彦星は、忠実な羊飼いで、二人ともとてもよく<a onclick="show_kanji_data('働')">働</a>きました。</span>
+        <span class="content-sent plain-sent is-hidden">織り姫は、織物が上手で、彦星は、忠実な羊飼いで、二人ともとてもよく働きました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('織り姫')">織り姫</a>は、<a onclick="show_vocab_data('織物')">織物</a>が上手で、<a onclick="show_vocab_data('彦星')">彦星</a>は、<a onclick="show_vocab_data('忠実な')">忠実な</a><a onclick="show_vocab_data('羊飼い')">羊飼い</a>で、二人ともとてもよく働きました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The Weaving Princess was very good at weaving, and Hikoboshi was a faithful shepherd, and both of them worked very hard.</span>
+      </td>
+    </tr>
+
+    <tr id="13-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-003" class="fas fa-play"></i>
+        <audio id="audio_13-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
+        <span class="content-sent plain-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
+        <span class="content-sent vocab-sent">ところが、大きくなって<a onclick="show_vocab_data('恋をし')">恋をし</a>はじめるころになると、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, when they grew up and began to fall in love,</span>
+      </td>
+    </tr>
+
+    <tr id="13-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-004" class="fas fa-play"></i>
+        <audio id="audio_13-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">織り姫は、機を放り出し、彦星も、羊の世話など全くしなくなってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫は、<a onclick="show_kanji_data('機')">機</a>を<a onclick="show_kanji_data('放')">放</a>り出し、彦星も、羊の世話など<a onclick="show_kanji_data('全')">全</a>くしなくなってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">織り姫は、機を放り出し、彦星も、羊の世話など全くしなくなってしまいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('織り姫')">織り姫</a>は、<a onclick="show_vocab_data('機')">機</a>を<a onclick="show_vocab_data('放り出し')">放り出し</a>、<a onclick="show_vocab_data('彦星')">彦星</a>も、羊の<a onclick="show_vocab_data('世話')">世話</a>など<a onclick="show_vocab_data('全く')">全く</a>しなくなってしまいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the Weaving Princess abandoned her loom, and Hikoboshi also completely stopped taking care of his sheep.</span>
+      </td>
+    </tr>
+
+    <tr id="13-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-005" class="fas fa-play"></i>
+        <audio id="audio_13-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これを見た星の国の王様は、おこって、織り姫を星の国の一番南に、</span>
+        <span class="content-sent kanji-sent is-hidden">これを見た星の国の王<a onclick="show_kanji_data('様')">様</a>は、おこって、<a onclick="show_kanji_data('織')">織</a>り姫を星の国の一番南に、</span>
+        <span class="content-sent plain-sent is-hidden">これを見た星の国の王様は、おこって、織り姫を星の国の一番南に、</span>
+        <span class="content-sent vocab-sent">これを見た星の国の<a onclick="show_vocab_data('王様')">王様</a>は、おこって、<a onclick="show_vocab_data('織り姫')">織り姫</a>を星の国の<a onclick="show_vocab_data('一番')">一番</a>南に、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The king of the star country, who saw this, was angry, and sent the Weaving Princess to the very southernmost part of the star country,</span>
+      </td>
+    </tr>
+
+    <tr id="13-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-006" class="fas fa-play"></i>
+        <audio id="audio_13-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
+        <span class="content-sent vocab-sent">そして、<a onclick="show_vocab_data('彦星')">彦星</a>を<a onclick="show_vocab_data('一番')">一番</a>北におくってしまいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and Hikoboshi to the very north.</span>
+      </td>
+    </tr>
+
+    <tr id="13-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-007" class="fas fa-play"></i>
+        <audio id="audio_13-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、仕事など全然手につきません。</span>
+        <span class="content-sent kanji-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、<a onclick="show_kanji_data('仕')">仕</a>事など<a onclick="show_kanji_data('全')">全</a><a onclick="show_kanji_data('然')">然</a>手につきません。</span>
+        <span class="content-sent plain-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、仕事など全然手につきません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('離ればなれ')">離ればなれ</a>になってしまった二人の<a onclick="show_vocab_data('恋人')">恋人</a>は、毎日<a onclick="show_vocab_data('なみだ')">なみだ</a>を<a onclick="show_vocab_data('流して')">流して</a>、仕事など全然<a onclick="show_vocab_data('手につきません')">手につきません</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The two separated lovers cried every day, and didn&#39;t even touch their work.</span>
+      </td>
+    </tr>
+
+    <tr id="13-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-008" class="fas fa-play"></i>
+        <audio id="audio_13-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そこで王様は、二人に、一生懸命働いたら、</span>
+        <span class="content-sent kanji-sent is-hidden">そこで王<a onclick="show_kanji_data('様')">様</a>は、二人に、一生懸<a onclick="show_kanji_data('命')">命</a><a onclick="show_kanji_data('働')">働</a>いたら、</span>
+        <span class="content-sent plain-sent is-hidden">そこで王様は、二人に、一生懸命働いたら、</span>
+        <span class="content-sent vocab-sent">そこで<a onclick="show_vocab_data('王様')">王様</a>は、二人に、<a onclick="show_vocab_data('一生懸命')">一生懸命</a>働いたら、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">So, the king promised the two that if they worked diligently,</span>
+      </td>
+    </tr>
+
+    <tr id="13-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-009" class="fas fa-play"></i>
+        <audio id="audio_13-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと約束なさいました。</span>
+        <span class="content-sent kanji-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと<a onclick="show_kanji_data('約')">約</a>束なさいました。</span>
+        <span class="content-sent plain-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと約束なさいました。</span>
+        <span class="content-sent vocab-sent">一年に一度、<a onclick="show_vocab_data('天の川')">天の川</a>の<a onclick="show_vocab_data('ほとり')">ほとり</a>で会わせてあげようと約束なさいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">he would let them meet once a year on the bank of the River of Heaven (the Milky Way).</span>
+      </td>
+    </tr>
+
+    <tr id="13-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-010" class="fas fa-play"></i>
+        <audio id="audio_13-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">織り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸命働くことに決めました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸<a onclick="show_kanji_data('命')">命</a><a onclick="show_kanji_data('働')">働</a>くことに<a onclick="show_kanji_data('決')">決</a>めました。</span>
+        <span class="content-sent plain-sent is-hidden">織り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸命働くことに決めました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('織り姫')">織り姫</a>と<a onclick="show_vocab_data('彦星')">彦星</a>は、一年に一度、<a onclick="show_vocab_data('お互いに')">お互いに</a>会えるのを楽にみに、<a onclick="show_vocab_data('一生懸命')">一生懸命</a>働くことに<a onclick="show_vocab_data('決めました')">決めました</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The Weaving Princess and Hikoboshi, looking forward to being able to meet once a year, decided to work very hard.</span>
+      </td>
+    </tr>
+
+    <tr id="13-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-011" class="fas fa-play"></i>
+        <audio id="audio_13-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">毎日毎日、織り姫は、彦星のことを思いながら機を織り、</span>
+        <span class="content-sent kanji-sent is-hidden">毎日毎日、<a onclick="show_kanji_data('織')">織</a>り姫は、彦星のことを思いながら<a onclick="show_kanji_data('機')">機</a>を<a onclick="show_kanji_data('織')">織</a>り、</span>
+        <span class="content-sent plain-sent is-hidden">毎日毎日、織り姫は、彦星のことを思いながら機を織り、</span>
+        <span class="content-sent vocab-sent">毎日毎日、<a onclick="show_vocab_data('織り姫')">織り姫</a>は、<a onclick="show_vocab_data('彦星')">彦星</a>のことを思いながら<a onclick="show_vocab_data('機')">機</a>を織り、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Every day, the Weaving Princess would work her loom while thinking of Hikoboshi,</span>
+      </td>
+    </tr>
+
+    <tr id="13-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-012" class="fas fa-play"></i>
+        <audio id="audio_13-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">彦星も、織り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">彦星も、<a onclick="show_kanji_data('織')">織</a>り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
+        <span class="content-sent plain-sent is-hidden">彦星も、織り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('彦星')">彦星</a>も、<a onclick="show_vocab_data('織り姫')">織り姫</a>の顔を目に<a onclick="show_vocab_data('浮べて')">浮べて</a>、羊の<a onclick="show_vocab_data('世話')">世話</a>をするようになりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and Hikoboshi too began to take care of his sheep while dreaming of the Weaving Princess.</span>
+      </td>
+    </tr>
+
+    <tr id="13-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-013" class="fas fa-play"></i>
+        <audio id="audio_13-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
+        <span class="content-sent kanji-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
+        <span class="content-sent plain-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
+        <span class="content-sent vocab-sent">そうして、一年に一度、<a onclick="show_vocab_data('天の川')">天の川</a>の<a onclick="show_vocab_data('ほとり')">ほとり</a>で会って、楽しい一夜をすごすのです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Thus, they meet on the bank of the River of Heaven once a year, and spend a wonderful night.</span>
+      </td>
+    </tr>
+
+    <tr id="13-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-014" class="fas fa-play"></i>
+        <audio id="audio_13-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
+        <span class="content-sent kanji-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
+        <span class="content-sent plain-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
+        <span class="content-sent vocab-sent">七月七日の夜、外に出て、<a onclick="show_vocab_data('星空')">星空</a>を<a onclick="show_vocab_data('ながめて')">ながめて</a>ごらんなさい。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On the night of the seventh of July, look up at the starry sky.</span>
+      </td>
+    </tr>
+
+    <tr id="13-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-015" class="fas fa-play"></i>
+        <audio id="audio_13-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
+        <span class="content-sent kanji-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
+        <span class="content-sent plain-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('天の川')">天の川</a>のそばで、二つのきれいな星が<a onclick="show_vocab_data('うれしそう')">うれしそう</a>に<a onclick="show_vocab_data('きらきら')">きらきら</a>輝いていますよ。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Beside the Milky Way, two beautiful stars will be twinkling happily.</span>
+      </td>
+    </tr>
+
+    <tr id="13-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-016" class="fas fa-play"></i>
+        <audio id="audio_13-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本の人々は、この日に、<a onclick="show_grammar_data('この二つの星のために')">この二つの星のために</a>七夕というお祭りをします。</span>
+        <span class="content-sent kanji-sent is-hidden">日本の人々は、この日に、この二つの星のために七夕というお<a onclick="show_kanji_data('祭')">祭</a>りをします。</span>
+        <span class="content-sent plain-sent is-hidden">日本の人々は、この日に、この二つの星のために七夕というお祭りをします。</span>
+        <span class="content-sent vocab-sent">日本の人々は、この日に、この二つの星のために七夕という<a onclick="show_vocab_data('お祭り')">お祭り</a>をします。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On this day, the Japanese people have a festival called &quot;Tanabata&quot; for these two stars.</span>
+      </td>
+    </tr>
+
+    <tr id="13-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-017" class="fas fa-play"></i>
+        <audio id="audio_13-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('地方によって')">地方によって</a>、いろいろなお祝いの仕方がありますが、</span>
+        <span class="content-sent kanji-sent is-hidden">地方によって、いろいろなお祝いの<a onclick="show_kanji_data('仕')">仕</a>方がありますが、</span>
+        <span class="content-sent plain-sent is-hidden">地方によって、いろいろなお祝いの仕方がありますが、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('地方')">地方</a>によって、いろいろな<a onclick="show_vocab_data('お祝い')">お祝い</a>の仕方がありますが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Depending on the region, there are various ways of celebrating,</span>
+      </td>
+    </tr>
+
+    <tr id="13-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-018" class="fas fa-play"></i>
+        <audio id="audio_13-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">大抵、笹の葉のついた竹の枝に、きれいな折り紙で作った装飾品や、筆で願いごとを書いたふだをつけて<a onclick="show_grammar_data('かざるのが普通です')">かざるのが普通です</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">大抵、笹の<a onclick="show_kanji_data('葉')">葉</a>のついた竹の枝に、きれいな折り紙で作った装飾<a onclick="show_kanji_data('品')">品</a>や、<a onclick="show_kanji_data('筆')">筆</a>で願いごとを書いたふだをつけてかざるのが普通です。</span>
+        <span class="content-sent plain-sent is-hidden">大抵、笹の葉のついた竹の枝に、きれいな折り紙で作った装飾品や、筆で願いごとを書いたふだをつけてかざるのが普通です。</span>
+        <span class="content-sent vocab-sent">大抵、<a onclick="show_vocab_data('笹')">笹</a>の<a onclick="show_vocab_data('葉')">葉</a>のついた竹の枝に、きれいな<a onclick="show_vocab_data('折り紙')">折り紙</a>で作った<a onclick="show_vocab_data('装飾品')">装飾品</a>や、<a onclick="show_vocab_data('筆')">筆</a>で願いごとを書いたふだをつけて<a onclick="show_vocab_data('かざる')">かざる</a>のが普通です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">but it&#39;s usually customary to decorate bamboo branches (with bamboo leaves on them) with decorations made from folded paper and tags with wishes written in calligraphy (lit. &quot;with a brush&quot;).</span>
+      </td>
+    </tr>
+
+    <tr id="13-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-019" class="fas fa-play"></i>
+        <audio id="audio_13-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">丁度、西洋のクリスマス・ツリーにいろいろなものをかざるのと似ています。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('丁')">丁</a>度、西洋のクリスマス・ツリーにいろいろなものをかざるのと<a onclick="show_kanji_data('似')">似</a>ています。</span>
+        <span class="content-sent plain-sent is-hidden">丁度、西洋のクリスマス・ツリーにいろいろなものをかざるのと似ています。</span>
+        <span class="content-sent vocab-sent">丁度、西洋のクリスマス・ツリーにいろいろなものを<a onclick="show_vocab_data('かざる')">かざる</a>のと似ています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This closely resembles the decorating of the Western Christmas tree with various things.</span>
+      </td>
+    </tr>
+
+    <tr id="13-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-020" class="fas fa-play"></i>
+        <audio id="audio_13-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">西洋では<a onclick="show_grammar_data('どんなにわんぱくでも、意地悪でも')">どんなにわんぱくでも、意地悪でも</a>、「とってもいい子になりますから、すてきなプレゼントを持って来て下さい。」と、</span>
+        <span class="content-sent kanji-sent is-hidden">西洋ではどんなにわんぱくでも、意地<a onclick="show_kanji_data('悪')">悪</a>でも、「とってもいい子になりますから、すてきなプレゼントを<a onclick="show_kanji_data('持')">持</a>って来て下さい。」と、</span>
+        <span class="content-sent plain-sent is-hidden">西洋ではどんなにわんぱくでも、意地悪でも、「とってもいい子になりますから、すてきなプレゼントを持って来て下さい。」と、</span>
+        <span class="content-sent vocab-sent">西洋ではどんなに<a onclick="show_vocab_data('わんぱく')">わんぱく</a>でも、<a onclick="show_vocab_data('意地悪')">意地悪</a>でも、「とってもいい子になりますから、<a onclick="show_vocab_data('すてきな')">すてきな</a>プレゼントを持って来て下さい。」と、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In the West, no matter how naughty or ill-tempered they are, children say &quot;I&#39;ll be a very good kid, so please bring me a wonderful present,&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="13-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-021" class="fas fa-play"></i>
+        <audio id="audio_13-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
+        <span class="content-sent kanji-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
+        <span class="content-sent plain-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
+        <span class="content-sent vocab-sent">クリスマス・ツリーの下でお願いごとをしますが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and make a wish under the Christmas tree.</span>
+      </td>
+    </tr>
+
+    <tr id="13-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-022" class="fas fa-play"></i>
+        <audio id="audio_13-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
+        <span class="content-sent kanji-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
+        <span class="content-sent plain-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
+        <span class="content-sent vocab-sent">日本でも七夕の時、子供たちは、同じようなことをします。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In Japan, at Tanabata, children do the same kind of thing.</span>
+      </td>
+    </tr>
+
+    <tr id="13-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-023" class="fas fa-play"></i>
+        <audio id="audio_13-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">普通、お習字とか<a onclick="show_grammar_data('おさいほうなどが上手')">おさいほうなどが上手</a>になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
+        <span class="content-sent kanji-sent is-hidden">普通、お<a onclick="show_kanji_data('習')">習</a>字とかおさいほうなどが上手になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
+        <span class="content-sent plain-sent is-hidden">普通、お習字とかおさいほうなどが上手になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
+        <span class="content-sent vocab-sent">普通、お<a onclick="show_vocab_data('習字')">習字</a>とかお<a onclick="show_vocab_data('さいほう')">さいほう</a>などが上手になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Usually, they write wishes, like wanting to become good at calligraphy or sewing, on paper, and tie the paper onto the bamboo branch.</span>
+      </td>
+    </tr>
+
+    <tr id="13-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-024" class="fas fa-play"></i>
+        <audio id="audio_13-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">行事のはじまりも季節も、また、願いごともまるっきり違いますが、</span>
+        <span class="content-sent kanji-sent is-hidden">行事のはじまりも<a onclick="show_kanji_data('季')">季</a><a onclick="show_kanji_data('節')">節</a>も、また、願いごともまるっきり違いますが、</span>
+        <span class="content-sent plain-sent is-hidden">行事のはじまりも季節も、また、願いごともまるっきり違いますが、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('行事')">行事</a>のはじまりも季節も、また、願いごとも<a onclick="show_vocab_data('まるっきり')">まるっきり</a><a onclick="show_vocab_data('違います')">違います</a>が、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The origin of the ceremony, the season, and the wishes are completely different,</span>
+      </td>
+    </tr>
+
+    <tr id="13-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-025" class="fas fa-play"></i>
+        <audio id="audio_13-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">クリスマス・ツリーと似たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
+        <span class="content-sent kanji-sent is-hidden">クリスマス・ツリーと<a onclick="show_kanji_data('似')">似</a>たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
+        <span class="content-sent plain-sent is-hidden">クリスマス・ツリーと似たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
+        <span class="content-sent vocab-sent">クリスマス・ツリーと似たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">but I think it&#39;s interesting that the people of Japan have continued a tradition similar to the Christmas tree.</span>
+      </td>
+    </tr>
+
+    <tr id="13-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-026" class="fas fa-play"></i>
+        <audio id="audio_13-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">七夕の伝説やお祝いの仕方は、日本の中でも、<a onclick="show_grammar_data('場所と時代によって')">場所と時代によって</a>、大分違います。</span>
+        <span class="content-sent kanji-sent is-hidden">七夕の伝<a onclick="show_kanji_data('説')">説</a>やお祝いの<a onclick="show_kanji_data('仕')">仕</a>方は、日本の中でも、場<a onclick="show_kanji_data('所')">所</a>と時代によって、大分違います。</span>
+        <span class="content-sent plain-sent is-hidden">七夕の伝説やお祝いの仕方は、日本の中でも、場所と時代によって、大分違います。</span>
+        <span class="content-sent vocab-sent">七夕の<a onclick="show_vocab_data('伝説')">伝説</a>や<a onclick="show_vocab_data('お祝い')">お祝い</a>の仕方は、日本の中でも、<a onclick="show_vocab_data('場所')">場所</a>と時代によって、大分<a onclick="show_vocab_data('違います')">違います</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The legend and way of celebrating Tanabata are very different depending on the place and the era, even within Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="13-027" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_13-027" class="fas fa-play"></i>
+        <audio id="audio_13-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-027.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">現在では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても有名です。</span>
+        <span class="content-sent kanji-sent is-hidden">現<a onclick="show_kanji_data('在')">在</a>では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても<a onclick="show_kanji_data('有')">有</a>名です。</span>
+        <span class="content-sent plain-sent is-hidden">現在では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても有名です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('現在')">現在</a>では、一<a onclick="show_vocab_data('ヵ')">ヵ</a>月おくれの八月七日に行われる<a onclick="show_vocab_data('仙台市')">仙台市</a>の七夕がとても有名です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nowadays, the month-late Tanabata of Sendai, which is held on August 8th, is very famous.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

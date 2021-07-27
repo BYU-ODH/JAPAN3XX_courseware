@@ -1,0 +1,1170 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>日本の始まり</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u5730\u7403\u4e0a": ["\u5730\u7403\uff08\u4e0a\uff09", "\u3061\u304d\u3085\u3046\uff08\u3058\u3087\u3046\uff09", "earth; globe; (on the earth)"], "\u6c17\u5019": ["\u6c17\u5019", "\u304d\u3053\u3046", "climate"], "\u5bd2\u51b7": ["\u5bd2\u51b7", "\u304b\u3093\u308c\u3044", "cold"], "\u6c37\u6cb3": ["\u6c37\u6cb3", "\u3072\u3087\u3046\u304c", "glacier"], "\u6642\u4ee3": ["\u6c37\u6cb3\u6642\u4ee3", "\u3072\u3087\u3046\u304c\u3058\u3060\u3044", "ice age"], "\u5927\u9678": ["\u5927\u9678", "\u305f\u3044\u308a\u304f", "continent"], "\u3064\u306a\u304c\u308b": ["\u3064\u306a\u304c\u308b", "", "to be attached"], "\u3064\u306a\u304c\u3063\u3066": ["\u3064\u306a\u304c\u308b", "", "to be attached"], "\u7d00\u5143\u524d": ["\u7d00\u5143\u524d", "\u304d\u3052\u3093\u305c\u3093", "B.C."], "\u7d04": ["\u7d04", "\u3084\u304f", "about; approximately"], "\u304b\u3093\u307c\u3064\u3059\u308b": ["\u304b\u3093\u307c\u3064\uff08\u3059\u308b\uff09", "", "a depression; (to sink; to cave in)"], "\u304b\u3093\u3070\u3064\u3057\u3066": ["\u304b\u3093\u307c\u3064\uff08\u3059\u308b\uff09", "", "a depression; (to sink; to cave in)"], "\u7d30\u9577\u3044": ["\u7d30\u9577\u3044", "\u307b\u305d\u306a\u304c\u3044", "long and narrow"], "\u5217\u5cf6": ["\u5217\u5cf6", "\u308c\u3063\u3068\u3046", "island chain; archipelago"], "\u5730\u5b66": ["\u5730\u5b66", "\u3061\u304c\u304f", "geology"], "\u8aac\u660e": ["\u8aac\u660e", "\u305b\u3064\u3081\u3044", "explanation"], "\u53e4\u4e8b\u8a18": ["\u53e4\u4e8b\u8a18", "\u3053\u3058\u304d", "Kojiki (Record of Ancient Matters, A.D. 712)"], "\u65e5\u672c\u66f8\u7d00": ["\u65e5\u672c\u66f8\u7d00", "\u306b\u307c\u3093\u3057\u3087\u304d", "Nihon Shoki (Chronicles of Japan, A.D. 720)"], "\u5104": ["\u5104", "\u304a\u304f", "one hundred million"], "\u9ad8\u5929\u539f": ["\u9ad8\u5929\u539f", "\u305f\u304b\u307e\u304c\u306f\u3089", "High Plain of Heaven"], "\u6700\u5f8c": ["\u6700\u5f8c", "\u3055\u3044\u3054", "last"], "\u3069\u308d": ["\u3069\u308d", "", "mud"], "\u307e\u3058\u308b": ["\u307e\u3058\u308b", "", "to mix"], "\u307e\u3058\u3063\u3066": ["\u307e\u3058\u308b", "", "to mix"], "\u9020\u308b": ["\u9020\u308b", "\u3064\u304f\u308b", "to build; to make"], "\u9020\u308a\u306a\u3055\u3044": ["\u9020\u308b", "\u3064\u304f\u308b", "to build; to make"], "\u547d\u3058\u308b": ["\u547d\u3058\u308b", "\u3081\u3044\u3058\u308b", "to command"], "\u547d\u3058": ["\u547d\u3058\u308b", "\u3081\u3044\u3058\u308b", "to command"], "\u56fd\u9020\u308a": ["\u56fd\u9020\u308a", "\u304f\u306b\u3065\u304f\u308a", "building a country"], "\u9053\u5177": ["\u9053\u5177", "\u3069\u3046\u3050", "tool"], "\u5929\u306e\u74ca\u77db": ["\u5929\u306e\u74ca\u77db", "\u3042\u307e\u306e\u306c\u307c\u304f", "heavenly jeweled spear"], "\u307b\u3053": ["\u307b\u3053", "", "spear"], "\u3084\u304c\u3066": ["\u3084\u304c\u3066", "", "at last; finally"], "\u6d6e\u304b\u3076": ["\u6d6e\u304b\u3076", "\u3046\u304b\u3076", "to float"], "\u5929\u306e\u6d6e\u6a4b": ["\u5929\u306e\u6d6e\u6a4b", "\u3042\u307e\u306e\u3046\u304d\u306f\u3057", "Floating Bridge of Heaven"], "\u3069\u308d\u3069\u308d": ["\u3069\u308d\u3069\u308d", "", "muddy"], "\u304b\u304d\u56de\u3059": ["\u304b\u304d\u56de\u3059", "\u304b\u304d\u307e\u308f\u3059", "to stir"], "\u304b\u304d\u56de\u3057": ["\u304b\u304d\u56de\u3059", "\u304b\u304d\u307e\u308f\u3059", "to stir"], "\u3055\u3063\u3068": ["\u3055\u3063\u3068", "", "quickly"], "\u5f15\u304d\u3042\u3052\u308b": ["\u5f15\u304d\u3042\u3052\u308b", "\u3072\u304d\u3042\u3052\u308b", "to pull up"], "\u5f15\u304d\u3042\u3052\u307e\u3057\u305f": ["\u5f15\u304d\u3042\u3052\u308b", "\u3072\u304d\u3042\u3052\u308b", "to pull up"], "\u30dd\u30bf\u30dd\u30bf\u3068": ["\u30dd\u30bf\u30dd\u30bf\u3068", "", "falling in drops; dripping"], "\u5869\u6c34": ["\u5869\u6c34", "\u3057\u304a\u307f\u305a", "salt water"], "\u56fa\u307e\u308b": ["\u56fa\u307e\u308b", "\u304b\u305f\u307e\u308b", "to harden"], "\u67f1": ["\u67f1", "\u306f\u3057\u3089", "pillar"], "\u3050\u308b\u308a\u3068": ["\u3050\u308b\u308a\u3068", "", "in a circle"], "\u8a93\u3046": ["\u8a93\u3046", "\u3061\u304b\u3046", "to pledge; to vow"], "\u8a93\u3044": ["\u8a93\u3046", "\u3061\u304b\u3046", "to pledge; to vow"], "\u8a93\u3063\u305f": ["\u8a93\u3046", "\u3061\u304b\u3046", "to pledge; to vow"], "\u3069\u3046\u3082": ["\u3069\u3046\u3082", "", "very much; at all"], "\u7406\u7531": ["\u7406\u7531", "\u308a\u3086\u3046", "a reason"], "\u58f0\u3092\u304b\u3051\u308b": ["\u58f0\u3092\u304b\u3051\u308b", "\u3053\u3048\u3092\u304b\u3051\u308b", "to speak"], "\u58f0\u3092\u304b\u3051\u305f": ["\u58f0\u3092\u304b\u3051\u308b", "\u3053\u3048\u3092\u304b\u3051\u308b", "to speak"], "\u6de1\u8def\u5cf6": ["\u6de1\u8def\u5cf6", "\u3042\u308f\u3058\u3057\u307e", "(an island between Shikoku and Honshu)"], "\u4f50\u6e21\u304c\u5cf6": ["\u4f50\u6e21\u304c\u5cf6", "\u3055\u3069\u304c\u3057\u307e", "(an island in the Japan Sea off the coast of Niigata Prefecture)"], "\u4eba\u9593\u5473": ["\u4eba\u9593\u5473", "\u306b\u3093\u3052\u3093\u307f", "humaneness; a human touch"], "\u795e\u8a71": ["\u795e\u8a71", "\u3057\u3093\u308f", "myth"], "\u3072\u307e": ["\u3072\u307e", "", "free time"], "\u53e4\u4ee3": ["\u53e4\u4ee3", "\u3053\u3060\u3044", "ancient period"], "\u6027\u683c": ["\u6027\u683c", "\u305b\u3044\u304b\u304f", "personality"], "\u60f3\u50cf": ["\u60f3\u50cf\uff08\u3059\u308b\uff09", "\u305d\u3046\u305e\u3046\uff08\u3059\u308b\uff09", "imagination; (to imagine; to surmise)"]};
+  var grammar_json = {"\u3068\u3057\u3066": ["N\u3068\u3057\u3066", "as N", [["\u56fd\u9020\u308a\u306e\u9053\u5177\u3068\u3057\u3066\u3001\u5929\u306e\u74ca\u77db\u3068\u3044\u3046\u9577\u3044\u307b\u3053\u3092\u3044\u305f\u3060\u3044\u305f\u3002", "They received the heabenly jeweled spear as a tool for creating countries."], ["\u4e00\u65e5\u672c\u4eba\u3068\u3057\u3066\u3001\u610f\u898b\u3092\u3079\u3055\u305b\u3066\u3044\u305f\u3060\u304d\u307e\u3059\u3002", "Please let me express my feelings as one Japanese."], ["\u305d\u308c\u306f\u3001\u305f\u3060\u4f8b\u3068\u3057\u3066\u3042\u3052\u305f\u3060\u3051\u3067\u3059\u3002", "I gave that merely as an example."]]], "\u4f55\u5104\u5e74\u3082": ["\u4f55\uff5e\u3082", "many", [["\u4f55\u5104\u5e74\u3082", "many millions of years"]]]};
+  var kanji_json = {"\u7403": ["\u305f\u307e", "\u30ad\u30e5\u30a6", "round ball/sphere", [["\u5730\u7403\uff08\u3061\u304d\u3085\u3046\uff09", "the earth"], ["\u91ce\u7403\uff08\u3084\u304d\u3085\u3046\uff09", "baseball"], ["\u7403\u6280\uff08\u304d\u3085\u3046\u304e\uff09", "a ball game"], ["\u7403\u72b6\uff08\u304d\u3085\u3046\u3058\u3087\u3046\uff09", "a baseball field"], ["\u96fb\u7403\uff08\u3067\u3093\u304d\u3085\u3046\uff09", "an electric bulb"]]], "\u51b7": ["\u3064\u3081\uff08\u305f\u3044\uff09\u30fb\u3072\uff08\u3048\u308b\uff09\u30fb\u3072\uff08\u3084\u3059\uff09\u30fb\u3055\uff08\u307e\u3059\uff09\u30fb\u3055\uff08\u3081\u308b\uff09", "\u30ec\u30a4", "cold (to the touch); to cool", [["\u51b7\u623f\uff08\u308c\u3044\u307c\u3046\uff09", "air-conditioning"], ["\u51b7\u8535\uff08\u308c\u3044\u305e\u3046\uff09", "refrigeration"], ["\u51b7\u6c34\uff08\u308c\u3044\u3059\u3044\uff09", "cold water"], ["\u5bd2\u51b7\uff08\u304b\u3093\u308c\u3044\uff09", "coldness"], ["\u51b7\u51cd\uff08\u308c\u3044\u3068\u3046\uff09", "freeze, refrigeration"]]], "\u6c37": ["\u3053\u304a\u308a", "\u30d3\u30e7\u30a6", "ice", [["\u6c37\u6c34\uff08\u3053\u304a\u308a\u307f\u305a\uff09", "ice water"], ["\u6c37\u70b9\uff08\u3072\u3087\u3046\u3066\u3093\uff09", "the freezing point"], ["\u6c37\u96ea\uff08\u3072\u3087\u3046\u305b\u3064\uff09", "ice and snow"], ["\u6c37\u6cb3\uff08\u3072\u3087\u3046\u304c\uff09", "a glacier"]]], "\u6cb3": ["\u304b\u308f", "\u30ab", "large river", [["\u6cb3\u5ddd\uff08\u304b\u305b\u3093\uff09", "rivers"], ["\u5927\u6cb3\uff08\u305f\u3044\u304c\uff09", "a large river"], ["\u904b\u6cb3\uff08\u3046\u3093\u304c\uff09", "a canal"], ["\u203b\u6cb3\u5cb8\uff08\u304b\u3057\uff09", "a riverside, a riverbank"]]], "\u4e07": ["", "\u30de\u30f3\u30fb\u30d0\u30f3", "10,000; many; all", [["\u4e09\u4e07\uff08\u3055\u3093\u307e\u3093\uff09", "thirty thousand"], ["\u4e07\u4e00\uff08\u307e\u3093\u3044\u3061\uff09", "by any chance"], ["\u4e07\u56fd\uff08\u3070\u3093\u3053\u304f\uff09", "international"], ["\u4e07\u6b73\uff08\u3070\u3093\u3056\u3044\uff09", "Banzai; cheers"]]], "\u9678": ["", "\u30ea\u30af", "continent; land", [["\u9678\u8ecd\uff08\u308a\u304f\u3050\u3093\uff09", "the army"], ["\u5927\u9678\uff08\u305f\u3044\u308a\u304f\uff09", "a continent"], ["\u4e0a\u9678\uff08\u3058\u3087\u3046\u308a\u304f\uff09", "landing, disembarkation"], ["\u9678\u4e0a\uff08\u308a\u304f\u3058\u3087\u3046\uff09", "on land, ashore"]]], "\u7d30": ["\u306f\u305d\uff08\u3044\uff09\u30fb\u307b\u305d\uff08\u308b\uff09\u30fb\u3053\u307e\uff08\u304b\uff09\u30fb\u3053\u307e\uff08\u304b\u3044\uff09", "\u30b5\u30a4", "thin; to become thin; fine; detail", [["\u8a73\u7d30\uff08\u3057\u3087\u3046\u3055\u3044\uff09", "details"], ["\u7d30\u9053\uff08\u307b\u305d\u307f\u3061\uff09", "a narrow path"], ["\u7d30\u5b57\uff08\u307b\u305d\u3058\uff09", "slender character"], ["\u7d30\u5de5\uff08\u3055\u3044\u304f\uff09", "workmanship"], ["\u7d30\u83cc\uff08\u3055\u3044\u304d\u3093\uff09", "a bacillus, a germ"]]], "\u5217": ["", "\u30ec\u30c4", "line, row; connection; to arrange", [["\u5217\u8eca\uff08\u308c\u3063\u3057\u3083\uff09", "train"], ["\u5217\u5cf6\uff08\u308c\u3063\u3068\u3046\uff09", "a chain of islands, archipelago"], ["\u4e00\u5217\uff08\u3044\u3061\u308c\u3064\uff09", "a line"], ["\u884c\u5217\uff08\u304e\u3087\u3046\u308c\u3064\uff09", "a procession, a line"]]], "\u5104": ["", "\u30aa\u30af", "100,000,000", [["\u5341\u5104\uff08\u3058\u3085\u3046\u304a\u304f\uff09", "a billion (1,000,000,000)"]]], "\u795e": ["\u304b\u307f\u30fb\uff3b\u304b\u3093\uff3d\u30fb\uff3b\u3053\u3046\uff3d", "\u30b7\u30f3\u30fb\u30b8\u30f3", "God, a god; divine", [["\u7cbe\u795e\uff08\u305b\u3044\u3057\u3093\uff09", "spirit, mind, soul"], ["\u795e\u7d4c\uff08\u3057\u3093\u3051\u3044\uff09", "a nerve"], ["\u795e\u793e\uff08\u3058\u3093\u3058\u3083\uff09", "a Shinto shrine"], ["\u795e\u69d8\uff08\u304b\u307f\u3055\u307e\uff09", "God, a god"], ["\u795e\u8a71\uff08\u3057\u3093\u308f\uff09", "a myth, mythology"]]], "\u6700": ["\u3082\u3063\u3068\uff08\u3082\uff09", "\u30b5\u30a4", "most . . .; -est", [["\u6700\u8fd1\uff08\u3055\u3044\u304d\u3093\uff09", "recently"], ["\u6700\u5f8c\uff08\u3055\u3044\u3054\uff09", "the last, the end"], ["\u6700\u9ad8\uff08\u3055\u3044\u3053\u3046\uff09", "the highest, the supreme"], ["\u6700\u5927\uff08\u3055\u3044\u3060\u3044\uff09", "the maximum, the greatest"], ["\u6700\u521d\uff08\u3055\u3044\u3057\u3087\uff09", "the first, the earliest"]]], "\u533a": ["", "\u30af", "division, section; to punctuate; to partition, divide", [["\u533a\u5206\uff08\u304f\u3076\u3093\uff09", "a division, a classification"], ["\u533a\u57df\uff08\u304f\u3044\u304d\uff09", "a district"], ["\u5730\u533a\uff08\u3061\u304f\uff09", "a district, an area"], ["\u533a\u9593\uff08\u304f\u304b\u3093\uff09", "section"]]], "\u5225": ["\u308f\u304b\uff08\u308c\u308b\uff09", "\u30d9\u30c4", "to separate; different", [["\u7279\u5225\u306a\uff08\u3068\u304f\u3079\u3064\u306a\uff09", "special"], ["\u533a\u5225\uff08\u304f\u3079\u3064\uff09", "a distinction"], ["\u5225\u5c45\uff08\u3079\u3063\u304d\u3087\uff09", "live separately"]]], "\u9020": ["\u3064\u304f\uff08\u308b\uff09", "\u30be\u30a6", "to build, to make", [["\u9020\u8239\uff08\u305e\u3046\u305b\u3093\uff09", "shipbuilding"], ["\u69cb\u9020\uff08\u3053\u3046\u305e\u3046\uff09", "structure, construction"], ["\u88fd\u9020\uff08\u305b\u3044\u305e\u3046\uff09", "manufacture, production"], ["\u6539\u9020\uff08\u304b\u3044\u305e\u3046\uff09", "reconstruction"], ["\u5275\u9020\uff08\u305d\u3046\u305e\u3046\uff09", "creation"]]], "\u5177": ["", "\u30b0", "tool, equipment; to have enough; to prepare; supply", [["\u5bb6\u5177\uff08\u304b\u3050\uff09", "furniture"], ["\u5177\u4f53\uff08\u3050\u305f\u3044\uff09", "concreteness"], ["\u9053\u5177\uff08\u3069\u3046\u3050\uff09", "a tool"], ["\u656c\u5177\uff08\u3051\u3044\u3050\uff09", "\"yours truly\", \"sincerely\", \"respectfully\""]]], "\u767a": ["", "\u30cf\u30c4\u30fb\u30db\u30c4", "to shoot; fire; to send; to begin", [["\u767a\u8868\uff08\u306f\u3063\u3074\u3087\u3046\uff09", "an announcement"], ["\u767a\u898b\uff08\u306f\u3063\u3051\u3093\uff09", "a discovery"], ["\u51fa\u767a\uff08\u3057\u3085\u3063\u3071\u3064\uff09", "departure"], ["\u767a\u660e\uff08\u306f\u3064\u3081\u3044\uff09", "an invention"], ["\u767a\u4f5c\uff08\u307b\u3063\u3055\uff09", "a fit, a seizure"]]], "\u6a4b": ["\u306f\u3057", "\u30ad\u30e7\u30a6", "bridge", [["\u9678\u6a4b\uff08\u308a\u3063\u304d\u3087\u3046\uff09", "an overpass, a pedestrian bridge"], ["\u9244\u6a4b\uff08\u3066\u3063\u304d\u3087\u3046\uff09", "an iron bridge, a railway bridge"], ["\u6b69\u9053\u6a4b\uff08\u307b\u3069\u3046\u304d\u3087\u3046\uff09", "a pedestrian bridge"], ["\u77f3\u6a4b\uff08\u3044\u3057\u3070\u3057\uff09", "a stone bridge"], ["\u91d1\u9580\u6a4b\uff08\u304d\u3093\u3082\u3093\u304d\u3087\u3046\uff09", "the Golden Gate Bridge"]]], "\u5869": ["\u3057\u304a", "\u30a8\u30f3", "salt", [["\u5869\u6c34\uff08\u3057\u304a\u307f\u305a\uff09", "salt water; brine"], ["\u5869\u6c34\uff08\u3048\u3093\u3059\u3044\uff09", "salt water; brine"], ["\u98df\u5869\uff08\u3057\u3087\u304f\u3048\u3093\uff09", "table salt"], ["\u5869\u52a0\u6e1b\uff08\u3057\u304a\u304b\u3052\u3093\uff09", "seasoning"]]], "\u56fa": ["\u304b\u305f\uff08\u3081\u308b\uff09\u30fb\u304b\u305f\uff08\u307e\u308b\uff09\u30fb\u304b\u305f\uff08\u3044\uff09", "\u30b3", "to harden; solid; a lump; hard", [["\u56fa\u6709\uff08\u3053\u3086\u3046\uff09", "peculiar to, unique to"], ["\u56fa\u5b9a\uff08\u3053\u3066\u3044\uff09", "fix"], ["\u9811\u56fa\u306a\uff08\u304c\u3093\u3053\u306a\uff09", "stubborn, obstinate"], ["\u56fa\u4f53\uff08\u3053\u305f\u3044\uff09", "a solid"]]], "\u67f1": ["\u306f\u3057\u3089", "\u30c1\u30e5\u30a6", "pillar; column; pole", [["\u96fb\u67f1\uff08\u3067\u3093\u3061\u3085\u3046\uff09", "an electric pole, a telephone pole, a light pole"], ["\u67f1\u6642\u8a08\uff08\u306f\u3057\u3089\u3069\u3051\u3044\uff09", "a (wall) clock"]]], "\u795d": ["\u3044\u308f\uff08\u3046\uff09", "\u30b7\u30e5\u30af\u30fb\uff3b\u30b7\u30e5\u30a6\uff3d", "to celebrate; to pray", [["\u795d\u798f\uff08\u3057\u3085\u304f\u3075\u304f\uff09", "a blessing"], ["\u795d\u65e5\uff08\u3057\u3085\u304f\u3058\u3064\uff09", "a holiday"], ["\u795d\u4e8b\uff08\u3044\u308f\u3044\u3054\u3068\uff09", "rejoicings; a happy event"]]], "\u611b": ["", "\u30a2\u30a4", "love; to love; like; to be kind to", [["\u611b\u60c5\uff08\u3042\u3044\u3058\u3087\u3046\uff09", "love, affection"], ["\u611b\u56fd\u5fc3\uff08\u3042\u3044\u3053\u304f\u3057\u3093\uff09", "patriotism"], ["\u604b\u611b\uff08\u308c\u3093\u3042\u3044\uff09", "love"], ["\u611b\u7528\uff08\u3042\u3044\u3088\u3046\uff09", "favorite"]]], "\u521d": ["\u306a\u3058\uff08\u3081\uff09\u30fb\u306f\u3058\uff08\u3081\u3066\uff09\u30fb\u306f\u3064\u30fb\u3046\u3044\u30fb\u305d\uff08\u3081\u308b\uff09", "\u30b7\u30e7", "beginning; early; the first; to begin", [["\u6700\u521d\uff08\u3055\u3044\u3057\u3087\uff09", "first, earliest"], ["\u521d\u671f\uff08\u3057\u3087\u304d\uff09", "the first stage"], ["\u521d\u5bfe\u9762\uff08\u3057\u3087\u305f\u3044\u3081\u3093\uff09", "the first meeting"], ["\u521d\u8033\uff08\u306f\u3064\u307f\u307f\uff09", "a thing heard for the first time"], ["\u521d\u7523\uff08\u3046\u3044\u3056\u3093\uff09", "one's first childbirth"]]], "\u6027": ["", "\u30bb\u30a4\u30fb\u30b7\u30e7\u30a6", "sex, one's disposition; property, quality", [["\u6027\u8cea\uff08\u305b\u3044\u3057\u3064\uff09", "nature, disposition"], ["\u6027\u80fd\uff08\u305b\u3044\u306e\u3046\uff09", "ability, efficiency"], ["\u5973\u6027\uff08\u3058\u3087\u305b\u3044\uff09", "female, woman"], ["\u7537\u6027\uff08\u3060\u3093\u305b\u3044\uff09", "male, man"]]], "\u683c": ["", "\u30ab\u30af\u30fb\uff3b\u30b3\u30af\uff3d", "rule; rank; social position; reason", [["\u6027\u683c\uff08\u305b\u3044\u304b\u304f\uff09", "character"], ["\u4fa1\u683c\uff08\u304b\u304b\u304f\uff09", "a price"], ["\u8cc7\u683c\uff08\u3057\u304b\u304f\uff09", "qualification, capacity"], ["\u4eba\u683c\uff08\u3058\u3093\u304b\u304f\uff09", "character, personality"]]], "\u843d": ["\u304a\uff08\u3061\u308b\uff09\u30fb\u304a\uff08\u3068\u3059\uff09", "\u30e9\u30af", "to fall; to drop", [["\u90e8\u843d\uff08\u3076\u3089\u304f\uff09", "a village"], ["\u843d\u7b2c\uff08\u3089\u304f\u3060\u3044\uff09", "fail an examination, flunk a test"], ["\u843d\u9078\uff08\u3089\u304f\u305b\u3093\uff09", "be defeated in an election"]]], "\u60f3": ["", "\u30bd\u30a6\u30fb\uff3b\u30bd\uff3d", "idea; to think; to imagine", [["\u7406\u60f3\uff08\u308a\u305d\u3046\uff09", "an ideal"], ["\u5275\u9020\uff08\u305d\u3046\u305e\u3046\uff09", "imagination"], ["\u601d\u60f3\uff08\u3057\u305d\u3046\uff09", "thougth, an idea"], ["\u4e88\u60f3\uff08\u3088\u305d\u3046\uff09", "expectations"], ["\u611f\u60f3\uff08\u304b\u3093\u305d\u3046\uff09", "impressions, thoughts"]]], "\u50cf": ["", "\u30be\u30a6", "image; form; statue", [["\u4ecf\u50cf\uff08\u3076\u3064\u305e\u3046\uff09", "an image of Buddha"], ["\u6728\u9020\uff08\u3082\u304f\u305e\u3046\uff09", "a wooden statue"], ["\u73fe\u50cf\uff08\u3052\u3093\u305e\u3046\uff09", "development of film"]]]};
+  </script>
+  <div class="block title">日本の始まり</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/16-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="16-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-001" class="fas fa-play"></i>
+        <audio id="audio_16-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「地球上の気候がとても寒冷で、氷河時代と呼ばれていたころ、日本は、まだアジア大陸とつながっていた。</span>
+        <span class="content-sent kanji-sent is-hidden">「地<a onclick="show_kanji_data('球')">球</a>上の気候がとても寒<a onclick="show_kanji_data('冷')">冷</a>で、<a onclick="show_kanji_data('氷')">氷</a><a onclick="show_kanji_data('河')">河</a>時代と呼ばれていたころ、日本は、まだアジア大<a onclick="show_kanji_data('陸')">陸</a>とつながっていた。</span>
+        <span class="content-sent plain-sent is-hidden">「地球上の気候がとても寒冷で、氷河時代と呼ばれていたころ、日本は、まだアジア大陸とつながっていた。</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('地球上')">地球上</a>の<a onclick="show_vocab_data('気候')">気候</a>がとても<a onclick="show_vocab_data('寒冷')">寒冷</a>で、<a onclick="show_vocab_data('氷河')">氷河</a><a onclick="show_vocab_data('時代')">時代</a>と呼ばれていたころ、日本は、まだアジア<a onclick="show_vocab_data('大陸')">大陸</a>と<a onclick="show_vocab_data('つながって')">つながって</a>いた。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;About the time called the Ice Age, when the climate of the earth was very cold, Japan was still connected to the Asian continent.</span>
+      </td>
+    </tr>
+
+    <tr id="16-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-002" class="fas fa-play"></i>
+        <audio id="audio_16-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、紀元前約一万年ごろ、日本と大陸の間がかんぼつして、細長い日本列島ができあがった。」</span>
+        <span class="content-sent kanji-sent is-hidden">そして、紀元前約一<a onclick="show_kanji_data('万')">万</a>年ごろ、日本と大<a onclick="show_kanji_data('陸')">陸</a>の間がかんぼつして、<a onclick="show_kanji_data('細')">細</a>長い日本<a onclick="show_kanji_data('列')">列</a>島ができあがった。」</span>
+        <span class="content-sent plain-sent is-hidden">そして、紀元前約一万年ごろ、日本と大陸の間がかんぼつして、細長い日本列島ができあがった。」</span>
+        <span class="content-sent vocab-sent">そして、<a onclick="show_vocab_data('紀元前')">紀元前</a><a onclick="show_vocab_data('約')">約</a>一万年ごろ、日本と<a onclick="show_vocab_data('大陸')">大陸</a>の間がかんぼつして、<a onclick="show_vocab_data('細長い')">細長い</a>日本<a onclick="show_vocab_data('列島')">列島</a>ができあがった。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Then, about 10,000 BC, the area between Japan and the continent sank, and the long, thin Japanese Archipelago was formed.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-003" class="fas fa-play"></i>
+        <audio id="audio_16-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">というのが、地理や地学の時間によく聞く日本列島の説明です。</span>
+        <span class="content-sent kanji-sent is-hidden">というのが、地理や地学の時間によく聞く日本<a onclick="show_kanji_data('列')">列</a>島の説明です。</span>
+        <span class="content-sent plain-sent is-hidden">というのが、地理や地学の時間によく聞く日本列島の説明です。</span>
+        <span class="content-sent vocab-sent">というのが、地理や<a onclick="show_vocab_data('地学')">地学</a>の時間によく聞く日本<a onclick="show_vocab_data('列島')">列島</a>の<a onclick="show_vocab_data('説明')">説明</a>です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This is the explanation of the Japanese archipelago that is often heard in geography and geology classes.</span>
+      </td>
+    </tr>
+
+    <tr id="16-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-004" class="fas fa-play"></i>
+        <audio id="audio_16-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これとは大分ちがった説明ですが、日本の古事記や日本書紀の中に、とてもおもしろいことが書いてあります。</span>
+        <span class="content-sent kanji-sent is-hidden">これとは大分ちがった説明ですが、日本の古事記や日本書紀の中に、とてもおもしろいことが書いてあります。</span>
+        <span class="content-sent plain-sent is-hidden">これとは大分ちがった説明ですが、日本の古事記や日本書紀の中に、とてもおもしろいことが書いてあります。</span>
+        <span class="content-sent vocab-sent">これとは大分ちがった<a onclick="show_vocab_data('説明')">説明</a>ですが、日本の<a onclick="show_vocab_data('古事記')">古事記</a>や<a onclick="show_vocab_data('日本書紀')">日本書紀</a>の中に、とてもおもしろいことが書いてあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It&#39;s an explanation that&#39;s very different from this one, but there is something very interesting written in the &quot;Record of Ancient Matters&quot; and the &quot;Chronicles of Japan.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-005" class="fas fa-play"></i>
+        <audio id="audio_16-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">まだ、天と地がはっきり分かれていない<a onclick="show_grammar_data('何億年も')">何億年も</a>むかしの話です。</span>
+        <span class="content-sent kanji-sent is-hidden">まだ、天と地がはっきり分かれていない何<a onclick="show_kanji_data('億')">億</a>年もむかしの話です。</span>
+        <span class="content-sent plain-sent is-hidden">まだ、天と地がはっきり分かれていない何億年もむかしの話です。</span>
+        <span class="content-sent vocab-sent">まだ、天と地がはっきり分かれていない何<a onclick="show_vocab_data('億')">億</a>年もむかしの話です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This is a story about hundreds of millions of years ago, when the heavens and the earth were not yet clearly divided.</span>
+      </td>
+    </tr>
+
+    <tr id="16-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-006" class="fas fa-play"></i>
+        <audio id="audio_16-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">高い雲の上に、高天原という国がありました。</span>
+        <span class="content-sent kanji-sent is-hidden">高い雲の上に、高天原という国がありました。</span>
+        <span class="content-sent plain-sent is-hidden">高い雲の上に、高天原という国がありました。</span>
+        <span class="content-sent vocab-sent">高い雲の上に、<a onclick="show_vocab_data('高天原')">高天原</a>という国がありました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On top of a high cloud, there was a country called the &quot;High Plain of Heaven.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-007" class="fas fa-play"></i>
+        <audio id="audio_16-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">高天原には、天御中主神という神様が住んでいました。</span>
+        <span class="content-sent kanji-sent is-hidden">高天原には、天御中主<a onclick="show_kanji_data('神')">神</a>という<a onclick="show_kanji_data('神')">神</a>様が住んでいました。</span>
+        <span class="content-sent plain-sent is-hidden">高天原には、天御中主神という神様が住んでいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('高天原')">高天原</a>には、天御中主神という神様が住んでいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In the High Plain of Heaven, there lived a god named &quot;Ana no minaka nushi no kami.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-008" class="fas fa-play"></i>
+        <audio id="audio_16-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、この神様に続いて、いろいろな神様が生まれましたが、</span>
+        <span class="content-sent kanji-sent is-hidden">そして、この<a onclick="show_kanji_data('神')">神</a>様に続いて、いろいろな<a onclick="show_kanji_data('神')">神</a>様が生まれましたが、</span>
+        <span class="content-sent plain-sent is-hidden">そして、この神様に続いて、いろいろな神様が生まれましたが、</span>
+        <span class="content-sent vocab-sent">そして、この神様に続いて、いろいろな神様が生まれましたが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">And, after this god, various other gods were born.</span>
+      </td>
+    </tr>
+
+    <tr id="16-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-009" class="fas fa-play"></i>
+        <audio id="audio_16-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">一番最後に生まれたのが、イザナギというりっぱな男の神様と、イザナミという美しい女の神様でした。</span>
+        <span class="content-sent kanji-sent is-hidden">一番<a onclick="show_kanji_data('最')">最</a>後に生まれたのが、イザナギというりっぱな男の<a onclick="show_kanji_data('神')">神</a>様と、イザナミという美しい女の<a onclick="show_kanji_data('神')">神</a>様でした。</span>
+        <span class="content-sent plain-sent is-hidden">一番最後に生まれたのが、イザナギというりっぱな男の神様と、イザナミという美しい女の神様でした。</span>
+        <span class="content-sent vocab-sent">一番<a onclick="show_vocab_data('最後')">最後</a>に生まれたのが、イザナギというりっぱな男の神様と、イザナミという美しい女の神様でした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The last ones to be born were a splendid god named Izanagi and beautiful goddess named Izanami.</span>
+      </td>
+    </tr>
+
+    <tr id="16-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-010" class="fas fa-play"></i>
+        <audio id="audio_16-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">高天原の雲の下には、まだ土と水がどろのようにまじっているだけで、陸や海の区別がありません。</span>
+        <span class="content-sent kanji-sent is-hidden">高天原の雲の下には、まだ土と水がどろのようにまじっているだけで、<a onclick="show_kanji_data('陸')">陸</a>や海の<a onclick="show_kanji_data('区')">区</a><a onclick="show_kanji_data('別')">別</a>がありません。</span>
+        <span class="content-sent plain-sent is-hidden">高天原の雲の下には、まだ土と水がどろのようにまじっているだけで、陸や海の区別がありません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('高天原')">高天原</a>の雲の下には、まだ土と水が<a onclick="show_vocab_data('どろ')">どろ</a>のように<a onclick="show_vocab_data('まじって')">まじって</a>いるだけで、陸や海の区別がありません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Below the clouds of the High Plains of Heaven, there was only water and earth, still mixed together like mud, with no distinction between land and sea.</span>
+      </td>
+    </tr>
+
+    <tr id="16-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-011" class="fas fa-play"></i>
+        <audio id="audio_16-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">天御中主の神は、ある日、イザナギとイザナミを呼んで、</span>
+        <span class="content-sent kanji-sent is-hidden">天御中主の<a onclick="show_kanji_data('神')">神</a>は、ある日、イザナギとイザナミを呼んで、</span>
+        <span class="content-sent plain-sent is-hidden">天御中主の神は、ある日、イザナギとイザナミを呼んで、</span>
+        <span class="content-sent vocab-sent">天御中主の神は、ある日、イザナギとイザナミを呼んで、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">One day, Ana no minaka nushi no kami called Izanagi and Izanami and commanded,</span>
+      </td>
+    </tr>
+
+    <tr id="16-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-012" class="fas fa-play"></i>
+        <audio id="audio_16-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「高天原の下におりて行って、新しい国を造りなさい。」とお命じになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">「高天原の下におりて行って、新しい国を<a onclick="show_kanji_data('造')">造</a>りなさい。」とお命じになりました。</span>
+        <span class="content-sent plain-sent is-hidden">「高天原の下におりて行って、新しい国を造りなさい。」とお命じになりました。</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('高天原')">高天原</a>の下におりて行って、新しい国を<a onclick="show_vocab_data('造りなさい')">造りなさい</a>。」とお<a onclick="show_vocab_data('命じ')">命じ</a>になりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;Go down beneath the High Plains of Heaven and make a new country.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-013" class="fas fa-play"></i>
+        <audio id="audio_16-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">イザナギとイザナミは、天御中主神から、国造りの道具<a onclick="show_grammar_data('として')">として</a>、</span>
+        <span class="content-sent kanji-sent is-hidden">イザナギとイザナミは、天御中主<a onclick="show_kanji_data('神')">神</a>から、国<a onclick="show_kanji_data('造')">造</a>りの道<a onclick="show_kanji_data('具')">具</a>として、</span>
+        <span class="content-sent plain-sent is-hidden">イザナギとイザナミは、天御中主神から、国造りの道具として、</span>
+        <span class="content-sent vocab-sent">イザナギとイザナミは、天御中主神から、<a onclick="show_vocab_data('国造り')">国造り</a>の<a onclick="show_vocab_data('道具')">道具</a>として、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">From Ana no minaka nushi no kami, Izanagi and Izanami received, as a tool to build a country,</span>
+      </td>
+    </tr>
+
+    <tr id="16-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-014" class="fas fa-play"></i>
+        <audio id="audio_16-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">天の瓊矛というほこをいただき、新しい国をさがしに、高天原を出発しました。</span>
+        <span class="content-sent kanji-sent is-hidden">天の瓊矛というほこをいただき、新しい国をさがしに、高天原を出<a onclick="show_kanji_data('発')">発</a>しました。</span>
+        <span class="content-sent plain-sent is-hidden">天の瓊矛というほこをいただき、新しい国をさがしに、高天原を出発しました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('天の瓊矛')">天の瓊矛</a>という<a onclick="show_vocab_data('ほこ')">ほこ</a>をいただき、新しい国をさがしに、<a onclick="show_vocab_data('高天原')">高天原</a>を出発しました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">a spear called &quot;the Heavenly Jeweled Spear,&quot; and departed from the High Plains of Heaven in search of a new country.</span>
+      </td>
+    </tr>
+
+    <tr id="16-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-015" class="fas fa-play"></i>
+        <audio id="audio_16-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">やがて二人は、天に浮かぶ天の浮橋という橋の上に来ました。</span>
+        <span class="content-sent kanji-sent is-hidden">やがて二人は、天に浮かぶ天の浮<a onclick="show_kanji_data('橋')">橋</a>という<a onclick="show_kanji_data('橋')">橋</a>の上に来ました。</span>
+        <span class="content-sent plain-sent is-hidden">やがて二人は、天に浮かぶ天の浮橋という橋の上に来ました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('やがて')">やがて</a>二人は、天に<a onclick="show_vocab_data('浮かぶ')">浮かぶ</a><a onclick="show_vocab_data('天の浮橋')">天の浮橋</a>という橋の上に来ました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Finally, the two came to the top of a bridge which floats in heaven, called the &quot;Floating Bridge of Heaven.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="16-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-016" class="fas fa-play"></i>
+        <audio id="audio_16-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その橋の上から下を見ると、海の中には何もありません。</span>
+        <span class="content-sent kanji-sent is-hidden">その<a onclick="show_kanji_data('橋')">橋</a>の上から下を見ると、海の中には何もありません。</span>
+        <span class="content-sent plain-sent is-hidden">その橋の上から下を見ると、海の中には何もありません。</span>
+        <span class="content-sent vocab-sent">その橋の上から下を見ると、海の中には何もありません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When they looked down from the top of the bridge, there was nothing in the ocean.</span>
+      </td>
+    </tr>
+
+    <tr id="16-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-017" class="fas fa-play"></i>
+        <audio id="audio_16-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そこで、イザナギは、天御中主神からいただいた長いほこを海の中に入れて、</span>
+        <span class="content-sent kanji-sent is-hidden">そこで、イザナギは、天御中主<a onclick="show_kanji_data('神')">神</a>からいただいた長いほこを海の中に入れて、</span>
+        <span class="content-sent plain-sent is-hidden">そこで、イザナギは、天御中主神からいただいた長いほこを海の中に入れて、</span>
+        <span class="content-sent vocab-sent">そこで、イザナギは、天御中主神からいただいた長い<a onclick="show_vocab_data('ほこ')">ほこ</a>を海の中に入れて、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">So, Izanagi put the long spear they had received from Ana no minaka nushi no kami into the ocean,</span>
+      </td>
+    </tr>
+
+    <tr id="16-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-018" class="fas fa-play"></i>
+        <audio id="audio_16-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">どろどろ<a onclick="show_grammar_data('として')">として</a>いる海をかき回し、さっと引きあげました。</span>
+        <span class="content-sent kanji-sent is-hidden">どろどろとしている海をかき回し、さっと引きあげました。</span>
+        <span class="content-sent plain-sent is-hidden">どろどろとしている海をかき回し、さっと引きあげました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('どろ')">どろ</a><a onclick="show_vocab_data('どろ')">どろ</a>としている海を<a onclick="show_vocab_data('かき回し')">かき回し</a>、<a onclick="show_vocab_data('さっと')">さっと</a><a onclick="show_vocab_data('引きあげました')">引きあげました</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">stirred the muddy ocean around, and quickly lifted it up again.</span>
+      </td>
+    </tr>
+
+    <tr id="16-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-019" class="fas fa-play"></i>
+        <audio id="audio_16-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そうすると、ポタポタと、ほこの先から塩水が落ちてきて、それが固まると、小さな島になりました。</span>
+        <span class="content-sent kanji-sent is-hidden">そうすると、ポタポタと、ほこの先から<a onclick="show_kanji_data('塩')">塩</a>水が<a onclick="show_kanji_data('落')">落</a>ちてきて、それが<a onclick="show_kanji_data('固')">固</a>まると、小さな島になりました。</span>
+        <span class="content-sent plain-sent is-hidden">そうすると、ポタポタと、ほこの先から塩水が落ちてきて、それが固まると、小さな島になりました。</span>
+        <span class="content-sent vocab-sent">そうすると、<a onclick="show_vocab_data('ポタポタと')">ポタポタと</a>、<a onclick="show_vocab_data('ほこ')">ほこ</a>の先から<a onclick="show_vocab_data('塩水')">塩水</a>が落ちてきて、それが<a onclick="show_vocab_data('固まる')">固まる</a>と、小さな島になりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When he did this, salt water dripped off the end of the spear, and when this hardened, it became a small island.</span>
+      </td>
+    </tr>
+
+    <tr id="16-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-020" class="fas fa-play"></i>
+        <audio id="audio_16-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">イザナギとイザナミは、この島に新しい国を造ることにして、おりてきました。</span>
+        <span class="content-sent kanji-sent is-hidden">イザナギとイザナミは、この島に新しい国を<a onclick="show_kanji_data('造')">造</a>ることにして、おりてきました。</span>
+        <span class="content-sent plain-sent is-hidden">イザナギとイザナミは、この島に新しい国を造ることにして、おりてきました。</span>
+        <span class="content-sent vocab-sent">イザナギとイザナミは、この島に新しい国を<a onclick="show_vocab_data('造る')">造る</a>ことにして、おりてきました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Izanagi and Izanami decided to build a new country on this island, and descended to it.</span>
+      </td>
+    </tr>
+
+    <tr id="16-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-021" class="fas fa-play"></i>
+        <audio id="audio_16-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そうして、大きな柱を立てて、家を作りました。</span>
+        <span class="content-sent kanji-sent is-hidden">そうして、大きな<a onclick="show_kanji_data('柱')">柱</a>を立てて、家を作りました。</span>
+        <span class="content-sent plain-sent is-hidden">そうして、大きな柱を立てて、家を作りました。</span>
+        <span class="content-sent vocab-sent">そうして、大きな<a onclick="show_vocab_data('柱')">柱</a>を立てて、家を作りました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Upon doing this, they set up a large pillar and built a house.</span>
+      </td>
+    </tr>
+
+    <tr id="16-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-022" class="fas fa-play"></i>
+        <audio id="audio_16-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">二人は、お祝いに、この大きな柱をぐるりと回り、顔を合わせて愛を誓い合い、</span>
+        <span class="content-sent kanji-sent is-hidden">二人は、お<a onclick="show_kanji_data('祝')">祝</a>いに、この大きな<a onclick="show_kanji_data('柱')">柱</a>をぐるりと回り、顔を合わせて<a onclick="show_kanji_data('愛')">愛</a>を誓い合い、</span>
+        <span class="content-sent plain-sent is-hidden">二人は、お祝いに、この大きな柱をぐるりと回り、顔を合わせて愛を誓い合い、</span>
+        <span class="content-sent vocab-sent">二人は、お祝いに、この大きな<a onclick="show_vocab_data('柱')">柱</a>を<a onclick="show_vocab_data('ぐるりと')">ぐるりと</a>回り、顔を合わせて愛を<a onclick="show_vocab_data('誓い')">誓い</a>合い、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In celebration, the two went around the pillar in circles, faced each other and pleged their love,</span>
+      </td>
+    </tr>
+
+    <tr id="16-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-023" class="fas fa-play"></i>
+        <audio id="audio_16-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">新しい島を造り始めましたが、最初は、どうもうまく島が造れません。</span>
+        <span class="content-sent kanji-sent is-hidden">新しい島を<a onclick="show_kanji_data('造')">造</a>り始めましたが、<a onclick="show_kanji_data('最')">最</a><a onclick="show_kanji_data('初')">初</a>は、どうもうまく島が<a onclick="show_kanji_data('造')">造</a>れません。</span>
+        <span class="content-sent plain-sent is-hidden">新しい島を造り始めましたが、最初は、どうもうまく島が造れません。</span>
+        <span class="content-sent vocab-sent">新しい島を造り始めましたが、最初は、<a onclick="show_vocab_data('どうも')">どうも</a>うまく島が造れません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and started to make new islands, but at first, they couldn&#39;t make islands well at all.</span>
+      </td>
+    </tr>
+
+    <tr id="16-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-024" class="fas fa-play"></i>
+        <audio id="audio_16-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">どうしてか理由を考えてみると、顔を合わせて愛を誓った時、</span>
+        <span class="content-sent kanji-sent is-hidden">どうしてか理由を考えてみると、顔を合わせて<a onclick="show_kanji_data('愛')">愛</a>を誓った時、</span>
+        <span class="content-sent plain-sent is-hidden">どうしてか理由を考えてみると、顔を合わせて愛を誓った時、</span>
+        <span class="content-sent vocab-sent">どうしてか<a onclick="show_vocab_data('理由')">理由</a>を考えてみると、顔を合わせて愛を<a onclick="show_vocab_data('誓った')">誓った</a>時、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When they thought about what the reason might be, they though that maybe things didn&#39;t go well because when they faced each other and pledged their love,</span>
+      </td>
+    </tr>
+
+    <tr id="16-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-025" class="fas fa-play"></i>
+        <audio id="audio_16-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">女の神様が先に声をかけたから、うまくいかなかったのではないかと思い、今度は、男の神様から先に声をかけて、島を造ってみました。</span>
+        <span class="content-sent kanji-sent is-hidden">女の<a onclick="show_kanji_data('神')">神</a>様が先に声をかけたから、うまくいかなかったのではないかと思い、今度は、男の<a onclick="show_kanji_data('神')">神</a>様から先に声をかけて、島を<a onclick="show_kanji_data('造')">造</a>ってみました。</span>
+        <span class="content-sent plain-sent is-hidden">女の神様が先に声をかけたから、うまくいかなかったのではないかと思い、今度は、男の神様から先に声をかけて、島を造ってみました。</span>
+        <span class="content-sent vocab-sent">女の神様が先に<a onclick="show_vocab_data('声をかけた')">声をかけた</a>から、うまくいかなかったのではないかと思い、今度は、男の神様から先に声をかけて、島を造ってみました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the goddess spoke first, so this time, the male god spoke first, and they tried to make an island.</span>
+      </td>
+    </tr>
+
+    <tr id="16-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-026" class="fas fa-play"></i>
+        <audio id="audio_16-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">すると、とても美しい島ができました。</span>
+        <span class="content-sent kanji-sent is-hidden">すると、とても美しい島ができました。</span>
+        <span class="content-sent plain-sent is-hidden">すると、とても美しい島ができました。</span>
+        <span class="content-sent vocab-sent">すると、とても美しい島ができました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When they did so, a beautiful island was formed.</span>
+      </td>
+    </tr>
+
+    <tr id="16-027" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-027" class="fas fa-play"></i>
+        <audio id="audio_16-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-027.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この島が現在の淡路島です。</span>
+        <span class="content-sent kanji-sent is-hidden">この島が現在の淡路島です。</span>
+        <span class="content-sent plain-sent is-hidden">この島が現在の淡路島です。</span>
+        <span class="content-sent vocab-sent">この島が現在の<a onclick="show_vocab_data('淡路島')">淡路島</a>です。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This island is the modern-day Awaji Island.</span>
+      </td>
+    </tr>
+
+    <tr id="16-028" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-028" class="fas fa-play"></i>
+        <audio id="audio_16-028" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-028.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そのあと、同じ方法で、伊矛之二名島（現在の四国）、筑紫の島（現在の九州）、佐渡が島などができあがり、</span>
+        <span class="content-sent kanji-sent is-hidden">そのあと、同じ方法で、伊矛之二名島（現在の四国）、筑紫の島（現在の九州）、佐渡が島などができあがり、</span>
+        <span class="content-sent plain-sent is-hidden">そのあと、同じ方法で、伊矛之二名島（現在の四国）、筑紫の島（現在の九州）、佐渡が島などができあがり、</span>
+        <span class="content-sent vocab-sent">そのあと、同じ方法で、伊矛之二名島（現在の四国）、筑紫の島（現在の九州）、<a onclick="show_vocab_data('佐渡が島')">佐渡が島</a>などができあがり、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">After that, in the same way, Iyo no Futana Island (present-day Shikoku), Tsukushi Island (present-day Kyushu), and Sado Island were made,</span>
+      </td>
+    </tr>
+
+    <tr id="16-029" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-029" class="fas fa-play"></i>
+        <audio id="audio_16-029" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-029.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">最後には、大きな大和豊秋津島（現在の本州）を造りました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('最')">最</a>後には、大きな大和豊秋津島（現在の本州）を<a onclick="show_kanji_data('造')">造</a>りました。</span>
+        <span class="content-sent plain-sent is-hidden">最後には、大きな大和豊秋津島（現在の本州）を造りました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('最後')">最後</a>には、大きな大和豊秋津島（現在の本州）を造りました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and last of all, they made the large Oyamatotoyoakizu Island (present-day Honshu).</span>
+      </td>
+    </tr>
+
+    <tr id="16-030" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-030" class="fas fa-play"></i>
+        <audio id="audio_16-030" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-030.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">二人の神様は、大喜びでした。</span>
+        <span class="content-sent kanji-sent is-hidden">二人の<a onclick="show_kanji_data('神')">神</a>様は、大喜びでした。</span>
+        <span class="content-sent plain-sent is-hidden">二人の神様は、大喜びでした。</span>
+        <span class="content-sent vocab-sent">二人の神様は、大喜びでした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The two gods were overjoyed.</span>
+      </td>
+    </tr>
+
+    <tr id="16-031" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-031" class="fas fa-play"></i>
+        <audio id="audio_16-031" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-031.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">イザナギとイザナミがこの時造った八つの島が、現在の日本の国だそうです。</span>
+        <span class="content-sent kanji-sent is-hidden">イザナギとイザナミがこの時<a onclick="show_kanji_data('造')">造</a>った八つの島が、現在の日本の国だそうです。</span>
+        <span class="content-sent plain-sent is-hidden">イザナギとイザナミがこの時造った八つの島が、現在の日本の国だそうです。</span>
+        <span class="content-sent vocab-sent">イザナギとイザナミがこの時造った八つの島が、現在の日本の国だそうです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It is said that the eight islands made by Izanagi and Izanami at this time are the present-day country of Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="16-032" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-032" class="fas fa-play"></i>
+        <audio id="audio_16-032" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-032.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">地理や地学の時間の説明とは大分ちがいますが、とても人間味のある、日本の始まりの説明だと思います。</span>
+        <span class="content-sent kanji-sent is-hidden">地理や地学の時間の説明とは大分ちがいますが、とても人間味のある、日本の始まりの説明だと思います。</span>
+        <span class="content-sent plain-sent is-hidden">地理や地学の時間の説明とは大分ちがいますが、とても人間味のある、日本の始まりの説明だと思います。</span>
+        <span class="content-sent vocab-sent">地理や<a onclick="show_vocab_data('地学')">地学</a>の時間の<a onclick="show_vocab_data('説明')">説明</a>とは大分ちがいますが、とても<a onclick="show_vocab_data('人間味')">人間味</a>のある、日本の始まりの<a onclick="show_vocab_data('説明')">説明</a>だと思います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This is very different from the explanations given in geography or geology classes, but I think it&#39;s an explanation of the origin of Japan that has a very human touch.</span>
+      </td>
+    </tr>
+
+    <tr id="16-033" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-033" class="fas fa-play"></i>
+        <audio id="audio_16-033" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-033.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このほかにも、まだたくさんおもしろい日本の神話が古事記や日本書紀という本の中に書いてあります。</span>
+        <span class="content-sent kanji-sent is-hidden">このほかにも、まだたくさんおもしろい日本の<a onclick="show_kanji_data('神')">神</a>話が古事記や日本書紀という本の中に書いてあります。</span>
+        <span class="content-sent plain-sent is-hidden">このほかにも、まだたくさんおもしろい日本の神話が古事記や日本書紀という本の中に書いてあります。</span>
+        <span class="content-sent vocab-sent">このほかにも、まだたくさんおもしろい日本の<a onclick="show_vocab_data('神話')">神話</a>が<a onclick="show_vocab_data('古事記')">古事記</a>や<a onclick="show_vocab_data('日本書紀')">日本書紀</a>という本の中に書いてあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Besides this, there are lots of other interesting Japanese myths written in the Record of Ancient Matters and the Chronicles of Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="16-034" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-034" class="fas fa-play"></i>
+        <audio id="audio_16-034" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-034.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ひまがあったら、読んでみてごらんなさい。</span>
+        <span class="content-sent kanji-sent is-hidden">ひまがあったら、読んでみてごらんなさい。</span>
+        <span class="content-sent plain-sent is-hidden">ひまがあったら、読んでみてごらんなさい。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ひま')">ひま</a>があったら、読んでみてごらんなさい。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">If you have time, please read them.</span>
+      </td>
+    </tr>
+
+    <tr id="16-035" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_16-035" class="fas fa-play"></i>
+        <audio id="audio_16-035" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/16-035.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本の古代の人々の生活や性格が想像できて、とてもおもしろいです。</span>
+        <span class="content-sent kanji-sent is-hidden">日本の古代の人々の生活や<a onclick="show_kanji_data('性')">性</a><a onclick="show_kanji_data('格')">格</a>が<a onclick="show_kanji_data('想')">想</a><a onclick="show_kanji_data('像')">像</a>できて、とてもおもしろいです。</span>
+        <span class="content-sent plain-sent is-hidden">日本の古代の人々の生活や性格が想像できて、とてもおもしろいです。</span>
+        <span class="content-sent vocab-sent">日本の<a onclick="show_vocab_data('古代')">古代</a>の人々の生活や<a onclick="show_vocab_data('性格')">性格</a>が<a onclick="show_vocab_data('想像')">想像</a>できて、とてもおもしろいです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">You will be able to imagine the lifestyle and character of the ancient Japanese people, and it will be very interesting.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

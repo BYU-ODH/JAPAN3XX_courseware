@@ -1,0 +1,927 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>九州</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u3064\u304d\u308b": ["\u3064\u304d\u308b", "", "to come to an end; to terminate"], "\u9762\u7a4d": ["\u9762\u7a4d", "\u3081\u3093\u305b\u304d", "area"], "\u5e73\u65b9": ["\u5e73\u65b9\u301c", "\u3078\u3044\u307b\u3046\u301c", "square \u301c (e.g. square kilometer)"], "\u5341\u5206\u306e\u4e00": ["\u5341\u5206\u306e\u4e00", "\u3058\u3085\u3046\u3076\u3093\u306e\u3044\u3061", "one tenth"], "\u706b\u5c71": ["\u706b\u5c71", "\u304b\u3056\u3093", "volcano"], "\u6d3b": ["\u6d3b\u706b\u5c71", "\u304b\u3063\u304b\u3056\u3093", "active volcano"], "\u6e29\u6cc9": ["\u6e29\u6cc9", "\u304a\u3093\u305b\u3093", "hot spring; spa"], "\u4ee3\u8868\u7684\u306a": ["\u4ee3\u8868\u7684\u306a", "\u3060\u3044\u3072\u3087\u3046\u3066\u304d\u306a", "representative; typical"], "\u305f\u3060": ["\u305f\u3060", "", "however, it is just that..."], "\u89b3\u5149\u5ba2": ["\u89b3\u5149\u5ba2", "\u304b\u3093\u3053\u3046\u304d\u3083\u304f", "sightseer"], "\u5546\u696d\u5316": ["\u5546\u696d\u5316", "\u3057\u3087\u3046\u304e\u3087\u3046\u304b", "commercialization"], "\u5c11\u306a\u304f\u306a\u3044": ["\u5c11\u306a\u304f\u306a\u3044", "\u3059\u304f\u306a\u304f\u306a\u3044", "not a few"], "\u5c11\u306a\u304f\u3042\u308a\u307e\u305b\u3093": ["\u5c11\u306a\u304f\u306a\u3044", "\u3059\u304f\u306a\u304f\u306a\u3044", "not a few"], "\u6e29\u6696\u306a": ["\u6e29\u6696\u306a", "\u304a\u3093\u3060\u3093\u306a", "warm; mild"], "\u6075\u3080": ["\u6075\u3080", "\u3081\u3050\u3080", "to bless"], "\u6075\u307e\u308c": ["\u6075\u3080", "\u3081\u3050\u3080", "to bless"], "\u91ce\u83dc": ["\u91ce\u83dc", "\u3084\u3055\u3044", "vegetables"], "\u679c\u7269": ["\u679c\u7269", "\u304f\u3060\u3082\u306e", "fruit"], "\u65e9\u671f": ["\u65e9\u671f", "\u305d\u3046\u304d", "early stage"], "\u88c1\u57f9": ["\u88c1\u57f9", "\u3055\u3044\u3070\u3044", "cultivation"], "\u65e9\u671f\u88c1\u57f9": ["\u65e9\u671f\u88c1\u57f9", "\u305d\u3046\u304d\u3055\u3044\u3070\u3044", "planting seeds earlier to improve production; early-stage cultivation"], "\u5404\u5730": ["\u5404\u5730", "\u304b\u304f\u3061", "every place; various places"], "\u98df\u5353": ["\u98df\u5353", "\u3057\u3087\u304f\u305f\u304f", "dining table"], "\u5357\u7aef": ["\u5357\u7aef", "\u306a\u3093\u305f\u3093", "southern end"], "\u71b1\u5e2f\u6027": ["\u71b1\u5e2f\u6027", "\u306d\u3063\u305f\u3044\u305b\u3044", "tropical"], "\u690d\u7269": ["\u690d\u7269", "\u3057\u3087\u304f\u3076\u3064", "plant"], "\u30b5\u30c8\u30a6\u30ad\u30d3": ["\u30b5\u30c8\u30a6\u30ad\u30d3", "", "sugar cane"], "\u5357\u56fd": ["\u5357\u56fd", "\u306a\u3093\u3054\u304f", "southern country"], "\u5317\u90e8": ["\u5317\u90e8", "\u307b\u304f\u3076", "northern part"], "\u5de5\u696d": ["\u5de5\u696d", "\u3053\u3046\u304e\u3087\u3046", "industry"], "\u76db\u3093": ["\u76db\u3093", "\u3055\u304b\u3093", "vigorous; extensive"], "\u91cd\u5316\u5b66": ["\u91cd\u5316\u5b66", "\u3058\u3085\u3046\u304b\u304c\u304f", "heavy chemical (industry)"], "\u9020\u8239": ["\u9020\u8239", "\u305e\u3046\u305b\u3093", "shipbuilding"], "\u4e00\u6642": ["\u4e00\u6642", "", "temporarily"], "\u77f3\u6cb9": ["\u77f3\u6cb9", "", "oil; petroleum"], "\u91cd\u8981\u6027": ["\u91cd\u8981\u6027", "\u3058\u3085\u3046\u3088\u3046\u305b\u3044", "importance"], "\u304b\u306a\u308a": ["\u304b\u306a\u308a", "", "quite; rather"], "\u6e1b\u5c11": ["\u6e1b\u5c11", "\u3052\u3093\u3057\u3087\u3046", "decrease; reduction"], "\u77f3\u70ad": ["\u77f3\u70ad", "\u305b\u304d\u305f\u3093", "coal"], "\u8fd1\u3054\u308d": ["\u8fd1\u3054\u308d", "\u3061\u304b\u3054\u308d", "lately; recently"], "\u811a\u5149\u3092\u6d74\u3073\u308b": ["\u811a\u5149\u3092\u6d74\u3073\u308b", "\u304d\u3083\u3063\u3053\u3046\u3092\u3042\u3073\u308b", "to be in the limelight"], "\u811a\u5149\u3092\u6d74\u3073": ["\u811a\u5149\u3092\u6d74\u3073\u308b", "\u304d\u3083\u3063\u3053\u3046\u3092\u3042\u3073\u308b", "to be in the limelight"], "\u7159\u7a81": ["\u7159\u7a81", "\u3048\u3093\u3068\u3064", "chimney"], "\u3055\u305e\u3084": ["\u3055\u305e\u3084", "", "surely; indeed (usually \u3055\u305e)"], "\u7159\u305f\u3044": ["\u7159\u305f\u3044", "\u3051\u3080\u305f\u3044", "smoky"], "\u7159\u305f\u304b\u308d\u3046": ["\u7159\u305f\u3044", "\u3051\u3080\u305f\u3044", "smoky"], "\u4e09\u6c60": ["\u4e09\u6c60", "\u307f\u3044\u3051", "(place name)"], "\u70ad\u5751": ["\u70ad\u5751", "\u305f\u3093\u3053\u3046", "coal mine"], "\u7523\u51fa\u5730": ["\u7523\u51fa\u5730", "\u3055\u3093\u3057\u3085\u3064\u3061", "production area"], "\u72b6\u6cc1": ["\u72b6\u6cc1", "\u3058\u3087\u3046\u304d\u3087\u3046", "circumstances; situation"], "\u79d1\u5b66": ["\u79d1\u5b66", "\u304b\u304c\u304f", "science"], "\u767a\u5c55": ["\u767a\u5c55", "\u306f\u3063\u3066\u3093", "development; growth"], "\u751f\u304d\u65b9": ["\u751f\u304d\u65b9", "\u3044\u304d\u304b\u305f", "lifestyle"], "\u8208\u5473\u6df1\u3044": ["\u8208\u5473\u6df1\u3044", "\u304d\u3087\u3046\u307f\u3076\u304b\u3044", "deeply interesting"]};
+  var grammar_json = {"\u547c\u3070\u308c\u308b\u3088\u3046\u306b\u306a\u308a\u307e\u3057\u305f": ["V<SUB>3</SUB>/N\u306e + \u3088\u3046\u306b\u306a\u308b", "to come to be V/N<br>to become such that V/N", [["\u4e5d\u3068\u547c\u3070\u308c\u308b\u3088\u3046\u306b\u306a\u308a\u307e\u3057\u305f\u3002", "It came to be called Kyushu."], ["\u3084\u3063\u3068\u3001\u304a\u3055\u3051\u304c\u98f2\u3081\u308b\u3088\u3046\u306b\u306a\u308a\u307e\u3057\u305f\u3002", "At last I got so I could drink <i>sake</i>."], ["\u3042\u306e\u5148\u751f\u306e\u3088\u3046\u306b\u306a\u308a\u305f\u3044\u3002", "I want to become like that teacher."]]], "\u4e03\u770c\u3067\u3067\u304d\u3066\u3044\u307e\u3059": ["N\u3067\u3067\u304d\u3066\u3044\u308b", "to be made (up) of N", [["\u4e5d\u306f\u3001\u4e03\u770c\u3067\u3067\u304d\u3066\u3044\u308b\u3002", "The island of Kyushu is made up of seven prefectures."], ["\u3053\u306e\u304a\u304b\u3057\u306f\u3001\u4f55\u3067\u3067\u304d\u3066\u3044\u307e\u3059\u304b\u3002", "What is the candy made of?"], ["\u30ab\u30ca\u30c0\u306f\u3001\u5e83\u3044\u5e73\u91ce\u3068\u9ad8\u3044\u5c71\u8108\u3067\u3067\u304d\u3066\u3044\u308b\u3002", "Canada is made up of vast plains and tall mountains."]]], "\u3068\u3044\u3046\u3088\u3046\u306b": ["N\u3068\u3044\u3046\u3088\u3046\u306b", "such as N", [["\u963f\u8607\u3001\u9727\u5cf6\u3001\u685c\u5cf6\u3068\u3044\u3046\u3088\u3046\u306b\u3001\u6d3b\u706b\u5c71\u304c\u305f\u304f\u3055\u3093\u3042\u308a\u307e\u3059\u3002", "There are many live volcanoes such as Mount Aso, Mount Kirishima, and Mount Sakurajima."], ["\u30b8\u30e3\u30a4\u30a2\u30f3\u30c4\u306f\u3001\u5ddd\u4e0a\u3001\u9577\u5cf6\u3001\u738b\u3068\u3044\u3046\u3088\u3046\u306b\u3001\u6709\u540d\u306a\u9078\u624b\u3092\u305f\u304f\u3055\u3093\u3060\u3057\u305f\u3002", "The Tokyo Giants have produced many famous players, such as Kawakami, Nagashima, and Oh."], ["\u30cf\u30ef\u30a4\u306f\u30ef\u30a4\u30ad\u30ad\u3068\u304b\u30cf\u30ca\u30a6\u30de\u30d9\u30a4\u3068\u304b\u3044\u3046\u3088\u3046\u306b\u3001\u304d\u308c\u3044\u306a\u30d3\u30fc\u30c1\u304c\u305f\u304f\u3055\u3093\u3042\u308b\u3002", "Hawaii has many beautiful beaches such as Waikiki and Hanauma Bay."]]], "\u5c11\u306a\u304f\u3042\u308a\u307e\u305b\u3093": ["N\u304c\u5c11\u306a\u304f\u306a\u3044", "not a few N<br>quite a few N<br>many N", [["\u5546\u696d\u5316\u3057\u3059\u304e\u3066\u3057\u307e\u3063\u305f\u5c11\u306a\u304f\u3042\u308a\u307e\u305b\u3093\u3002", "There are not a few places that have become excessively commercialized."], ["\u3080\u304b\u3057\u6797\u3060\u3063\u305f\u304c\u3001\u4eca\u306f\u3001\u6728\u304c\u4e00\u672c\u3082\u306a\u304f\u306a\u3063\u3066\u3057\u307e\u3063\u305f\u6240\u3082\u5c11\u306a\u304f\u306a\u3044\u3002", "There are quite a few places that were forested in the past but where not a single tree grows today."]]], "\u3081\u305a\u3089\u3057\u304c\u3089\u308c\u307e\u3059": ["TA<SUB>stem</SUB> + \u304c\u308b", "to act like ...; to treat as ...;", [["\u305d\u3093\u306a\u306b\u5bd2\u304c\u3089\u306a\u304f\u3066\u3082\u3044\u3044\u3067\u3057\u3087\u3046\u3002", "You don't have to act like it's that cold."], ["\u3081\u305a\u3089\u3057\u304c\u3089\u308c\u307e\u3059\u3002", "It will be treated as something very rare."], ["\u307f\u3093\u306a\u3001\u3068\u3066\u3082\u304a\u3082\u3057\u308d\u304c\u3063\u3066\u3044\u307e\u3059\u3002", "Everyone acts like they're enjoying it very much."]]], "\u91cd\u8981\u306b\u306a\u308b\u304b\u3069\u3046\u304b\u306f\u5206\u304b\u308a\u307e\u305b\u3093": ["X\u304b\u3069\u3046\u304b\u5206\u304b\u3089\u306a\u3044", "to not know whether or not X", [["\u91cd\u8981\u306b\u306a\u308b\u304b\u3069\u3046\u304b\u5206\u304b\u308a\u307e\u305b\u3093\u3002", "I don't know whether or not it will become important."], ["\u3053\u308c\u306f\u3001\u3044\u3044\u4f8b\u304b\u3069\u3046\u304b\u5206\u304b\u308a\u307e\u305b\u3093\u3002", "I don't know whether or not this is a good example."], ["\u660e\u65e5\u3001\u96e8\u304c\u3075\u308b\u304b\u3069\u3046\u304b\u5206\u304b\u308a\u307e\u305b\u3093\u304b\u3002", "Do you know whether or not it will rain tomorrow?"]]], "\u4e09\u6c60\u70ad\u5751\u3092\u59cb\u3081\u3001\u305f\u304f\u3055\u3093\u306e\u70ad\u5751\u304c\u3042\u308a": ["X\u3092\u59cb\u3081\u3001Y\u304c\u3042\u308b", "there are (many) Y, such as/beginning with/especially X<br>a good example of Y is X", [["\u4e5d\u306f\u3001\u6709\u540d\u306a\u4e09\u6c60\u70ad\u3092\u59cb\u3081\u3001\u305f\u304f\u3055\u3093\u306e\u70ad\u304c\u3042\u308b\u3002", "Beginning with the famous Miike Mine, Kyushu has many mines."], ["\u5148\u751f\u65b9\u3092\u59cb\u3081\u3001\u307f\u306a\u3055\u307e\u65b9\u306e\u3054\u6069\u306f\u308f\u3059\u308c\u307e\u305b\u3093\u3002", "We will not forget the love that you, especially the teachers, have shown us."], ["\u65e5\u5149\u3092\u59cb\u3081\u3001\u3044\u308d\u3044\u308d\u306a\u6240\u3092\u898b\u7269\u3057\u3066\u304d\u307e\u3057\u305f\u3002", "We went to see various places such as Nikko."]]]};
+  var kanji_json = {"\u798f": ["", "\u30d5\u30af", "blessed; happy; good (news)", [["\u798f\u97f3\uff08\u3075\u304f\u3044\u3093\uff09", "the gospel"], ["\u5e78\u798f\uff08\u3053\u3046\u3075\u304f\uff09", "happiness"], ["\u795d\u798f\uff08\u3057\u3085\u304f\u3075\u304f\uff09", "a blessing"]]], "\u8cc0": ["", "\u30ac", "to celebrate; to rejoice; to be happy", [["\u5e74\u8cc0\uff08\u306d\u3093\u304c\uff09", "New Year's greetings"], ["\u8cc0\u8a5e\uff08\u304c\u3057\uff09", "a congratulatory message"], ["\u8cc0\u6b63\uff08\u304c\u3057\u3087\u3046\uff09", "Happy New Year! New Year's Greetings!"]]], "\u5bae": ["\u307f\u3084", "\u30ad\u30e5\u30a6\u30fb\u30b0\u30a6\u30fb\uff3b\u30af\uff3d", "shrine; mansion; palace; imperial family; imperial residence", [["\u5bae\u6bbf\uff08\u304d\u3085\u3046\u3067\u3093\uff09", "a palace"], ["\u795e\u5bae\uff08\u3058\u3093\u3050\u3046\uff09", "a Shinto shrine"], ["\u5bae\u57ce\uff08\u304d\u3085\u3046\u3058\u3087\u3046\uff09", "the Imperial Palace"]]], "\u770c": ["", "\u30b1\u30f3", "prefecture", [["\u770c\u55b6\uff08\u3051\u3093\u3048\u3044\uff09", "under prefectural management"], ["\u770c\u5e81\uff08\u3051\u3093\u3061\u3087\u3046\uff09", "a prefectural office"], ["\u770c\u7acb\uff08\u3051\u3093\u308a\u3064\uff09", "prefectural (government)"], ["\u770c\u9053\uff08\u3051\u3093\u3069\u3046\uff09", "a prefectural highway"]]], "\u9762": ["\u304a\u3082\u30fb\u304a\u3082\u3066\u30fb\u3064\u3089", "\u30e1\u30f3", "face; surface; front; aspect; side", [["\u65b9\u9762\uff08\u307b\u3046\u3081\u3093\uff09", "a district, a direction"], ["\u76f4\u9762\uff08\u3061\u3087\u304f\u3081\u3093\uff09", "face, confront"], ["\u8868\u9762\uff08\u3072\u3087\u3046\u3081\u3093\uff09", "the surface"], ["\u524d\u9762\uff08\u305c\u3093\u3081\u3093\uff09", "all out; overall"]]], "\u7a4d": ["\u3064\uff08\u3080\uff09\u30fb\u3064\uff08\u3082\u308b\uff09", "\u30bb\u30ad", "to pile up; width; bulk; quantity", [["\u9762\u7a4d\uff08\u3081\u3093\u305b\u304d\uff09", "area"], ["\u7a4d\u6975\u7684\u306a\uff08\u305b\u3063\u304d\u3087\u304f\u3066\u304d\u306a\uff09", "positive, active"], ["\u5bb9\u7a4d\uff08\u3088\u3046\u305b\u304d\uff09", "capacity, bulk"], ["\u7a4d\u96ea\uff08\u305b\u304d\u305b\u3064\uff09", "fallen snow"], ["\u5c71\u7a4d\uff08\u3055\u3093\u305b\u304d\uff09", "lie in piles, accumulate"]]], "\u6e29": ["\u3042\u305f\u305f\uff08\u304b\u3044\uff09\u30fb\u3042\u305f\u305f\uff08\u307e\u308b\uff09\u30fb\u3042\u305f\u305f\uff08\u3081\u308b\uff09", "\u30aa\u30f3", "warm; to become warm; to make warm; calm; temperature", [["\u6e29\u5ea6\uff08\u304a\u3093\u3069\uff09", "temperature"], ["\u6e29\u6cc9\uff08\u304a\u3093\u305b\u3093\uff09", "a hot spring"], ["\u4f53\u6e29\uff08\u305f\u3044\u304a\u3093\uff09", "body temperature"], ["\u6e29\u5e2f\uff08\u304a\u3093\u305f\u3044\uff09", "temperate zone"]]], "\u5e9c": ["", "\u30d5", "urban prefecture; capital; city", [["\u5e9c\u5e81\uff08\u3075\u3061\u3087\u3046\uff09", "a prefectural office"], ["\u5e9c\u7acb\uff08\u3075\u308a\u3064\uff09", "prefectural"], ["\u9996\u5e9c\uff08\u3057\u3085\u3075\uff09", "a capital"], ["\u5e55\u5e9c\uff08\u3070\u304f\u3075\uff09", "the Shogunate"], ["\u653f\u5e9c\uff08\u305b\u3044\u3075\uff09", "the government"]]], "\u89b3": ["", "\u30ab\u30f3", "to look, see; view; idea", [["\u89b3\u5149\uff08\u304b\u3093\u3053\u3046\uff09", "sight-seeing"], ["\u89b3\u5bdf\uff08\u304b\u3093\u3055\u3064\uff09", "observation"], ["\u89b3\u5ba2\uff08\u304b\u3093\u304d\u3083\u304f\uff09", "a spectator, the audience"]]], "\u96c6": ["\u3042\u3064\uff08\u307e\u308b\uff09\u30fb\u3042\u3064\uff08\u3081\u308b\uff09\u30fb\u3064\u3069\uff08\u3046\uff09", "\u30b7\u30e5\u30a6", "to gather; to meet together", [["\u96c6\u56e3\uff08\u3057\u3085\u3046\u3060\u3093\uff09", "a group"], ["\u7de8\u96c6\uff08\u3078\u3093\u3057\u3085\u3046\uff09", "editing"], ["\u96c6\u4e2d\uff08\u3057\u3085\u3046\u3061\u3085\u3046\uff09", "concentration"], ["\u96c6\u4f1a\uff08\u3057\u3085\u3046\u304b\u3044\uff09", "a meeting, a gathering"]]], "\u5546": ["\u3042\u304d\u306a\uff08\u3046\uff09", "\u30b7\u30e7\u30a6", "to sell; business; commercial", [["\u5546\u696d\uff08\u3057\u3087\u3046\u304e\u3087\u3046\uff09", "commerce, business"], ["\u5546\u58f2\uff08\u3057\u3087\u3046\u3070\u3044\uff09", "trade, business"], ["\u5546\u54c1\uff08\u3057\u3087\u3046\u3072\u3093\uff09", "a commodity, goods"], ["\u5546\u5e97\uff08\u3057\u3087\u3046\u3066\u3093\uff09", "a shop, a store"]]], "\u696d": ["\u308f\u3056", "\u30ae\u30e7\u30a6\u30fb\u30b4\u30a6", "job; work; business; learning", [["\u5de5\u696d\uff08\u304d\u3087\u304e\u3087\u3046\uff09", "industries"], ["\u7523\u696d\uff08\u3055\u3093\u304e\u3087\u3046\uff09", "industry"], ["\u4f01\u696d\uff08\u304d\u304e\u3087\u3046\uff09", "an enterprise"], ["\u5931\u696d\uff08\u3057\u3064\u304e\u3087\u3046\uff09", "unemployment"]]], "\u5019": ["\u305d\u3046\u308d\u3046", "\u30b3\u30a6", "classical verbal ending equivalent to -\u307e\u3059; weather; season; to look for; to desire; to search; state of affairs; sign, indication", [["\u5019\u6587\uff08\u305d\u3046\u308d\u3046\u3076\u3093\uff09", "the Soro style (a very polite form)"], ["\u6c17\u5019\uff08\u304d\u3053\u3046\uff09", "climate"], ["\u5019\u88dc\uff08\u3053\u3046\u307b\uff09", "candidacy"], ["\u6642\u5019\uff08\u3058\u3053\u3046\uff09", "weather, the season"]]], "\u83dc": ["\u306a", "\u30b5\u30a4", "vegetable, greens", [["\u9752\u83dc\uff08\u3042\u304a\u306a\uff09", "greens"], ["\u83dc\u98df\uff08\u3055\u3044\u3057\u3087\u304f\uff09", "a vegetarian diet"], ["\u767d\u83dc\uff08\u306f\u304f\u3055\u3044\uff09", "a Chinese cabbage"], ["\u83dc\u5712\uff08\u3055\u3044\u3048\u3093\uff09", "a vegetable garden"], ["\u91ce\u83dc\uff08\u3084\u3055\u3044\uff09", "vegetables"]]], "\u679c": ["\u306f\uff08\u305f\u3059\uff09\u30fb\u306f\uff08\u3066\u308b\uff09\u30fb\u306f\uff08\u3066\uff09", "\u30ab", "to achieve; to come to an end; the end; fruit", [["\u679c\u5b9f\uff08\u304b\u3058\u3064\uff09", "fruit"], ["\u52b9\u679c\uff08\u3053\u3046\u304b\uff09", "an effect"], ["\u7d50\u679c\uff08\u3051\u3063\u304b\uff09", "a result, an outcome"], ["\u203b\u679c\u7269\uff08\u304f\u3060\u3082\u306e\uff09", "fruit"]]], "\u671f": ["", "\u30ad\u30fb\uff3b\u30b4\uff3d", "once around; time; time interval; period; to wait", [["\u671f\u672b\uff08\u304d\u307e\u3064\uff09", "the end of the term"], ["\u65e9\u671f\uff08\u305d\u3046\u304d\uff09", "an early stage"], ["\u521d\u671f\uff08\u3057\u3087\u304d\uff09", "the first stage"], ["\u6642\u671f\uff08\u3058\u304d\uff09", "time, a period, season"], ["\u671f\u5f85\uff08\u304d\u305f\u3044\uff09", "expectations, anticipation"]]], "\u5404": ["\u304a\u306e\u304a\u306e", "\u30ab\u30af", "each; every", [["\u5404\u56fd\uff08\u304b\u3063\u3053\u304f\uff09", "every (each) country"], ["\u5404\u5730\uff08\u304b\u304f\u3061\uff09", "each (every) place"], ["\u5404\u7a2e\uff08\u304b\u304f\u3057\u3085\uff09", "various, all sorts"], ["\u5404\u81ea\uff08\u304b\u304f\u3058\uff09", "each (every) one"]]], "\u9001": ["\u304a\u304f\uff08\u308b\uff09", "\u30bd\u30a6", "to send; to dispatch", [["\u653e\u9001\uff08\u307b\u3046\u305d\u3046\uff09", "broadcast"], ["\u8f38\u9001\uff08\u3086\u305d\u3046\uff09", "transportation, shipping"], ["\u9001\u5225\uff08\u305d\u3046\u3079\u3064\uff09", "a send-off"], ["\u9001\u5225\u4f1a\uff08\u305d\u3046\u3079\u3064\u304b\u3044\uff09", "a farewell party"]]], "\u5ead": ["\u306b\u308f", "\u30c6\u30a4", "garden; yard", [["\u6821\u5ead\uff08\u3053\u3046\u3066\u3044\uff09", "the school grounds"], ["\u88cf\u5ead\uff08\u3046\u3089\u306b\u308f\uff09", "the back yard"], ["\u5ead\u5712\uff08\u3066\u3044\u3048\u3093\uff09", "a garden"], ["\u5ead\u7403\uff08\u3066\u3044\u304d\u3085\u3046\uff09", "tennis"], ["\u5bb6\u5ead\uff08\u304b\u3066\u3044\uff09", "the home, family"]]], "\u71b1": ["\u3042\u3064\uff08\u3044\uff09", "\u30cd\u30c4", "hot; to heat; heat; fever; with all one's might", [["\u71b1\u5e2f\uff08\u306d\u3063\u305f\u3044\uff09", "the tropics"], ["\u71b1\u610f\uff08\u306d\u3064\u3044\uff09", "zeal, eagerness"], ["\u71b1\u5fc3\u306a\uff08\u306d\u3063\u3057\u3093\u306a\uff09", "zealous, enthusiastic"]]], "\u5e2f": ["\u304a\uff08\u3073\u308b\uff09\u30fb\u304a\u3073", "\u30bf\u30a4", "to hold, to have; belt, sash, <i>obi</i>; to wear on the waist", [["\u4e00\u5e2f\uff08\u3044\u3063\u305f\u3044\uff09", "all over the district"], ["\u5730\u5e2f\uff08\u3061\u305f\u3044\uff09", "a zone, a region"], ["\u5e2f\u5200\uff08\u305f\u3044\u3068\u3046\uff09", "wear a sword"], ["\u5e2f\u96fb\uff08\u305f\u3044\u3067\u3093\uff09", "electrified, charged with electricity"]]], "\u690d": ["\u3046\uff08\u3048\u308b\uff09\u30fb\u3046\uff08\u308f\u308b\uff09", "\u30b7\u30e7\u30af", "to plant; to be planted; plants; to fix or establish in a place", [["\u79fb\u690d\uff08\u3044\u3057\u3087\u304f\uff09", "transplant"], ["\u690d\u6c11\u5730\uff08\u3057\u3087\u304f\u307f\u3093\u3061\uff09", "a colony"], ["\u690d\u7269\uff08\u3057\u3087\u304f\u3076\u3064\uff09", "a (vegetable) plant"], ["\u690d\u6728\uff08\u3046\u3048\u304d\uff09", "a potted plant"], ["\u690d\u6a39\u796d\uff08\u3057\u3087\u304f\u3058\u3085\u3055\u3044\uff09", "Arbor Day"]]], "\u6cb9": ["\u3042\u3076\u3089", "\u30e6", "oil", [["\u6cb9\u8102\uff08\u3086\u3057\uff09", "oils and fats"], ["\u6cb9\u7530\uff08\u3086\u3067\u3093\uff09", "an oil field"], ["\u77f3\u6cb9\uff08\u305b\u304d\u3086\uff09", "petroleum"], ["\u706f\u6cb9\uff08\u3068\u3046\u3086\uff09", "lamp oil, kerosene"], ["\u6cb9\u7d75\uff08\u3042\u3076\u3089\u3048\uff09", "an oil painting"]]], "\u6e1b": ["\u3078\uff08\u308b\uff09\u30fb\u3078\uff08\u3089\u3059\uff09", "\u30b2\u30f3", "to decrease, diminish; to subside, abate, recede", [["\u534a\u6e1b\uff08\u306f\u3093\u3052\u3093\uff09", "reduce by half"], ["\u6e1b\u91cf\uff08\u3052\u3093\u308a\u3087\u3046\uff09", "a loss in quantity"], ["\u6e1b\u5c11\uff08\u3052\u3093\u3057\u3087\u3046\uff09", "a decrease"], ["\u5897\u6e1b\uff08\u305d\u3046\u3052\u3093\uff09", "an increase or decrease, rise and fall"]]], "\u70ad": ["\u3059\u307f", "\u30bf\u30f3", "charcoal, coal", [["\u70ad\u7d20\uff08\u305f\u3093\u305d\uff09", "carbon"], ["\u77f3\u70ad\uff08\u305b\u304d\u305f\u3093\uff09", "coal"], ["\u70ad\u5c64\uff08\u305f\u3093\u305d\u3046\uff09", "a coal seam"], ["\u70ad\u7530\uff08\u305f\u3093\u3067\u3093\uff09", "a coal field"], ["\u70ad\u706b\uff08\u3059\u307f\u3073\uff09", "charcoal fire"]]], "\u7523": ["\u3046\uff08\u3080\uff09\u30fb\u3046\uff08\u307e\u308c\u308b\uff09\u30fb\u3046\u3076", "\u30b5\u30f3", "to bear children; to be produced; birthing, to manufacture; make/produce", [["\u7523\u696d\uff08\u3055\u3093\u304e\u3087\u3046\uff09", "industry"], ["\u7523\u51fa\uff08\u3055\u3093\u3057\u3085\u3064\uff09", "production"], ["\u8ca1\u7523\uff08\u3056\u3044\u3055\u3093\uff09", "estate, fortune, assets"], ["\u751f\u7523\uff08\u305b\u3044\u3055\u3093\uff09", "production"], ["\u5171\u7523\u515a\uff08\u304d\u3087\u3046\u3055\u3093\u3068\u3046\uff09", "the Communist Party"]]], "\u6d74": ["\u3042\uff08\u3073\u308b\uff09\u30fb\u3042\uff08\u3073\u305b\u308b\uff09", "\u30e8\u30af", "to take a bath", [["\u6d77\u6c34\u6d74\uff08\u304b\u3044\u3059\u3044\u3088\u304f\uff09", "sea bathing"], ["\u5165\u6d74\uff08\u306b\u3085\u3046\u3088\u304f\uff09", "taking a bath"], ["\u6d74\u5ba4\uff08\u3088\u304f\u3057\u3064\uff09", "a bathroom"], ["\u6d74\u5834\uff08\u3088\u304f\u3058\u3087\u3046\uff09", "a bath; a public bathhouse"], ["\u203b\u6d74\u8863\uff08\u3086\u304b\u305f\uff09", "a bathrobe"]]], "\u72b6": ["", "\u30b8\u30e7\u30a6", "form; figure; shape; condition; note, memo", [["\u767d\u72b6\uff08\u306f\u304f\u3058\u3087\u3046\uff09", "confess, acknowledge (a crime)"], ["\u72b6\u6cc1\uff08\u3058\u3087\u3046\u304d\u3087\u3046\uff09", "the situation"], ["\u73fe\u72b6\uff08\u3052\u3093\u3058\u3087\u3046\uff09", "the present, actual condition"], ["\u72b6\u614b\uff08\u3058\u3087\u3046\u305f\u3044\uff09", "a state of affairs, a condition"]]], "\u8208": ["\u304a\u3053\uff08\u308b\uff09\u30fb\u304a\u3053\uff08\u3059\uff09", "\u30ad\u30e7\u30a6\u30fb\u30b3\u30a6", "to rise; to raise, lift; to pull up; to revive; interest", [["\u8208\u5473\uff08\u304d\u3087\u3046\u307f\uff09", "an interest"], ["\u8208\u596e\uff08\u3053\u3046\u3075\u3093\uff09", "excitement"], ["\u5fa9\u8208\uff08\u3075\u3063\u3053\u3046\uff09", "revival, reconstruction"]]]};
+  </script>
+  <div class="block title">九州</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/17-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="17-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-001" class="fas fa-play"></i>
+        <audio id="audio_17-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むかし、九州は、筑紫の島よ呼ばれました。</span>
+        <span class="content-sent kanji-sent is-hidden">むかし、九州は、筑紫の島よ呼ばれました。</span>
+        <span class="content-sent plain-sent is-hidden">むかし、九州は、筑紫の島よ呼ばれました。</span>
+        <span class="content-sent vocab-sent">むかし、九州は、筑紫の島よ呼ばれました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Long ago, Kyushu was called &quot;the island of Tsukushi.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="17-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-002" class="fas fa-play"></i>
+        <audio id="audio_17-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「つくし」という言葉は、きっと、「つきる」という言葉から来たもので、</span>
+        <span class="content-sent kanji-sent is-hidden">「つくし」という言葉は、きっと、「つきる」という言葉から来たもので、</span>
+        <span class="content-sent plain-sent is-hidden">「つくし」という言葉は、きっと、「つきる」という言葉から来たもので、</span>
+        <span class="content-sent vocab-sent">「つくし」という言葉は、きっと、「<a onclick="show_vocab_data('つきる')">つきる</a>」という言葉から来たもので、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The word &quot;Tsukushi&quot; certainly comes from the word &quot;tsukiru&quot; (to come to an end, to terminate),</span>
+      </td>
+    </tr>
+
+    <tr id="17-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-003" class="fas fa-play"></i>
+        <audio id="audio_17-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本列島の「つきる」所にあるので、筑紫の島と呼ばれたのだろうと言われています。</span>
+        <span class="content-sent kanji-sent is-hidden">日本列島の「つきる」所にあるので、筑紫の島と呼ばれたのだろうと言われています。</span>
+        <span class="content-sent plain-sent is-hidden">日本列島の「つきる」所にあるので、筑紫の島と呼ばれたのだろうと言われています。</span>
+        <span class="content-sent vocab-sent">日本列島の「<a onclick="show_vocab_data('つきる')">つきる</a>」所にあるので、筑紫の島と呼ばれたのだろうと言われています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and it&#39;s said Kyushu probably came to be called &quot;the island of Tsukushi&quot; because it&#39;s at the &quot;end&quot; of the Japanese archipelago.</span>
+      </td>
+    </tr>
+
+    <tr id="17-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-004" class="fas fa-play"></i>
+        <audio id="audio_17-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">八世紀ごろに、この筑紫の島に、九つの国があったことから、</span>
+        <span class="content-sent kanji-sent is-hidden">八世紀ごろに、この筑紫の島に、九つの国があったことから、</span>
+        <span class="content-sent plain-sent is-hidden">八世紀ごろに、この筑紫の島に、九つの国があったことから、</span>
+        <span class="content-sent vocab-sent">八世紀ごろに、この筑紫の島に、九つの国があったことから、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Because of the fact that around the eighth century, on the island of Tsukushi, there were nine countries,</span>
+      </td>
+    </tr>
+
+    <tr id="17-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-005" class="fas fa-play"></i>
+        <audio id="audio_17-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この島は、現在のように九州と<a onclick="show_grammar_data('呼ばれるようになりました')">呼ばれるようになりました</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">この島は、現在のように九州と呼ばれるようになりました。</span>
+        <span class="content-sent plain-sent is-hidden">この島は、現在のように九州と呼ばれるようになりました。</span>
+        <span class="content-sent vocab-sent">この島は、現在のように九州と呼ばれるようになりました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">this island came to be called &quot;Kyushu&quot; (&quot;nine states&quot;), as it is today.</span>
+      </td>
+    </tr>
+
+    <tr id="17-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-006" class="fas fa-play"></i>
+        <audio id="audio_17-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">現在は、福岡、佐賀、長崎、大分、熊本、宮崎、鹿児島、の<a onclick="show_grammar_data('七県でできています')">七県でできています</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">現在は、<a onclick="show_kanji_data('福')">福</a>岡、佐<a onclick="show_kanji_data('賀')">賀</a>、長崎、大分、熊本、<a onclick="show_kanji_data('宮')">宮</a>崎、鹿児島、の七<a onclick="show_kanji_data('県')">県</a>でできています。</span>
+        <span class="content-sent plain-sent is-hidden">現在は、福岡、佐賀、長崎、大分、熊本、宮崎、鹿児島、の七県でできています。</span>
+        <span class="content-sent vocab-sent">現在は、福岡、佐賀、長崎、大分、熊本、宮崎、鹿児島、の七県でできています。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nowadays, Kyushu is made up of seven prefectures (&quot;ken&quot;): Fukuoka, Saga, Nagasaki, Oita, Kumamoto, Miyazaki, and Kagoshima.</span>
+      </td>
+    </tr>
+
+    <tr id="17-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-007" class="fas fa-play"></i>
+        <audio id="audio_17-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">九州の面積は、41,969.5平方キロメートルで、</span>
+        <span class="content-sent kanji-sent is-hidden">九州の<a onclick="show_kanji_data('面')">面</a><a onclick="show_kanji_data('積')">積</a>は、41,969.5平方キロメートルで、</span>
+        <span class="content-sent plain-sent is-hidden">九州の面積は、41,969.5平方キロメートルで、</span>
+        <span class="content-sent vocab-sent">九州の<a onclick="show_vocab_data('面積')">面積</a>は、41,969.5<a onclick="show_vocab_data('平方')">平方</a>キロメートルで、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The area of Kyushu is 41,969.5 square kilometers,</span>
+      </td>
+    </tr>
+
+    <tr id="17-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-008" class="fas fa-play"></i>
+        <audio id="audio_17-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ちょうどアメリカのカリフォルニア州の十分の一ぐらいの大きさです。</span>
+        <span class="content-sent kanji-sent is-hidden">ちょうどアメリカのカリフォルニア州の十分の一ぐらいの大きさです。</span>
+        <span class="content-sent plain-sent is-hidden">ちょうどアメリカのカリフォルニア州の十分の一ぐらいの大きさです。</span>
+        <span class="content-sent vocab-sent">ちょうどアメリカのカリフォルニア州の<a onclick="show_vocab_data('十分の一')">十分の一</a>ぐらいの大きさです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">which is just about one-tenth the size of California in the United States.</span>
+      </td>
+    </tr>
+
+    <tr id="17-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-009" class="fas fa-play"></i>
+        <audio id="audio_17-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">九州は、火山が多いので有名で、阿蘇、霧島、桜島<a onclick="show_grammar_data('というように')">というように</a>活火山がたくさんあります。</span>
+        <span class="content-sent kanji-sent is-hidden">九州は、火山が多いので有名で、阿蘇、霧島、桜島というように活火山がたくさんあります。</span>
+        <span class="content-sent plain-sent is-hidden">九州は、火山が多いので有名で、阿蘇、霧島、桜島というように活火山がたくさんあります。</span>
+        <span class="content-sent vocab-sent">九州は、<a onclick="show_vocab_data('火山')">火山</a>が多いので有名で、阿蘇、霧島、桜島というように<a onclick="show_vocab_data('活')">活</a><a onclick="show_vocab_data('火山')">火山</a>がたくさんあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Kyushu is famous for having many volcanoes, and there are many active volcanoes such as Aso, Kirishima, and Sakurajima.</span>
+      </td>
+    </tr>
+
+    <tr id="17-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-010" class="fas fa-play"></i>
+        <audio id="audio_17-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そのため、有名な温泉もあちらこちらにあり、</span>
+        <span class="content-sent kanji-sent is-hidden">そのため、有名な<a onclick="show_kanji_data('温')">温</a>泉もあちらこちらにあり、</span>
+        <span class="content-sent plain-sent is-hidden">そのため、有名な温泉もあちらこちらにあり、</span>
+        <span class="content-sent vocab-sent">そのため、有名な<a onclick="show_vocab_data('温泉')">温泉</a>もあちらこちらにあり、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Because of this, there are famous hot springs here and there,</span>
+      </td>
+    </tr>
+
+    <tr id="17-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-011" class="fas fa-play"></i>
+        <audio id="audio_17-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">別府や雲仙は、日本の温泉の中でも代表的なものです。</span>
+        <span class="content-sent kanji-sent is-hidden">別<a onclick="show_kanji_data('府')">府</a>や雲仙は、日本の<a onclick="show_kanji_data('温')">温</a>泉の中でも代表的なものです。</span>
+        <span class="content-sent plain-sent is-hidden">別府や雲仙は、日本の温泉の中でも代表的なものです。</span>
+        <span class="content-sent vocab-sent">別府や雲仙は、日本の<a onclick="show_vocab_data('温泉')">温泉</a>の中でも<a onclick="show_vocab_data('代表的な')">代表的な</a>ものです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">including Beppu and Unzen, which are representative even among all of Japan&#39;s hot springs.</span>
+      </td>
+    </tr>
+
+    <tr id="17-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-012" class="fas fa-play"></i>
+        <audio id="audio_17-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ただ、観光客集めのために、商業化しすぎてしまった所も<a onclick="show_grammar_data('少なくありません')">少なくありません</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">ただ、<a onclick="show_kanji_data('観')">観</a>光客<a onclick="show_kanji_data('集')">集</a>めのために、<a onclick="show_kanji_data('商')">商</a><a onclick="show_kanji_data('業')">業</a>化しすぎてしまった所も少なくありません。</span>
+        <span class="content-sent plain-sent is-hidden">ただ、観光客集めのために、商業化しすぎてしまった所も少なくありません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ただ')">ただ</a>、<a onclick="show_vocab_data('観光客')">観光客</a>集めのために、<a onclick="show_vocab_data('商業化')">商業化</a>しすぎてしまった所も<a onclick="show_vocab_data('少なくありません')">少なくありません</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The only problem is that there are also not a few of these places which have been over-commercialized in the effort to attract tourists.</span>
+      </td>
+    </tr>
+
+    <tr id="17-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-013" class="fas fa-play"></i>
+        <audio id="audio_17-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">南の島、九州は、温暖な気候に恵まれ、野菜や果物がよくとれます。</span>
+        <span class="content-sent kanji-sent is-hidden">南の島、九州は、<a onclick="show_kanji_data('温')">温</a>暖な気<a onclick="show_kanji_data('候')">候</a>に恵まれ、野<a onclick="show_kanji_data('菜')">菜</a>や<a onclick="show_kanji_data('果')">果</a>物がよくとれます。</span>
+        <span class="content-sent plain-sent is-hidden">南の島、九州は、温暖な気候に恵まれ、野菜や果物がよくとれます。</span>
+        <span class="content-sent vocab-sent">南の島、九州は、<a onclick="show_vocab_data('温暖な')">温暖な</a>気候に<a onclick="show_vocab_data('恵まれ')">恵まれ</a>、<a onclick="show_vocab_data('野菜')">野菜</a>や<a onclick="show_vocab_data('果物')">果物</a>がよくとれます。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The southern island, Kyushu, is blessed with a warm climate, and many vegetables and fruits are produced.</span>
+      </td>
+    </tr>
+
+    <tr id="17-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-014" class="fas fa-play"></i>
+        <audio id="audio_17-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">特に、野菜の早期裁培は有名で、</span>
+        <span class="content-sent kanji-sent is-hidden">特に、野<a onclick="show_kanji_data('菜')">菜</a>の早<a onclick="show_kanji_data('期')">期</a>裁培は有名で、</span>
+        <span class="content-sent plain-sent is-hidden">特に、野菜の早期裁培は有名で、</span>
+        <span class="content-sent vocab-sent">特に、<a onclick="show_vocab_data('野菜')">野菜</a>の<a onclick="show_vocab_data('早期')">早期</a><a onclick="show_vocab_data('裁培')">裁培</a>は有名で、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In particular, early cultivation of vegetables is famous,</span>
+      </td>
+    </tr>
+
+    <tr id="17-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-015" class="fas fa-play"></i>
+        <audio id="audio_17-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">早くとれた野菜は、各地に送られて、日本中の家庭の食卓で<a onclick="show_grammar_data('めずらしがられます')">めずらしがられます</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">早くとれた野<a onclick="show_kanji_data('菜')">菜</a>は、<a onclick="show_kanji_data('各')">各</a>地に<a onclick="show_kanji_data('送')">送</a>られて、日本中の家<a onclick="show_kanji_data('庭')">庭</a>の食卓でめずらしがられます。</span>
+        <span class="content-sent plain-sent is-hidden">早くとれた野菜は、各地に送られて、日本中の家庭の食卓でめずらしがられます。</span>
+        <span class="content-sent vocab-sent">早くとれた<a onclick="show_vocab_data('野菜')">野菜</a>は、<a onclick="show_vocab_data('各地')">各地</a>に送られて、日本中の家庭の<a onclick="show_vocab_data('食卓')">食卓</a>でめずらしがられます。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and these vegetables which are harvested early are sent to all parts of the country and are considered delicacies on dinner tables throughout Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="17-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-016" class="fas fa-play"></i>
+        <audio id="audio_17-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">九州の南端では、熱帯性植物もでき、バナナやパイナップルやサトウキビなどがとれて、</span>
+        <span class="content-sent kanji-sent is-hidden">九州の南端では、<a onclick="show_kanji_data('熱')">熱</a><a onclick="show_kanji_data('帯')">帯</a>性<a onclick="show_kanji_data('植')">植</a>物もでき、バナナやパイナップルやサトウキビなどがとれて、</span>
+        <span class="content-sent plain-sent is-hidden">九州の南端では、熱帯性植物もでき、バナナやパイナップルやサトウキビなどがとれて、</span>
+        <span class="content-sent vocab-sent">九州の<a onclick="show_vocab_data('南端')">南端</a>では、<a onclick="show_vocab_data('熱帯性')">熱帯性</a><a onclick="show_vocab_data('植物')">植物</a>もでき、バナナやパイナップルや<a onclick="show_vocab_data('サトウキビ')">サトウキビ</a>などがとれて、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On the southern edge of Kyushu, tropical plants grow, and things like bananas, pineapples, and sugar are harvested,</span>
+      </td>
+    </tr>
+
+    <tr id="17-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-017" class="fas fa-play"></i>
+        <audio id="audio_17-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本というよりも、南国のハワイを思わせる所もあります。</span>
+        <span class="content-sent kanji-sent is-hidden">日本というよりも、南国のハワイを思わせる所もあります。</span>
+        <span class="content-sent plain-sent is-hidden">日本というよりも、南国のハワイを思わせる所もあります。</span>
+        <span class="content-sent vocab-sent">日本というよりも、<a onclick="show_vocab_data('南国')">南国</a>のハワイを思わせる所もあります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">and there are places which remind one, more than Japan, of the southern land of Hawaii.</span>
+      </td>
+    </tr>
+
+    <tr id="17-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-018" class="fas fa-play"></i>
+        <audio id="audio_17-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、九州の北部では工業が盛んで、北九州の重化学工業、長崎の造船業など、</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、九州の北部では工<a onclick="show_kanji_data('業')">業</a>が盛んで、北九州の重化学工<a onclick="show_kanji_data('業')">業</a>、長崎の造船<a onclick="show_kanji_data('業')">業</a>など、</span>
+        <span class="content-sent plain-sent is-hidden">しかし、九州の北部では工業が盛んで、北九州の重化学工業、長崎の造船業など、</span>
+        <span class="content-sent vocab-sent">しかし、九州の<a onclick="show_vocab_data('北部')">北部</a>では<a onclick="show_vocab_data('工業')">工業</a>が<a onclick="show_vocab_data('盛ん')">盛ん</a>で、北九州の<a onclick="show_vocab_data('重化学')">重化学</a><a onclick="show_vocab_data('工業')">工業</a>、長崎の<a onclick="show_vocab_data('造船')">造船</a>業など、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">However, in the northern part of Kyushu there is extensive industry, and with things like the heavy chemical industry of Kitakyushu and the shipbuilding industry of Nagasaki,</span>
+      </td>
+    </tr>
+
+    <tr id="17-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-019" class="fas fa-play"></i>
+        <audio id="audio_17-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">日本でも大切な工業地帯があります。</span>
+        <span class="content-sent kanji-sent is-hidden">日本でも大切な工<a onclick="show_kanji_data('業')">業</a>地<a onclick="show_kanji_data('帯')">帯</a>があります。</span>
+        <span class="content-sent plain-sent is-hidden">日本でも大切な工業地帯があります。</span>
+        <span class="content-sent vocab-sent">日本でも大切な<a onclick="show_vocab_data('工業')">工業</a>地帯があります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">there is an industrial belt which is important even on a national scale.</span>
+      </td>
+    </tr>
+
+    <tr id="17-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-020" class="fas fa-play"></i>
+        <audio id="audio_17-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">一時、石油におされて、重要性がかなり減少した石炭が、</span>
+        <span class="content-sent kanji-sent is-hidden">一時、石<a onclick="show_kanji_data('油')">油</a>におされて、重要性がかなり<a onclick="show_kanji_data('減')">減</a>少した石<a onclick="show_kanji_data('炭')">炭</a>が、</span>
+        <span class="content-sent plain-sent is-hidden">一時、石油におされて、重要性がかなり減少した石炭が、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('一時')">一時</a>、<a onclick="show_vocab_data('石油')">石油</a>におされて、<a onclick="show_vocab_data('重要性')">重要性</a>が<a onclick="show_vocab_data('かなり')">かなり</a><a onclick="show_vocab_data('減少')">減少</a>した<a onclick="show_vocab_data('石炭')">石炭</a>が、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Coal, which for a time was pushed out by petroleum and lost much of its importance,</span>
+      </td>
+    </tr>
+
+    <tr id="17-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-021" class="fas fa-play"></i>
+        <audio id="audio_17-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また近ごろ脚光を浴び始めたのは、おもしろいことだと思います。</span>
+        <span class="content-sent kanji-sent is-hidden">また近ごろ脚光を<a onclick="show_kanji_data('浴')">浴</a>び始めたのは、おもしろいことだと思います。</span>
+        <span class="content-sent plain-sent is-hidden">また近ごろ脚光を浴び始めたのは、おもしろいことだと思います。</span>
+        <span class="content-sent vocab-sent">また<a onclick="show_vocab_data('近ごろ')">近ごろ</a><a onclick="show_vocab_data('脚光を浴び')">脚光を浴び</a>始めたのは、おもしろいことだと思います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">has recently begun to be in the spotlight again, which I find interesting.</span>
+      </td>
+    </tr>
+
+    <tr id="17-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-022" class="fas fa-play"></i>
+        <audio id="audio_17-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">九州は、「・・・あんまり煙突が高いので、さぞやお月さん煙たかろう。」</span>
+        <span class="content-sent kanji-sent is-hidden">九州は、「・・・あんまり煙突が高いので、さぞやお月さん煙たかろう。」</span>
+        <span class="content-sent plain-sent is-hidden">九州は、「・・・あんまり煙突が高いので、さぞやお月さん煙たかろう。」</span>
+        <span class="content-sent vocab-sent">九州は、「・・・あんまり<a onclick="show_vocab_data('煙突')">煙突</a>が高いので、<a onclick="show_vocab_data('さぞや')">さぞや</a>お月さん<a onclick="show_vocab_data('煙たかろう')">煙たかろう</a>。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;...the chimneys are so tall, that surely even the moon is smoky&quot;,</span>
+      </td>
+    </tr>
+
+    <tr id="17-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-023" class="fas fa-play"></i>
+        <audio id="audio_17-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と歌に歌われた<a onclick="show_grammar_data('三池炭坑を始め、たくさんの炭坑があり')">三池炭坑を始め、たくさんの炭坑があり</a>、日本の主な石炭産出地でした。</span>
+        <span class="content-sent kanji-sent is-hidden">と歌に歌われた三池<a onclick="show_kanji_data('炭')">炭</a>坑を始め、たくさんの<a onclick="show_kanji_data('炭')">炭</a>坑があり、日本の主な石<a onclick="show_kanji_data('炭')">炭</a><a onclick="show_kanji_data('産')">産</a>出地でした。</span>
+        <span class="content-sent plain-sent is-hidden">と歌に歌われた三池炭坑を始め、たくさんの炭坑があり、日本の主な石炭産出地でした。</span>
+        <span class="content-sent vocab-sent">と歌に歌われた<a onclick="show_vocab_data('三池')">三池</a><a onclick="show_vocab_data('炭坑')">炭坑</a>を始め、たくさんの<a onclick="show_vocab_data('炭坑')">炭坑</a>があり、日本の主な<a onclick="show_vocab_data('石炭')">石炭</a><a onclick="show_vocab_data('産出地')">産出地</a>でした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">sings the song about the Miike Mine, one of the many coal mines of Kyushu, making it the main coal production area of Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="17-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-024" class="fas fa-play"></i>
+        <audio id="audio_17-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">これからまた石炭がこれほど<a onclick="show_grammar_data('重要になるかどうかは分かりません')">重要になるかどうかは分かりません</a>が、</span>
+        <span class="content-sent kanji-sent is-hidden">これからまた石<a onclick="show_kanji_data('炭')">炭</a>がこれほど重要になるかどうかは分かりませんが、</span>
+        <span class="content-sent plain-sent is-hidden">これからまた石炭がこれほど重要になるかどうかは分かりませんが、</span>
+        <span class="content-sent vocab-sent">これからまた<a onclick="show_vocab_data('石炭')">石炭</a>がこれほど重要になるかどうかは分かりませんが、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">I don&#39;t know whether or not coal will ever become this important again;</span>
+      </td>
+    </tr>
+
+    <tr id="17-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-025" class="fas fa-play"></i>
+        <audio id="audio_17-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その土地の地理状況、気候だけでなく、科学の発展、人間の生き方によって、</span>
+        <span class="content-sent kanji-sent is-hidden">その土地の地理<a onclick="show_kanji_data('状')">状</a>況、気<a onclick="show_kanji_data('候')">候</a>だけでなく、科学の発展、人間の生き方によって、</span>
+        <span class="content-sent plain-sent is-hidden">その土地の地理状況、気候だけでなく、科学の発展、人間の生き方によって、</span>
+        <span class="content-sent vocab-sent">その土地の地理<a onclick="show_vocab_data('状況')">状況</a>、気候だけでなく、<a onclick="show_vocab_data('科学')">科学</a>の<a onclick="show_vocab_data('発展')">発展</a>、人間の<a onclick="show_vocab_data('生き方')">生き方</a>によって、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">however, not only with the geographical conditions and climate but also with the progress of science and people&#39;s lifestyle,</span>
+      </td>
+    </tr>
+
+    <tr id="17-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_17-026" class="fas fa-play"></i>
+        <audio id="audio_17-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/17-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その土地の様子や姿が変わっていくということは、興味深いことだと思います。</span>
+        <span class="content-sent kanji-sent is-hidden">その土地の様子や姿が変わっていくということは、<a onclick="show_kanji_data('興')">興</a>味深いことだと思います。</span>
+        <span class="content-sent plain-sent is-hidden">その土地の様子や姿が変わっていくということは、興味深いことだと思います。</span>
+        <span class="content-sent vocab-sent">その土地の様子や姿が変わっていくということは、<a onclick="show_vocab_data('興味深い')">興味深い</a>ことだと思います。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">the changes in the situation and form of the land is a deeply interesting thing, I think.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

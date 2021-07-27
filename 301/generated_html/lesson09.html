@@ -1,0 +1,603 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>忠犬八公</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u99c5": ["\u99c5", "\u3048\u304d", "train station"], "\u99c5\u524d": ["\u99c5\u524d", "\u3048\u304d\u307e\u3048", "front of the station"], "\u305e\u3046": ["\u305e\u3046", "", "statue"], "\u53cb\u4eba": ["\u53cb\u4eba", "\u3086\u3046\u3058\u3093", "friend"], "\u5f85\u3061\u5408\u308f\u305b": ["\u5f85\u3061\u5408\u308f\u305b", "\u307e\u3061\u3042\u308f\u305b", "meeting; rendezvous"], "\u304a\u663c": ["\uff08\u304a\uff09\u663c", "\uff08\u304a\uff09\u3072\u308b", "noontime"], "\u3084\u304f\u305d\u304f\u3092\u3057\u307e\u3059": ["\u7d04\u675f", "\u3084\u304f\u305d\u304f\uff08\u3059\u308b\uff09", "appointment; promise; (to make an appointment)"], "\u98fc\u3044\u4e3b": ["\u98fc\u3044\u4e3b", "\u304b\u3044\u306c\u3057", "owner"], "\u5fe0\u5b9f": ["\u5fe0\u5b9f", "\u3061\u3085\u3046\u3058\u3064", "faithful; loyal"], "\u8a18\u5ff5\u306b": ["\u8a18\u5ff5\u306b", "\u304d\u306d\u3093\u306b", "in memory of"], "\u5927\u6b63": ["\u5927\u6b63", "\u305f\u3044\u3057\u3087\u3046", "Taisho era (1912-1925)"], "\u624d": ["\u301c\u624d", "\u301c\u3055\u3044", "\u301c year's old (\u3055\u3044 is written in formal situations with \u6b73; however, \u624d is a widely used alternate.)"], "\u529b\u5f37\u3044": ["\u529b\u5f37\u3044", "\u3061\u304b\u3089\u3065\u3088\u3044", "strong; powerful"], "\u529b\u5f37\u304f\u3066": ["\u529b\u5f37\u3044", "\u3061\u304b\u3089\u3065\u3088\u3044", "strong; powerful"], "\u305f\u304f\u307e\u3057\u3044": ["\u305f\u304f\u307e\u3057\u3044", "", "strong; stout; sturdy; muscular"], "\u79cb\u7530\u72ac": ["\u79cb\u7530\u72ac", "\u3042\u304d\u305f\u3051\u3093", "Akita breed"], "\u53f0\u98a8": ["\u53f0\u98a8", "\u305f\u3044\u3075\u3046", "typhoon"], "\u671d\u5915": ["\u671d\u5915", "\u3042\u3055\u3086\u3046", "morning and night"], "\u4e3b\u4eba": ["\u4e3b\u4eba", "\u3057\u3085\u3058\u3093", "master"], "\u304a\u304f\u308a\u3080\u304b\u3048": ["\u304a\u304f\u308a\u3080\u304b\u3048", "", "sending off and greeting"], "\u306a\u304f\u306a\u308b": ["\u306a\u304f\u306a\u308b", "", "to pass away; to die"], "\u306a\u304f\u306a\u308a": ["\u306a\u304f\u306a\u308b", "", "to pass away; to die"], "\u591c\u304c\u660e\u3051\u308b": ["\u591c\u304c\u660e\u3051\u308b", "\u3088\u304c\u3042\u3051\u308b", "morning breaks"], "\u591c\u304c\u660e\u3051\u3066": ["\u591c\u304c\u660e\u3051\u308b", "\u3088\u304c\u3042\u3051\u308b", "morning breaks"], "\u592a\u967d": ["\u592a\u967d", "\u305f\u3044\u3088\u3046", "sun"], "\u5149": ["\u5149", "\u3072\u304b\u308a", "light"], "\u3058\u3063\u3068": ["\u3058\u3063\u3068", "", "still; patiently; intently"], "\u3059\u308f\u308b": ["\u3059\u308f\u308b", "", "to sit"], "\u3059\u308f\u3063\u305f": ["\u3059\u308f\u308b", "", "to sit"], "\u307e\u307e": ["\u301c\u307e\u307e", "", "to remain \u301c"], "\u3073\u304f\u3068\u3082\u3057\u306a\u3044": ["\u3073\u304f\u3068\u3082\u3057\u306a\u3044", "", "to stand firm; to not move an inch"], "\u52d5\u304f": ["\u52d5\u304f", "\u3046\u3054\u304f", "to move"], "\u52d5\u3053\u3046": ["\u52d5\u304f", "\u3046\u3054\u304f", "to move"], "\u6674\u308c\u308b": ["\u6674\u308c\u308b", "\u306f\u308c\u308b", "to clear up; to be clear"], "\u6674\u308c\u3066": ["\u6674\u308c\u308b", "\u306f\u308c\u308b", "to clear up; to be clear"], "\u307e\u3051\u308b": ["\u307e\u3051\u308b", "", "to be defeated"], "\u307e\u3051\u305a": ["\u307e\u3051\u308b", "", "to be defeated"], "\u5f85\u3061\u3064\u3065\u3051": ["\u301c\u3064\u3065\u3051\u308b", "", "to continue to \u301c"], "\u306f\u306a\u308c\u308b": ["\u306f\u306a\u308c\u308b", "", "to separate from; to leave"], "\u96fb\u8eca": ["\u96fb\u8eca", "\u3067\u3093\u3057\u3083", "electric train"], "\u5927\u305c\u3044": ["\u5927\u305c\u3044", "\u304a\u304a\u305c\u3044", "many"], "\u3054\u3068\u306b": ["\u301c\u3054\u3068\u306b", "", "everytime \u301c"], "\u601d\u3044\u304a\u3053\u3059": ["\u601d\u3044\u304a\u3053\u3059", "\u304a\u3082\u3044\u3042\u3053\u3059", "to recollect; to bring to mind"], "\u540c\u6642\u306b": ["\u540c\u6642\u306b", "\u3069\u3046\u3058\u306b", "at the same time; simultaneously"], "\u76f8\u624b": ["\u76f8\u624b", "\u3042\u3044\u3066", "the other person"], "\u304a\u304f\u308c\u308b": ["\u304a\u304f\u308c\u308b", "", "to be late"], "\u304a\u304f\u308c\u3066": ["\u304a\u304f\u308c\u308b", "", "to be late"], "\u304a\u3053\u308a\u3060\u3059": ["\u304a\u3053\u308a\u3060\u3059", "", "to get angry"], "\u306f\u304b\u306a\u3044": ["\u306f\u304b\u306a\u3044", "", "transient; fleeting"], "\u306f\u304b\u306a\u3055": ["\u306f\u304b\u306a\u3044", "", "transient; fleeting"], "\u307f\u306b\u304f\u3044": ["\u307f\u306b\u304f\u3044", "", "ugly"], "\u307f\u306b\u304f\u304f": ["\u307f\u306b\u304f\u3044", "", "ugly"]};
+  var grammar_json = {"\u96ea\u304c\u3075\u308d\u3046\u3068\u3001\u53f0\u98a8\u304c\u6765\u3088\u3046\u3068": ["Godan: V<SUP>x</SUP><SUB>stem</SUB> + \u304a\u3046 + \u3068\u30fb\u30fb\u30fb V<SUP>y</SUP><SUB>stem</SUB> + \u304a\u3046 + \u3068<br>Ichidan: V<SUP>x</SUP><SUB>stem</SUB> + \u3088\u3046 + \u3068\u30fb\u30fb\u30fb V<SUP>y</SUP><SUB>stem</SUB> + \u3088\u3046 + \u3068", "Whether V<SUP>x</SUP> or V<SUP>y</SUP>", [["\u96e8\u304c\u3075\u308d\u3046\u3068\u3001\u53f0\u98a8\u304c\u6765\u3088\u3046\u3068\u3001\u671d\u5915\u3001\u9001\u308a\u8fce\u3048\u3092\u3057\u307e\u3057\u305f\u3002", "Come rain or come high winds, he always saw his master off in the morning and greeted him at night."], ["\u6674\u308c\u3066\u3044\u3088\u3046\u3068\u3001\u66c7\u3063\u3066\u3044\u3088\u3046\u3068\u3001\u5f85\u3061\u7d9a\u3051\u307e\u3057\u305f\u3002", "No matter what (lit. whether clear or cloudy), he continued to wait."]]], "\u6674\u308c\u3066\u3044\u3088\u3046\u3068\u3001\u9ed2\u96f2\u304c\u51fa\u3066\u6765\u3088\u3046\u3068": ["Godan: V<SUP>x</SUP><SUB>stem</SUB> + \u304a\u3046 + \u3068\u30fb\u30fb\u30fb V<SUP>y</SUP><SUB>stem</SUB> + \u304a\u3046 + \u3068<br>Ichidan: V<SUP>x</SUP><SUB>stem</SUB> + \u3088\u3046 + \u3068\u30fb\u30fb\u30fb V<SUP>y</SUP><SUB>stem</SUB> + \u3088\u3046 + \u3068", "Whether V<SUP>x</SUP> or V<SUP>y</SUP>", [["\u96e8\u304c\u3075\u308d\u3046\u3068\u3001\u53f0\u98a8\u304c\u6765\u3088\u3046\u3068\u3001\u671d\u5915\u3001\u9001\u308a\u8fce\u3048\u3092\u3057\u307e\u3057\u305f\u3002", "Come rain or come high winds, he always saw his master off in the morning and greeted him at night."], ["\u6674\u308c\u3066\u3044\u3088\u3046\u3068\u3001\u66c7\u3063\u3066\u3044\u3088\u3046\u3068\u3001\u5f85\u3061\u7d9a\u3051\u307e\u3057\u305f\u3002", "No matter what (lit. whether clear or cloudy), he continued to wait."]]], "\u3059\u308f\u3063\u305f\u307e\u307e": ["V<SUB>\u305f</SUB>/\u3053\u306e/\u305d\u306e/\u3042\u306e + \u307e\u307e", "to reamin V-ing<br>in a V-ed condition<br>the way this/that is", [["\u516b\u516c\u306f\u3001\u3059\u308f\u3063\u305f\u307e\u307e\u3001\u3073\u304f\u3068\u3082\u52d5\u3053\u3046\u3068\u3057\u307e\u305b\u3093\u3067\u3057\u305f\u3002", "Hachiko remained sitting and would not budge."], ["\u305d\u306e\u72ac\u306f\u3001\u306b\u304f\u3092\u53e3\u306b\u304f\u308f\u3048\u305f\u307e\u307e\u3067\u3001\u30ef\u30f3\u3068\u8a00\u3044\u307e\u3057\u305f\u3002", "Holding a piece of meat in its mouth, the dog barked."], ["\u306d\u305f\u307e\u307e\u3067\u3001\u30c6\u30ec\u30d3\u3092\u898b\u3061\u3083\u3044\u3051\u306a\u3044\u3002", "You shouldn't watch television lying down."], ["\u305d\u306e\u307e\u307e\u3067\u304d\u3063\u3053\u3046\u3067\u3059\u3002", "It is fine as it is."]]], "\u898b\u308b\u3054\u3068\u306b": ["V<SUB>3</SUB> + \u3054\u3068\u306b", "every time V", [["\u516b\u516c\u306e\u305e\u3046\u3092\u898b\u308b\u3054\u3068\u306b\u3001\u516b\u516c\u306e\u5fe0\u5b9f\u3055\u3092\u601d\u3044\u304a\u3053\u3059\u3002", "Every time we look at the statue of Hachiko, we are reminded of his faithfulness."], ["\u96e8\u304c\u3075\u308b\u3054\u3068\u306b\u3001\u3044\u3084\u306a\u3053\u3068\u304c\u304a\u3053\u308b\u3002", "Every time it rains, something unpleasant happens."]]], "\u307f\u306b\u304f\u304f\u601d\u3048\u3066\u3057\u304b\u305f\u304c\u3042\u308a\u307e\u305b\u3093": ["V<SUB>\u3066</SUB> + \u3057\u304b\u305f\u304c\u306a\u3044", "can't help but V", [["\u307f\u306b\u304f\u304f\u601d\u3048\u3066\u3057\u304b\u305f\u304c\u3042\u308a\u307e\u305b\u3093\u3002", "I can't help but think of it as being ugly."], ["\u53cb\u3060\u3061\u306b\u601d\u3048\u3066\u3057\u304b\u305f\u304c\u306a\u3044\u3002", "I can't help but think of you as my friend."], ["\u3042\u306e\u4eba\u306f\u4e2d\u56fd\u4eba\u306b\u898b\u3048\u3066\u3057\u304b\u305f\u304c\u306a\u3044\u3002", "I can't help but think he is Chinese."], ["\u6771\u4eac\u306b\u8eca\u3067\u884c\u304d\u305f\u304f\u3066\u3057\u304b\u305f\u304c\u306a\u3044\u3002", "I am dying to drive to Tokyo."], ["\u3059\u3057\u304c\u98df\u3079\u305f\u304f\u3066\u3057\u304b\u305f\u304c\u306a\u3044\u3002", "I am dying to eat sushi."], ["\u3042\u306e\u5b50\u306f\u6c7d\u8eca\u306b\u306e\u308a\u305f\u304f\u3066\u3057\u304b\u305f\u304c\u306a\u3044\u306e\uff1f", "Is it because the child is dying to ride a train?"]]]};
+  var kanji_json = {"\u516b": ["\u3084\u30fb\u3084\uff08\u3064\uff09\u30fb\u3084\u3063\uff08\u3064\uff09\u30fb\uff3b\u3088\u3046\uff3d", "\u30cf\u30c1", "eight; many", [["\u516b\u65e5\uff08\u3088\u3046\u304b\uff09", "the eighth day of the month"], ["\u516b\u767e\uff08\u306f\u3063\u3074\u3083\u304f\uff09", "800"], ["\u516b\u9762\uff08\u306f\u3061\u3081\u3093\uff09", "eight faces"], ["\u203b\u516b\u767e\u5c4b\uff08\u3084\u304a\u3084\uff09", "vegetable store"], ["\u203b\u516b\u767e\u9577\uff08\u3084\u304a\u3061\u3087\u3046\uff09", "a fixed game"]]], "\u4eac": ["", "\u30ad\u30e7\u30a6\u30fb\u30b1\u30a4", "capital", [["\u6771\u4eac\uff08\u3068\u3046\u304d\u3087\u3046\uff09", "Tokyo"], ["\u4eac\u90fd\uff08\u304d\u3087\u3046\u3068\uff09", "Kyoto"], ["\u4eac\u6d5c\uff08\u3051\u3044\u3072\u3093\uff09", "Tokyo and Yokohama"], ["\u4e0a\u4eac\uff08\u3058\u3087\u3046\u304d\u3087\u3046\uff09", "visit Tokyo"], ["\u5e30\u4eac\uff08\u304d\u304d\u3087\u3046\uff09", "return to Tokyo"]]], "\u8c37": ["\u305f\u306b", "\u30b3\u30af", "valley", [["\u5ce1\u8c37\uff08\u304d\u3087\u3046\u3053\u304f\uff09", "canyon"], ["\u8c37\u5ddd\uff08\u305f\u306b\u304c\u308f\uff09", "stream"], ["\u8c37\u5e95\uff08\u305f\u306b\u305d\u3053\uff09", "valley floor"]]], "\u53cb": ["\u3068\u3082", "\u30e6\u30a6", "friend", [["\u53cb\u4eba\uff08\u3086\u3046\u3058\u3093\uff09", "friend"], ["\u53cb\u9054\uff08\u3068\u3082\u3060\u3061\uff09", "friend"], ["\u53cb\u597d\uff08\u3086\u3046\u3053\u3046\uff09", "friendly relations"], ["\u53cb\u60c5\uff08\u3086\u3046\u3058\u3087\u3046\uff09", "friendship"], ["\u89aa\u53cb\uff08\u3057\u3093\u3086\u3046\uff09", "close friend"]]], "\u663c": ["\u3072\u308b", "\u30c1\u30e5\u30a6", "daytime; noon", [["\u663c\u98df\uff08\u3061\u3085\u3046\u3058\u3087\u304f\uff09", "lunch"], ["\u771f\u663c\uff08\u307e\u3072\u308b\uff09", "noon"], ["\u304a\u663c\uff08\u304a\u3072\u308b\uff09", "noon"], ["\u663c\u9593\uff08\u3072\u308b\u307e\uff09", "daytime"], ["\u767d\u663c\uff08\u306f\u304f\u3061\u3085\u3046\uff09", "broad daylight"]]], "\u8a18": ["\u3057\u308b\uff08\u3059\uff09", "\u30ad", "record; written; history", [["\u8a18\u4e8b\uff08\u304d\u3058\uff09", "article (newspaper article, etc.)"], ["\u8a18\u5ff5\uff08\u304d\u306d\u3093\uff09", "commemoration"], ["\u8a18\u9332\uff08\u304d\u308d\u304f\uff09", "record"], ["\u65e5\u8a18\uff08\u306b\u3063\u304d\uff09", "diary"], ["\u8a18\u8005\uff08\u304d\u3057\u3083\uff09", "reporter"]]], "\u624d": ["", "\u30b5\u30a4", "talent; age; work", [["\u5929\u624d\uff08\u3066\u3093\u3055\u3044\uff09", "genius"], ["\u624d\u80fd\uff08\u3055\u3044\u306e\u3046\uff09", "talents"], ["\u624d\u77e5\uff08\u3055\u3044\u3061\uff09", "wit or intellignece"], ["\u6f2b\u624d\uff08\u307e\u3093\u3056\u3044\uff09", "comic"], ["\u624d\u5973\uff08\u3055\u3044\u3058\u3087\uff09", "talented woman"]]], "\u5f37": ["\u3064\u3088\uff08\u3044\uff09\u30fb\u3064\u3088\uff08\u307e\u308b\uff09\u30fb\u3064\u3088\uff08\u3081\u308b\uff09\u30fb\u3057\uff08\u3044\u308b\uff09", "\u30ad\u30e7\u30a6\u30fb\u30b4\u30a6", "strong; to strengthen; to force", [["\u52c9\u5f37\uff08\u3079\u3093\u304d\u3087\u3046\uff09", "study"], ["\u5f37\u8abf\uff08\u304d\u3087\u3046\u3061\u3087\u3046\uff09", "emphasis"], ["\u5f37\u76d7\uff08\u3054\u3046\u3068\u3046\uff09", "mugger"], ["\u5f37\u5236\uff08\u304d\u3087\u3046\u305b\u3044\uff09", "force"], ["\u5f37\u529b\uff08\u304d\u3087\u3046\u308a\u3087\u304f\uff09", "powerful"]]], "\u79cb": ["\u3042\u304d", "\u30b7\u30e5\u30a6", "autumn", [["\u79cb\u5b63\uff08\u3057\u3085\u3046\u304d\uff09", "autumn"], ["\u6625\u79cb\uff08\u3057\u3085\u3093\u3058\u3085\u3046\uff09", "spring and autumn"], ["\u79cb\u5206\uff08\u3057\u3085\u3046\u3076\u3093\uff09", "autumn equinox"], ["\u79cb\u98a8\uff08\u3042\u304d\u304b\u305c\uff09", "autumn wind"]]], "\u98a8": ["\u304b\u305c\u30fb\uff3b\u304b\u3056\uff3d", "\u30d5\u30a6\u30fb\uff3b\u30d5\uff3d", "wind; form", [["\u98a8\u666f\uff08\u3075\u3046\u3051\u3044\uff09", "scenery"], ["\u53f0\u98a8\uff08\u305f\u3044\u3075\u3046\uff09", "typhoon"], ["\u98a8\u5442\uff08\u3075\u308d\uff09", "bath"], ["\u5317\u98a8\uff08\u304d\u305f\u304b\u305c\uff09", "north wind"], ["\u98a8\u8eca\uff08\u304b\u305c\u3050\u308b\u307e\uff09", "pinwheel"]]], "\u53f0": ["", "\u30c0\u30a4\u30fb\u30bf\u30a4", "high place; origin", [["\u821e\u53f0\uff08\u3076\u305f\u3044\uff09", "stage"], ["\u53f0\u6240\uff08\u3060\u3044\u3069\u3053\u308d\uff09", "kitchen"], ["\u571f\u53f0\uff08\u3069\u3060\u3044\uff09", "foundation"], ["\u53f0\u98a8\uff08\u305f\u3044\u3075\u3046\uff09", "typhoon"], ["\u706f\u53f0\uff08\u3068\u3046\u3060\u3044\uff09", "lighthouse"]]], "\u7a7a": ["\u305d\u3089\u30fb\u3042\uff08\u304f\uff09\u30fb\u3042\uff08\u3051\u308b\uff09\u30fb\u304b\u3089", "\u30af\u30a6", "sky; empty", [["\u7a7a\u8ecd\uff08\u304f\u3046\u3050\u3093\uff09", "Air Force"], ["\u7a7a\u6c17\uff08\u304f\u3046\u304d\uff09", "air"], ["\u9752\u7a7a\uff08\u3042\u304a\u305e\u3089\uff09", "blue sky"], ["\u7a7a\u9593\uff08\u304f\u3046\u304b\u3093\uff09", "space"], ["\u7a7a\u624b\uff08\u304b\u3089\u3066\uff09", "karate"]]], "\u661f": ["\u307b\u3057", "\u30bb\u30a4\u30fb\uff3b\u30b7\u30e7\u30a6\uff3d", "stars", [["\u661f\u7a7a\uff08\u307b\u3057\u305e\u3089\uff09", "starry sky"], ["\u885b\u661f\uff08\u3048\u3044\u305b\u3044\uff09", "satellites"], ["\u661f\u96f2\uff08\u305b\u3044\u3046\u3093\uff09", "galactic nebula"], ["\u661f\u5ea7\uff08\u305b\u3044\u3056\uff09", "constellation"], ["\u6d41\u661f\uff08\u308a\u3085\u3046\u305b\u3044\uff09", "meteorites"]]], "\u5149": ["\u3072\u304b\uff08\u308b\uff09\u30fb\u3072\u304b\u308a", "\u30b3\u30a6", "light; to shine", [["\u5149\u666f\uff08\u3053\u3046\u3051\u3044\uff09", "scene"], ["\u5149\u6ca2\uff08\u3053\u3046\u305f\u304f\uff09", "luster"], ["\u5149\u5b66\uff08\u3053\u3046\u304c\u304f\uff09", "optics"], ["\u5149\u7dda\uff08\u3053\u3046\u305b\u3093\uff09", "light rays"], ["\u65e5\u5149\uff08\u306b\u3063\u3053\u3046\uff09", "sunlight"]]], "\u6674": ["\u306f\uff08\u308c\u308b\uff09\u30fb\u306f\uff08\u3089\u3059\uff09", "\u30bb\u30a4", "to become clear weather", [["\u6674\u96e8\uff08\u305b\u3044\u3046\uff09", "rain clouds"], ["\u6674\u5929\uff08\u305b\u3044\u3066\u3093\uff09", "clear weather"], ["\u5feb\u6674\uff08\u304b\u3044\u305b\u3044\uff09", "fine weather"], ["\u79cb\u6674\u308c\uff08\u3042\u304d\u3070\u308c\uff09", "fune autumn weather"], ["\u6674\u308c\u9593\uff08\u306f\u308c\u307e\uff09", "interval of clear weather"]]], "\u96f2": ["\u304f\u307e", "\u30a6\u30f3", "cloud", [["\u96e8\u96f2\uff08\u3042\u307e\u3050\u3082\uff09", "rain clouds"], ["\u6697\u96f2\uff08\u3042\u3093\u3046\u3093\uff09", "dark clouds"], ["\u767d\u96f2\uff08\u306f\u304f\u3046\u3093\uff09", "white clouds"], ["\u96f2\u6c34\uff08\u3046\u3093\u3059\u3044\uff09", "itinerant priest"], ["\u96f7\u96f2\uff08\u3089\u3044\u3046\u3093\uff09", "thunder cloud"]]], "\u96fb": ["", "\u30c7\u30f3", "lightning; electricity", [["\u96fb\u8eca\uff08\u3067\u3093\u3057\u3083\uff09", "train (electric-powered train)"], ["\u96fb\u6c17\uff08\u3067\u3093\u304d\uff09", "electricity"], ["\u96fb\u8a71\uff08\u3067\u3093\u308f\uff09", "telephone"], ["\u96fb\u529b\uff08\u3067\u3093\u308a\u3087\u304f\uff09", "electric power"], ["\u96fb\u706f\uff08\u3067\u3093\u3068\u3046\uff09", "electric light"]]], "\u6c7d": ["", "\u30ad", "steam; vapor", [["\u6c7d\u8eca\uff08\u304d\u3057\u3083\uff09", "train (steam-powered train)"], ["\u6c7d\u8239\uff08\u304d\u305b\u3093\uff09", "steamboat"]]], "\u8239": ["\u3075\u306d\u30fb\u3075\u306a", "\u30bb\u30f3", "boat", [["\u4e57\u8239\uff08\u3058\u3087\u3046\u305b\u3093\uff09", "embarkation"], ["\u6f01\u8239\uff08\u304e\u3087\u305b\u3093\uff09", "fishing boat"], ["\u8239\u54e1\uff08\u305b\u3093\u3044\u3093\uff09", "crew"], ["\u6c7d\u8239\uff08\u304d\u305b\u3093\uff09", "steamboat"], ["\u8239\u9577\uff08\u305b\u3093\u3061\u3087\u3046\uff09", "captain of the ship"]]], "\u516d": ["\u3080\u30fb\u3080\uff08\u3064\uff09\u30fb\u3080\u3063\uff08\u3064\uff09\u30fb\uff3b\u3080\u3044\uff3d", "\u30ed\u30af", "6", [["\u516d\u6708\uff08\u308d\u304f\u304c\u3064\uff09", "June"], ["\u516d\u6cd5\uff08\u308d\u3063\u307d\u3046\uff09", "six directions; six codes"], ["\u516d\u65e5\uff08\u3080\u3044\u304b\uff09", "the sixth day of the month"], ["\u7b2c\u516d\u611f\uff08\u3060\u3044\u308d\u3063\u304b\u3093\uff09", "sixth sense"]]]};
+  </script>
+  <div class="block title">忠犬八公</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/09-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="09-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-001" class="fas fa-play"></i>
+        <audio id="audio_09-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">東京の渋谷という駅前に、とても有名な犬のぞうがあります。</span>
+        <span class="content-sent kanji-sent is-hidden">東<a onclick="show_kanji_data('京')">京</a>の渋<a onclick="show_kanji_data('谷')">谷</a>という駅前に、とても有名な犬のぞうがあります。</span>
+        <span class="content-sent plain-sent is-hidden">東京の渋谷という駅前に、とても有名な犬のぞうがあります。</span>
+        <span class="content-sent vocab-sent">東京の渋谷という<a onclick="show_vocab_data('駅')">駅</a>前に、とても有名な犬の<a onclick="show_vocab_data('ぞう')">ぞう</a>があります。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In front of the Shibuya Station in Tokyo, there is a very famous dog&#39;s statue.</span>
+      </td>
+    </tr>
+
+    <tr id="09-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-002" class="fas fa-play"></i>
+        <audio id="audio_09-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">東京に住む人々は、渋谷駅で友人と待ち合わせをする時に、よく、「今日お昼に、八公の前で会おう」などと言って、やくそくをします。</span>
+        <span class="content-sent kanji-sent is-hidden">東<a onclick="show_kanji_data('京')">京</a>に住む人々は、渋<a onclick="show_kanji_data('谷')">谷</a>駅で<a onclick="show_kanji_data('友')">友</a>人と待ち合わせをする時に、よく、「今日お<a onclick="show_kanji_data('昼')">昼</a>に、<a onclick="show_kanji_data('八')">八</a>公の前で会おう」などと言って、やくそくをします。</span>
+        <span class="content-sent plain-sent is-hidden">東京に住む人々は、渋谷駅で友人と待ち合わせをする時に、よく、「今日お昼に、八公の前で会おう」などと言って、やくそくをします。</span>
+        <span class="content-sent vocab-sent">東京に住む人々は、渋谷<a onclick="show_vocab_data('駅')">駅</a>で<a onclick="show_vocab_data('友人')">友人</a>と<a onclick="show_vocab_data('待ち合わせ')">待ち合わせ</a>をする時に、よく、「今日<a onclick="show_vocab_data('お昼')">お昼</a>に、八公の前で会おう」などと言って、<a onclick="show_vocab_data('やくそくをします')">やくそくをします</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the people who live in Tokyo meet their friends at Shibuya Station, they often make appointments by sayiing something like, &quot;Today at noon let&#39;s meet in front of Hachiko.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="09-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-003" class="fas fa-play"></i>
+        <audio id="audio_09-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このぞうは、飼い主にとても忠実だった八公という犬を記念にして、作られたものです。</span>
+        <span class="content-sent kanji-sent is-hidden">このぞうは、飼い主にとても忠実だった<a onclick="show_kanji_data('八')">八</a>公という犬を<a onclick="show_kanji_data('記')">記</a>念にして、作られたものです。</span>
+        <span class="content-sent plain-sent is-hidden">このぞうは、飼い主にとても忠実だった八公という犬を記念にして、作られたものです。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('ぞう')">ぞう</a>は、<a onclick="show_vocab_data('飼い主')">飼い主</a>にとても<a onclick="show_vocab_data('忠実')">忠実</a>だった八公という犬を<a onclick="show_vocab_data('記念に')">記念に</a>して、作られたものです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This statue was made in memory of a dog named Hachiko who was very faithful to her master.</span>
+      </td>
+    </tr>
+
+    <tr id="09-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-004" class="fas fa-play"></i>
+        <audio id="audio_09-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">八公は、一九二三年（大正十二年）に生まれました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('八')">八</a>公は、一九二三年（大正十二年）に生まれました。</span>
+        <span class="content-sent plain-sent is-hidden">八公は、一九二三年（大正十二年）に生まれました。</span>
+        <span class="content-sent vocab-sent">八公は、一九二三年（<a onclick="show_vocab_data('大正')">大正</a>十二年）に生まれました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Hachiko was born in 1923 (Taisho 12).</span>
+      </td>
+    </tr>
+
+    <tr id="09-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-005" class="fas fa-play"></i>
+        <audio id="audio_09-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、一才の時、当時、東京大学の先生をしていた上野英三郎という人に飼われました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして、一<a onclick="show_kanji_data('才')">才</a>の時、当時、東<a onclick="show_kanji_data('京')">京</a>大学の先生をしていた上野英三郎という人に飼われました。</span>
+        <span class="content-sent plain-sent is-hidden">そして、一才の時、当時、東京大学の先生をしていた上野英三郎という人に飼われました。</span>
+        <span class="content-sent vocab-sent">そして、一<a onclick="show_vocab_data('才')">才</a>の時、当時、東京大学の先生をしていた上野英三郎という人に飼われました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">And, at the age of one year, she was acquired by a man named Eizaburo Ueno, who was a professor at Tokyo University.</span>
+      </td>
+    </tr>
+
+    <tr id="09-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-006" class="fas fa-play"></i>
+        <audio id="audio_09-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">八公は、力強くて、たくましい秋田犬で、雨の日も風の日も、<a onclick="show_grammar_data('雪がふろうと、台風が来ようと')">雪がふろうと、台風が来ようと</a>、毎日、朝夕、渋谷駅まで主人のおくりむかえをしました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('八')">八</a>公は、力<a onclick="show_kanji_data('強')">強</a>くて、たくましい<a onclick="show_kanji_data('秋')">秋</a>田犬で、雨の日も<a onclick="show_kanji_data('風')">風</a>の日も、雪がふろうと、<a onclick="show_kanji_data('台')">台</a><a onclick="show_kanji_data('風')">風</a>が来ようと、毎日、朝夕、渋<a onclick="show_kanji_data('谷')">谷</a>駅まで主人のおくりむかえをしました。</span>
+        <span class="content-sent plain-sent is-hidden">八公は、力強くて、たくましい秋田犬で、雨の日も風の日も、雪がふろうと、台風が来ようと、毎日、朝夕、渋谷駅まで主人のおくりむかえをしました。</span>
+        <span class="content-sent vocab-sent">八公は、<a onclick="show_vocab_data('力強くて')">力強くて</a>、<a onclick="show_vocab_data('たくましい')">たくましい</a><a onclick="show_vocab_data('秋田犬')">秋田犬</a>で、雨の日も風の日も、雪がふろうと、<a onclick="show_vocab_data('台風')">台風</a>が来ようと、毎日、<a onclick="show_vocab_data('朝夕')">朝夕</a>、渋谷<a onclick="show_vocab_data('駅')">駅</a>まで<a onclick="show_vocab_data('主人')">主人</a>の<a onclick="show_vocab_data('おくりむかえ')">おくりむかえ</a>をしました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Hachiko was a strong, hardy Akita (breed), and on rainy days and windy days, whether it snowed or whether a typhoon blew, every day, morning and evening, Hachiko sent off and met her master at the Shibuya Station.</span>
+      </td>
+    </tr>
+
+    <tr id="09-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-007" class="fas fa-play"></i>
+        <audio id="audio_09-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、上野先生は、一九二五年、家に帰る途中、おなくなりになられてしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、上野先生は、一九二五年、家に帰る途中、おなくなりになられてしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、上野先生は、一九二五年、家に帰る途中、おなくなりになられてしまいました。</span>
+        <span class="content-sent vocab-sent">ところが、上野先生は、一九二五年、家に帰る途中、お<a onclick="show_vocab_data('なくなり')">なくなり</a>になられてしまいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">However, while on the way home in 1925, Mr. Ueno died.</span>
+      </td>
+    </tr>
+
+    <tr id="09-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-008" class="fas fa-play"></i>
+        <audio id="audio_09-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">その日も、忠実な八公は、いつものように、先生がお帰りになるのを渋谷駅で待っていたのです。</span>
+        <span class="content-sent kanji-sent is-hidden">その日も、忠実な<a onclick="show_kanji_data('八')">八</a>公は、いつものように、先生がお帰りになるのを渋<a onclick="show_kanji_data('谷')">谷</a>駅で待っていたのです。</span>
+        <span class="content-sent plain-sent is-hidden">その日も、忠実な八公は、いつものように、先生がお帰りになるのを渋谷駅で待っていたのです。</span>
+        <span class="content-sent vocab-sent">その日も、<a onclick="show_vocab_data('忠実')">忠実</a>な八公は、いつものように、先生がお帰りになるのを渋谷<a onclick="show_vocab_data('駅')">駅</a>で待っていたのです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On that day too, as always, faithful Hachiko was waiting at Shibuya Station for the professor&#39;s return.</span>
+      </td>
+    </tr>
+
+    <tr id="09-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-009" class="fas fa-play"></i>
+        <audio id="audio_09-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、夜になって、空に月や星がみえるころになっても、先生は、お帰りになりません。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、夜になって、<a onclick="show_kanji_data('空')">空</a>に月や<a onclick="show_kanji_data('星')">星</a>がみえるころになっても、先生は、お帰りになりません。</span>
+        <span class="content-sent plain-sent is-hidden">しかし、夜になって、空に月や星がみえるころになっても、先生は、お帰りになりません。</span>
+        <span class="content-sent vocab-sent">しかし、夜になって、空に月や星がみえるころになっても、先生は、お帰りになりません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">But, even when it got to be evening when the moon and stars could be seen, the professor didn&#39;t return.</span>
+      </td>
+    </tr>
+
+    <tr id="09-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-010" class="fas fa-play"></i>
+        <audio id="audio_09-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">夜が明けて、太陽の光が見えてきても、先生は、帰って来られません。</span>
+        <span class="content-sent kanji-sent is-hidden">夜が明けて、太陽の<a onclick="show_kanji_data('光')">光</a>が見えてきても、先生は、帰って来られません。</span>
+        <span class="content-sent plain-sent is-hidden">夜が明けて、太陽の光が見えてきても、先生は、帰って来られません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('夜が明けて')">夜が明けて</a>、<a onclick="show_vocab_data('太陽')">太陽</a>の<a onclick="show_vocab_data('光')">光</a>が見えてきても、先生は、帰って来られません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Even when the dawn broke and the light of the sun could be seen, still the professor didn&#39;t return.</span>
+      </td>
+    </tr>
+
+    <tr id="09-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-011" class="fas fa-play"></i>
+        <audio id="audio_09-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、忠犬八公は、じっと<a onclick="show_grammar_data('すわったまま')">すわったまま</a>びくとも動こうとしませんでした。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、忠犬<a onclick="show_kanji_data('八')">八</a>公は、じっとすわったままびくとも動こうとしませんでした。</span>
+        <span class="content-sent plain-sent is-hidden">しかし、忠犬八公は、じっとすわったままびくとも動こうとしませんでした。</span>
+        <span class="content-sent vocab-sent">しかし、忠犬八公は、<a onclick="show_vocab_data('じっと')">じっと</a><a onclick="show_vocab_data('すわった')">すわった</a><a onclick="show_vocab_data('まま')">まま</a>びくとも<a onclick="show_vocab_data('動こう')">動こう</a>としませんでした。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">However, the faithful dog Hachiko stayed sitting still, and didn&#39;t even budge.</span>
+      </td>
+    </tr>
+
+    <tr id="09-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-012" class="fas fa-play"></i>
+        <audio id="audio_09-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、<a onclick="show_grammar_data('晴れていようと、黒雲が出て来ようと')">晴れていようと、黒雲が出て来ようと</a>、雨にも雪にもまけず、もう二度とお帰りにならない先生を、いつかいつかと待ちつづけ、十一年間、死ぬもで渋谷駅を一歩もはなれなかったとのことです。</span>
+        <span class="content-sent kanji-sent is-hidden">そして、<a onclick="show_kanji_data('晴')">晴</a>れていようと、黒<a onclick="show_kanji_data('雲')">雲</a>が出て来ようと、雨にも雪にもまけず、もう二度とお帰りにならない先生を、いつかいつかと待ちつづけ、十一年間、死ぬもで渋<a onclick="show_kanji_data('谷')">谷</a>駅を一歩もはなれなかったとのことです。</span>
+        <span class="content-sent plain-sent is-hidden">そして、晴れていようと、黒雲が出て来ようと、雨にも雪にもまけず、もう二度とお帰りにならない先生を、いつかいつかと待ちつづけ、十一年間、死ぬもで渋谷駅を一歩もはなれなかったとのことです。</span>
+        <span class="content-sent vocab-sent">そして、<a onclick="show_vocab_data('晴れて')">晴れて</a>いようと、黒雲が出て来ようと、雨にも雪にも<a onclick="show_vocab_data('まけず')">まけず</a>、もう二度とお帰りにならない先生を、いつかいつかと<a onclick="show_vocab_data('待ちつづけ')">待ちつづけ</a>、十一年間、死ぬもで渋谷<a onclick="show_vocab_data('駅')">駅</a>を一歩もはなれなかったとのことです。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">And, whether clear skies or whether black clouds formed, not giving in to rain or snow, she continued to wait for the professor who was never to return, and it&#39;s said that for ll years until she died, she didn&#39;t stray on step from Shibuya Station.</span>
+      </td>
+    </tr>
+
+    <tr id="09-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-013" class="fas fa-play"></i>
+        <audio id="audio_09-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">バスや、電車や、大ぜいの人が行き来する渋谷駅前の八公のぞうを<a onclick="show_grammar_data('見るごとに')">見るごとに</a>、八公の忠実さを思いおこすと同時に、</span>
+        <span class="content-sent kanji-sent is-hidden">バスや、<a onclick="show_kanji_data('電')">電</a>車や、大ぜいの人が行き来する渋<a onclick="show_kanji_data('谷')">谷</a>駅前の<a onclick="show_kanji_data('八')">八</a>公のぞうを見るごとに、<a onclick="show_kanji_data('八')">八</a>公の忠実さを思いおこすと同時に、</span>
+        <span class="content-sent plain-sent is-hidden">バスや、電車や、大ぜいの人が行き来する渋谷駅前の八公のぞうを見るごとに、八公の忠実さを思いおこすと同時に、</span>
+        <span class="content-sent vocab-sent">バスや、<a onclick="show_vocab_data('電車')">電車</a>や、<a onclick="show_vocab_data('大ぜい')">大ぜい</a>の人が行き来する渋谷<a onclick="show_vocab_data('駅')">駅</a>前の八公の<a onclick="show_vocab_data('ぞう')">ぞう</a>を見る<a onclick="show_vocab_data('ごとに')">ごとに</a>、八公の<a onclick="show_vocab_data('忠実')">忠実</a>さを<a onclick="show_vocab_data('思いおこす')">思いおこす</a>と<a onclick="show_vocab_data('同時に')">同時に</a>、</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Everytime I see Hachiko&#39;s statue in front of Shibuya Station where buses, trains, and crowds of people come and go, along with remembering Hachiko&#39;s faithfulness,</span>
+      </td>
+    </tr>
+
+    <tr id="09-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09-014" class="fas fa-play"></i>
+        <audio id="audio_09-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">相手が、五、六分おくれてきたと言って、おこりだす人間社会のはかなさが<a onclick="show_grammar_data('みにくく思えてしかたがありません')">みにくく思えてしかたがありません</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">相手が、五、<a onclick="show_kanji_data('六')">六</a>分おくれてきたと言って、おこりだす人間社会のはかなさがみにくく思えてしかたがありません。</span>
+        <span class="content-sent plain-sent is-hidden">相手が、五、六分おくれてきたと言って、おこりだす人間社会のはかなさがみにくく思えてしかたがありません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('相手')">相手</a>が、五、六分<a onclick="show_vocab_data('おくれて')">おくれて</a>きたと言って、<a onclick="show_vocab_data('おこりだす')">おこりだす</a>人間社会の<a onclick="show_vocab_data('はかなさ')">はかなさ</a>が<a onclick="show_vocab_data('みにくく')">みにくく</a>思えてしかたがありません。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">I can&#39;t help but think of as ugly the vain human society where people get angry because the other party comes five or six minutes late.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

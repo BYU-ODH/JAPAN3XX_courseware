@@ -1,0 +1,549 @@
+<html>
+
+<head>
+  <title>
+    Japanese 301
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
+    show_html(card_html)
+}
+
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+</script>
+
+<style>
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 301</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>けちんぼう</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u3051\u3061\u3093\u307c\u3046": ["\u3051\u3061\u3093\u307c\u3046", "", "miser"], "\u3080\u304b\u3057": ["\u3080\u304b\u3057", "", "olden times; long ago"], "\u3080\u304b\u3057\u3080\u304b\u3057": ["\u3080\u304b\u3057\u3080\u304b\u3057", "", "once upon a time"], "\u4e00\u65b9\u306e": ["\u4e00\u65b9\u306e", "\u3044\u3063\u307d\u3046\u306e", "one of a pair"], "\u4e3b\u4eba": ["\u4e3b\u4eba", "\u3057\u3085\u3046\u3058\u3093", "head of the house; husband"], "\u91d1\u3065\u3061": ["\u91d1\u3065\u3061", "\u304b\u306a\u3065\u3061", "hammer"], "\u3064\u304b\u3044\u306e\u8005": ["\u3064\u304b\u3044\u306e\u8005", "\u3064\u304b\u3044\u306e\u3082\u306e", "servant"], "\u305f\u306e\u3080": ["\u305f\u306e\u3080", "", "to ask"], "\u305f\u306e\u307f\u307e\u3057\u305f": ["\u305f\u306e\u3080", "", "to ask"], "\u304b\u3059": ["\u304b\u3059", "", "to lend"], "\u304b\u3057\u3066": ["\u304b\u3059", "", "to lend"], "\u304f\u304e": ["\u304f\u304e", "", "nail"], "\u3046\u3064": ["\u3046\u3064", "", "to hammer; to hit"], "\u3046\u3061\u305f\u3044": ["\u3046\u3064", "", "to hammer; to hit"], "\u9244": ["\u9244", "\u3066\u3064", "iron; steel"], "\u8fd4\u4e8b": ["\u8fd4\u4e8b", "\u3078\u3093\u3058", "reply"], "\u3042\u3044\u306b\u304f": ["\u3042\u3044\u306b\u304f", "", "unfortunately"], "\u4eca": ["\u4eca", "\u3044\u307e", "now"], "\u3061\u3087\u3046\u3069": ["\u3061\u3087\u3046\u3069", "", "just; precisely"], "\u304a\u3053\u308b": ["\u304a\u3053\u308b", "", "to get angry"], "\u304a\u3053\u3063\u3066": ["\u304a\u3053\u308b", "", "to get angry"], "\u4e16\u306e\u4e2d": ["\u4e16\u306e\u4e2d", "\u3088\u306e\u306a\u304b", "the world"], "\u3051\u3061\u306a": ["\u3051\u3061(\u306a)", "", "stingy"], "\u305f\u305a\u306d\u308b": ["\u305f\u305a\u306d\u308b", "", "to ask"], "\u305f\u305a\u306d\u3066": ["\u305f\u305a\u306d\u308b", "", "to ask"], "\u3046\u305d": ["\u3046\u305d\uff08\u301c\u3092\u3064\u304f\uff09", "", "a lie; (to tell a lie)"], "\u3053\u3068\u308f\u308b": ["\u3053\u3068\u308f\u308b", "", "to turn (someone) down; to refuse"], "\u3053\u3068\u308f\u3063\u305f": ["\u3053\u3068\u308f\u308b", "", "to turn (someone) down; to refuse"], "\u3044\u305f\u3080": ["\u3044\u305f\u3080", "", "to be damaged"], "\u304a\u3057\u3044": ["\u304a\u3057\u3044", "", "grudging; reluctant"], "\u304a\u3057\u304f": ["\u304a\u3057\u3044", "", "grudging; reluctant"], "\u3057\u304b\u305f\u304c\u306a\u3044": ["\u3057\u304b\u305f\u304c\u306a\u3044", "", "nothing can be done"], "\u3055\u3080\u3089\u3044": ["\u3055\u3080\u3089\u3044", "", "samurai"], "\u3054\u3056": ["\u3054\u3056", "", "straw mat"], "\u767e\u59d3": ["\u767e\u59d3", "\u3072\u3083\u304f\u3057\u3087\u3046", "farmer; peasant"], "\u6669": ["\u6669", "\u3070\u3093", "evening; night"], "\u3068\u3081\u308b": ["\u3068\u3081\u308b", "", "to lodge (someone); to put up overnight"], "\u3068\u3081\u3066": ["\u3068\u3081\u308b", "", "to lodge (someone); to put up overnight"], "\u3075\u3068\u3093": ["\u3075\u3068\u3093", "", "bedding; comforter; futon"], "\u3088\u308d\u3057\u3044": ["\u3088\u308d\u3057\u3044", "", "good"], "\u3088\u308d\u3057\u304b\u3063\u305f\u3089": ["\u3088\u308d\u3057\u3044", "", "good"], "\u3068\u307e\u308b": ["\u3068\u307e\u308b", "", "to stay"], "\u3068\u307e\u308a": ["\u3068\u307e\u308b", "", "to stay"], "\u304b\u3051\u308b": ["\u304b\u3051\u308b", "", "to put on; to put over something"], "\u304b\u3051\u3066": ["\u304b\u3051\u308b", "", "to put on; to put over something"], "\u305f\u3073\u305f\u3073": ["\u305f\u3073\u305f\u3073", "", "often"], "\u3044\u304f\u3055": ["\u3044\u304f\u3055", "", "war; battle"], "\u91ce\u5bbf": ["\u91ce\u5bbf", "\u306e\u3058\u3085\u3046", "sleeping in the open; camping out"], "\u5fc3\u914d": ["\u5fc3\u914d", "\u3057\u3093\u3071\u3044", "worry"], "\u7121\u7528": ["\u7121\u7528", "\u3080\u3088\u3046", "unnecessary"], "\u3054\u308d\u308a\u3068": ["\u3054\u308d\u308a\u3068", "", "lazily; rolling over"], "\u591c\u4e2d": ["\u591c\u4e2d", "\u3088\u306a\u304b", "the middle of the night"], "\u3060\u3093\u3060\u3093": ["\u3060\u3093\u3060\u3093", "", "gradually"], "\u3068\u3046\u3068\u3046": ["\u3068\u3046\u3068\u3046", "", "at last; finally"], "\u304c\u307e\u3093": ["\u304c\u307e\u3093 (\u301c\u3059\u308b)", "", "endurance; (to endure; to bear)"], "\u304a\u3053\u3059": ["\u304a\u3053\u3059", "", "to awaken"], "\u304a\u3053\u3057\u3066": ["\u304a\u3053\u3059", "", "to awaken"], "\u306d\u305a\u307f": ["\u306d\u305a\u307f", "", "rat; mouse"], "\u3042\u3089\u3046": ["\u3042\u3089\u3046", "", "to wash"], "\u3042\u3089\u308f\u305b\u3066": ["\u3042\u3089\u3046", "", "to wash"], "\u304d\u305f\u306a\u3044": ["\u304d\u305f\u306a\u3044", "", "dirty"], "\u3075\u3080": ["\u3075\u3080", "", "to walk on"], "\u3075\u307e\u308c\u308b": ["\u3075\u3080", "", "to walk on"], "\u304d\u3082\u306e": ["\u304d\u3082\u306e", "", "clothes"], "\u3088\u3054\u308c\u308b": ["\u3088\u3054\u308c\u308b", "", "to get dirty"], "\u3055\u308b": ["\u3055\u308b", "", "monkey"], "\u3057\u3063\u307d": ["\u3057\u3063\u307d", "", "tail"], "\u304f\u307e": ["\u304f\u307e", "", "bear"], "\u3060\u307e\u3059": ["\u3060\u307e\u3059", "", "to fool; to deceive"], "\u3060\u307e\u3055\u308c\u3066": ["\u3060\u307e\u3059", "", "to fool; to deceive"], "\u307f\u3058\u304b\u3044": ["\u307f\u3058\u304b\u3044", "", "short"], "\u51ac": ["\u51ac", "\u3075\u3086", "winter"], "\u305d\u3046\u3060\u3093": ["\u305d\u3046\u3060\u3093 (\u301c\u3059\u308b)", "", "consultation; (to consult with)"], "\u3075\u304b\u3044": ["\u6df1\u3044", "\u3075\u304b\u3044", "deep"], "\u304f\u3044\u3064\u304f": ["\u304f\u3044\u3064\u304f", "", "to bite at and attach to"], "\u5927\u3088\u308d\u3053\u3073": ["(\u5927)\u3088\u308d\u3053\u3073", "\uff08\u304a\u304a\uff09\u3088\u308d\u3053\u3073", "(great) joy"], "\u5f85\u3064": ["\u5f85\u3064", "\u307e\u3064", "to wait"], "\u5f85\u3063\u3066": ["\u5f85\u3064", "\u307e\u3064", "to wait"], "\u3075\u3051\u308b": ["\u3075\u3051\u308b", "", "to deepen; to grow late"], "\u3075\u3051\u3066": ["\u3075\u3051\u308b", "", "to deepen; to grow late"], "\u304a\u3082\u3044": ["\u91cd\u3044", "\u304a\u3082\u3044", "heavy"], "\u304a\u3082\u304f": ["\u91cd\u3044", "\u304a\u3082\u3044", "heavy"], "\u6c37": ["\u6c37\uff1b\uff08\u301c\u304c\u306f\u308b\uff09", "\u3053\u304a\u308a\uff1b\uff08\u301c\u304c\u306f\u308b\uff09", "ice; (ice forms)"], "\u5341\u5206": ["\u5341\u5206", "\u3058\u3085\u3046\u3076\u3093", "enough; sufficient"], "\u3042\u3093\u307e\u308a": ["\u3042\u3093\u307e\u308a", "", "too much; too (colloquial form of \u3042\u307e\u308a)"], "\u3064\u3081\u305f\u3044": ["\u3064\u3081\u305f\u3044", "", "cold"], "\u306c\u3051\u308b": ["\u306c\u3051\u308b", "", "to come out"], "\u306c\u3051\u307e\u305b\u3093": ["\u306c\u3051\u308b", "", "to come out"], "\u5927\u3055\u308f\u304e": ["(\u5927)\u3055\u308f\u304e", "\uff08\u304a\u304a\uff09\u3055\u308f\u304e", "(big) commotion"]};
+  var grammar_json = {"\u304b\u3059\u306e\u304c\u304a\u3057\u304f": ["V<SUB>3</SUB> + \u306e\u304c\u304a\u3057\u3044", "to hate to V<br>to not want to V", [["\u3068\u306a\u308a\u306e\u4eba\u306f\u91d1\u3065\u3061\u3092\u304b\u3059\u306e\u304c\u304a\u3057\u304f\u306a\u3063\u305f\u3002", "The neighbor didn't want ot lend his hammer"], ["\u304a\u91d1\u3092\u3064\u304b\u3046\u306e\u304c\u304a\u3057\u304f\u306a\u3063\u305f\u3002", "I hated to spend the money."]]], "\u3068\u3081\u3066\u304f\u308c": ["V<SUB>\u3066</SUB> + \u304f\u3060\u3055\u308b<br>V<SUB>\u3066</SUB> + \u304f\u308c\u308b", "someone does something for me/us", [["\u305b\u3093\u305b\u3044\u304c\u4e2d\u56fd\u306e\u3053\u3068\u3092\u8a71\u3057\u3066\u304f\u3060\u3055\u3063\u305f", "The teacher told us about China."], ["\u7236\u304c\u9b5a\u306e\u3064\u308a\u65b9\u3092\u6559\u3048\u3066\u304f\u308c\u305f", "Father taught me how to fish."], ["\u308f\u305f\u3057\u306e\u3053\u3068\u3092\u601d\u3063\u3066\u304f\u308c\u3066\u3042\u308a\u304c\u3068\u3046", "Thanks for thinking of me."], ["\u3068\u3081\u3066\u304f\u308c", "Put me up overnight"]]], "\u304b\u3051\u3066\u304f\u308c": ["V<SUB>\u3066</SUB> + \u304f\u3060\u3055\u308b<br>V<SUB>\u3066</SUB> + \u304f\u308c\u308b", "someone does something for me/us", [["\u305b\u3093\u305b\u3044\u304c\u4e2d\u56fd\u306e\u3053\u3068\u3092\u8a71\u3057\u3066\u304f\u3060\u3055\u3063\u305f", "The teacher told us about China."], ["\u7236\u304c\u9b5a\u306e\u3064\u308a\u65b9\u3092\u6559\u3048\u3066\u304f\u308c\u305f", "Father taught me how to fish."], ["\u308f\u305f\u3057\u306e\u3053\u3068\u3092\u601d\u3063\u3066\u304f\u308c\u3066\u3042\u308a\u304c\u3068\u3046", "Thanks for thinking of me."], ["\u3068\u3081\u3066\u304f\u308c", "Put me up overnight"]]], "\u6559\u3048\u3066\u304f\u308c\u307e\u3057\u305f": ["V<SUB>\u3066</SUB> + \u304f\u3060\u3055\u308b<br>V<SUB>\u3066</SUB> + \u304f\u308c\u308b", "someone does something for me/us", [["\u305b\u3093\u305b\u3044\u304c\u4e2d\u56fd\u306e\u3053\u3068\u3092\u8a71\u3057\u3066\u304f\u3060\u3055\u3063\u305f", "The teacher told us about China."], ["\u7236\u304c\u9b5a\u306e\u3064\u308a\u65b9\u3092\u6559\u3048\u3066\u304f\u308c\u305f", "Father taught me how to fish."], ["\u308f\u305f\u3057\u306e\u3053\u3068\u3092\u601d\u3063\u3066\u304f\u308c\u3066\u3042\u308a\u304c\u3068\u3046", "Thanks for thinking of me."], ["\u3068\u3081\u3066\u304f\u308c", "Put me up overnight"]]], "\u3055\u3080\u3046\u3054\u3056\u3044\u307e\u3059": ["TA + \u3046 + \u3054\u3056\u3044\u307e\u3059<br>QA + \u3067 + \u3054\u3056\u3044\u307e\u3059", "polite conjugation for adjectives", []], "\u304a\u3068\u307e\u308a\u304f\u3060\u3055\u3044": ["\u304aV<SUB>2</SUB> + \u304f\u3060\u3055\u3044", "Please V (polite)", [["\u304a\u3068\u307e\u308a\u304f\u3060\u3055\u3044", "Please stay over."], ["\u304a\u4f11\u307f\u304f\u3060\u3055\u3044", "Please take a rest."], ["\u3082\u3046\u4e00\u3069\u304a\u304b\u3093\u304c\u3048\u304f\u3060\u3055\u3044", "Please think it over once more."]]], "\u304a\u4f11\u307f\u304f\u3060\u3055\u3044": ["\u304aV<SUB>2</SUB> + \u304f\u3060\u3055\u3044", "Please V (polite)", [["\u304a\u3068\u307e\u308a\u304f\u3060\u3055\u3044", "Please stay over."], ["\u304a\u4f11\u307f\u304f\u3060\u3055\u3044", "Please take a rest."], ["\u3082\u3046\u4e00\u3069\u304a\u304b\u3093\u304c\u3048\u304f\u3060\u3055\u3044", "Please think it over once more."]]], "\u306d\u305f\u3053\u3068\u306a\u3069\u306f\u306a\u3044": ["V<SUB>\u305f</SUB> + \u3053\u3068\u304c\u3042\u308b<br>V<SUB>\u305f</SUB> + \u3053\u3068\u304c\u306a\u3044", "have V-ed before<br>have never V-ed before", [["\u3082\u306e\u3092\u304b\u3051\u3066\u306d\u305f\u3053\u3068\u306a\u3069\u306f\u306a\u3044", "I haven't ever done anything like sleep with something over me."], ["\u65e5\u672c\u3078\u884c\u3063\u305f\u3053\u3068\u304c\u306a\u3044", "I have never been to Japan."], ["\u3075\u3058\u3055\u3093\u3092\u898b\u305f\u3053\u3068\u304c\u3042\u308a\u307e\u3059\u304b", "Have you ever seen Mount Fuji?"]]], "\u3068\u304a\u308a\u306b\u3057\u3066": ["X\u3068\u304a\u308aY", "Y, exactly the way X<br>Y, as X", [["\u6559\u3048\u3066\u3082\u3089\u3063\u305f\u3068\u304a\u308a\u306b\u3057\u307e\u3059", "I will do it exactly the way you taught me."], ["\u8a00\u308f\u308c\u305f\u3068\u304a\u308a\u306b\u3057\u306a\u3055\u3044", "Do as you were told."], ["\u805e\u3044\u305f\u3068\u304a\u308a\u3060\u3063\u305f", "It was exactly as I had heard."]]], "\u306f\u3063\u3066\u304d\u305f\u304b\u3089\u3067\u3059": ["S\u304b\u3089X", "because S, X<br>Y, as X", [["\u624b\u304c\u3064\u3081\u305f\u3044\u304b\u3089\u3082\u3046\u5e30\u308d\u3046", "Our hands are getting cold, so let's go home."], ["\u3072\u3063\u3071\u3063\u305f\u304b\u3089\u3067\u3057\u3087\u3046", "That's probably because he pulled it."], ["\u8a00\u308f\u308c\u305f\u3068\u304a\u308a\u306b\u3057\u306a\u304b\u3063\u305f\u304b\u3089\u3067\u3059", "That is because she did not do exactly as she was told."]]], "\u5e30\u308d\u3046": ["Godan: Vstem + \u304a\u3046<br>Ichidan: Vstem + \u3088\u3046", "Let's/I'll/I shall V", [["\u3082\u3046\u5e30\u308d\u3046", "I'll/Let's go home."], ["\u30d1\u30f3\u3092\u8cb7\u3063\u3066\u6765\u3088\u3046", "I'll/Let's go get some bread."], ["\u3082\u3046\u306d\u3088\u3046", "Let's go to sleep now."], ["\u30c6\u30cb\u30b9\u3092\u3057\u3088\u3046\u304b", "Let's play tennis, shall we?"]]], "\u5f15\u304d\u4e0a\u3052\u3088\u3046\u3068\u3057\u305f": ["Godan: Vstem + \u304a\u3046 + \u3068\u3059\u308b<br>Ichidan: Vstem + \u3088\u3046 + \u3068\u3059\u308b", "to try to V", [["\u3057\u3063\u307d\u3092\u5f15\u304d?\u7e67\uff70\u3088\u3046\u3068\u3057\u305f", "He tried to pull out his tail."], ["\u6c34\u3092\u306e\u3082\u3046\u3068\u3057\u305f", "She tried to drink the water."], ["\u304f\u307e\u306f\u9b5a\u3092\u3068\u308d\u3046\u3068\u3057\u305f", "The bear tried to catch a fish."]]], "\u3051\u308c\u3069\u3082": ["S\u3051\u308c\u3069\u3082X", "Although S, X<br>S, but X", [["\u3057\u3063\u307d\u3092\u5f15\u304d\u4e0a\u3052\u3088\u3046\u3068\u3057\u305f\u3051\u308c\u3069\u3082\u3001\u3069\u3046\u3057\u3066\u3082\u306c\u3051\u307e\u305b\u3093", "He tried to pull out his tail, but he couldn't do it no matter what."], ["\u65e5\u672c\u3078\u6765\u305f\u3051\u308c\u3069\u3082\u3001\u65e5\u672c\u8a9e\u304c\u8a71\u305b\u306a\u3044", "Although she came to Japan, she doesn't speak Japanese."], ["\u5143\u6c17\u3060\u3051\u308c\u3069\u3082\u3001\u3057\u3042\u308f\u305b\u3067\u306f\u306a\u3044", "He is fine, but he is not happy."]]], "\u3072\u3063\u307d\u3063\u305f\u3068\u3053\u308d\u304c": ["V<SUB>\u305f</SUB> + \u3068\u3053\u308d\u304c\u3001 S", "when V, S<br>although V, S", [["\u3080\u308a\u306b\u3072\u3063\u3071\u3063\u305f\u3068\u3053\u308d\u304c\u3001\u5207\u308c\u3066\u3057\u307e\u3044\u307e\u3057\u305f", "It broke off when he pulled too hard."], ["\u5bb6\u306b\u3044\u305d\u3044\u3067\u5e30\u3063\u305f\u3068\u3053\u308d\u304c\u3001\u5b50\u3069\u3082\u305f\u3061\u306f\u3082\u3046\u306d\u3066\u3057\u307e\u3063\u3066\u3044\u305f", "Although she hurried home, the children had already gone to bed."]]], "\u3072\u3063\u307d\u3063\u305f\u304b\u3089\u306a\u306e\u3067\u3057\u3087\u3046": ["X\u306e\u306fY\u304b\u3089\u3060", "the reason for X is Y", [["\u3055\u308b\u306e\u9854\u306e\u307e\u3063\u304b\u306a\u306e\u306f\u3001\u305d\u306e\u3068\u304d\u3001\u3042\u307e\u308a\u529b\u3092\u5165\u308c\u3066\u3057\u3063\u307d\u3092\u3072\u3063\u3071\u3063\u305f\u304b\u3089\u306a\u306e\u3067\u3059", "The reason the monkey has a bright red face is that at that time he pulled his tail too hard."], ["\u3075\u3058\u3055\u3093\u304c\u898b\u3048\u306a\u304b\u3063\u305f\u306e\u306f\u3001\u5929\u6c17\u304c\u308f\u308b\u304b\u3063\u305f\u304b\u3089\u3067\u3057\u3087\u3046", "The reason you couldn't see Mount Fuji is probably that the weather was bad."]]], "\u3046\u3061\u305f\u3044\u306e\u3067\u3059": ["S\u306e\u3067\u3059<br>S\u306e\u3060", "It is that S<br>The reason is that S", [["\u3061\u3087\u3063\u3068\u304f\u304e\u304c\u3046\u3061\u305f\u3044\u306e\u3067\u3059\u304c", "The fact is, I want to hit a nail."]]], "\u306a\u3063\u305f\u306e\u3060": ["S\u306e\u3067\u3059<br>S\u306e\u3060", "It is that S<br>The reason is that S", [["\u3061\u3087\u3063\u3068\u304f\u304e\u304c\u3046\u3061\u305f\u3044\u306e\u3067\u3059\u304c", "The fact is, I want to hit a nail."]]], "\u9577\u304b\u3063\u305f\u306e\u3067\u3059": ["S\u306e\u3067\u3059<br>S\u306e\u3060", "It is that S<br>The reason is that S", [["\u3061\u3087\u3063\u3068\u304f\u304e\u304c\u3046\u3061\u305f\u3044\u306e\u3067\u3059\u304c", "The fact is, I want to hit a nail."]]], "\u306a\u3063\u3066\u3057\u307e\u3063\u305f\u306e\u3067\u3059": ["S\u306e\u3067\u3059<br>S\u306e\u3060", "It is that S<br>The reason is that S", [["\u3061\u3087\u3063\u3068\u304f\u304e\u304c\u3046\u3061\u305f\u3044\u306e\u3067\u3059\u304c", "The fact is, I want to hit a nail."]]], "\u304f\u3044\u3064\u3044\u305f\u306e\u3060": ["S\u306e\u3067\u3059<br>S\u306e\u3060", "It is that S<br>The reason is that S", [["\u3061\u3087\u3063\u3068\u304f\u304e\u304c\u3046\u3061\u305f\u3044\u306e\u3067\u3059\u304c", "The fact is, I want to hit a nail."]]], "\u304b\u3057\u3066\u3044\u305f\u3060\u3051\u307e\u305b\u3093\u304b": ["Agent \u306b + V<SUB>\u3066</SUB> + \u3044\u305f\u3060\u3051\u307e\u305b\u3093\u304b", "Could I get Agent to V?<br>Would Agent please V?", [["\u91d1\u3065\u3061\u3092\u304b\u3057\u3066\u3044\u305f\u3060\u3051\u307e\u305b\u3093\u304b\u3002", "Would you please lend me a hammer?"], ["\u305b\u3093\u305b\u3044\u306b\u6765\u3066\u3044\u305f\u3060\u3051\u307e\u305b\u3093\u304b\u3002", "Could I ask the teacher to come?"]]]};
+  var kanji_json = {"\u5408": ["\u3042\uff08\u3046\uff09\u30fb\u3042\uff08\u308f\u3059\uff09\u30fb\u3042\uff08\u308f\u305b\u308b\uff09", "\u30b4\u30a6\u30fb\u30ac\u30c3\u30fb\uff3b\u30ab\u30c3\uff3d", "to match; to put together; to adjust", [["\u5408\u8846\u56fd\uff08\u304c\u3063\u3057\u3085\u3046\u3053\u304f\uff09", "U.S.A."], ["\u5834\u5408\uff08\u3070\u3042\u3044\uff09", "case"], ["\u5408\u7406\uff08\u3054\u3046\u308a\uff09", "rational"], ["\u5177\u5408\uff08\u3050\u3042\u3044\uff09", "condition"], ["\u7d44\u5408\uff08\u304f\u307f\u3042\u3044\uff09", "unions"]]], "\u7d44": ["\u304f\uff08\u3080\uff09\u30fb\u304f\u307f", "\u30bd", "to put together; class, group, team, crew", [["\u7d44\u7e54\uff08\u305d\u3057\u304d\uff09", "organization"], ["\u7d44\u5408\uff08\u304f\u307f\u3042\u3044\uff09", "labor union"], ["\u756a\u7d44\uff08\u3070\u3093\u3050\u307f\uff09", "program"], ["\u7d44\u6210\uff08\u305d\u305b\u3044\uff09", "composition"]]], "\u4e00": ["\u3072\u3068\u30fb\u3072\u3068\uff08\u3064\uff09", "\u30a4\u30c1\u30fb\u30a4\u30c4", "one; first; a little; the same", [["\u4e00\u756a\uff08\u3044\u3061\u3070\u3093\uff09", "#1"], ["\u4e00\u4f53\uff08\u3044\u3063\u305f\u3044\uff09", "on the whole"], ["\u7d71\u4e00\uff08\u3068\u3046\u3044\u3064\uff09", "unification"], ["\u203b\u4e00\u4eba\uff08\u3072\u3068\u308a\uff09", "one person"], ["\u203b\u4e00\u65e5\uff08\u3064\u3044\u305f\u3061\uff09", "first day of the month"]]], "\u601d": ["\u304a\u3082\uff08\u3046\uff09", "\u30b7", "to think; idea", [["\u601d\u60f3\uff08\u3057\u305d\u3046\uff09", "thoughts"], ["\u601d\u616e\uff08\u3057\u308a\u3087\uff09", "consideration"], ["\u601d\u6848\uff08\u3057\u3042\u3093\uff09", "ideas"], ["\u610f\u601d\uff08\u3044\u3057\uff09", "will"], ["\u601d\u3044\u51fa\u3059\uff08\u304a\u3082\u3044\u3060\u3059\uff09", "to remember"]]], "\u4f11": ["\u3084\u3059\uff08\u3080\uff09\u30fb\u3084\u3059\uff08\u307e\u308b\uff09\u30fb\u3084\u3059\uff08\u3081\u308b\uff09", "\u30ad\u30e5\u30a6", "to rest; to feel at east; to take a vacation; break", [["\u4f11\u5b66\uff08\u304d\u3085\u3046\u304c\u304f\uff09", "school absense"], ["\u904b\u4f11\uff08\u3046\u3093\u304d\u3085\u3046\uff09", "suspension"], ["\u4f11\u6687\uff08\u304d\u3085\u3046\u304b\uff09", "vacation"], ["\u4f11\u65e5\uff08\u304d\u3085\u3046\u3058\u3064\uff09", "holiday"], ["\u4f11\u8077\uff08\u304d\u3085\u3046\u3057\u3087\u304f\uff09", "laid off"]]], "\u5143": ["\u3082\u3068", "\u30b2\u30f3\u30fb\u30ac\u30f3", "origin; beginning", [["\u5143\u6c17\uff08\u3052\u3093\u304d\uff09", "fine"], ["\u5143\u65e5\uff08\u304c\u3093\u3058\u3064\uff09", "New Year's Day"], ["\u7d00\u5143\uff08\u304d\u3052\u3093\uff09", "an epoch"], ["\u8eab\u5143\uff08\u307f\u3082\u3068\uff09", "identity"], ["\u5143\u65e6\uff08\u304c\u3093\u305f\u3093\uff09", "New Year's morning"]]], "\u767e": ["", "\u30d2\u30e3\u30af", "hundred; many", [["\u767e\u79d1\uff08\u3072\u3083\u3063\u304b\uff09", "encyclopedia"], ["\u56db\u767e\uff08\u3088\u3093\u3072\u3083\u304f\uff09", "400"], ["\u767e\u70b9\uff08\u3072\u3083\u304f\u3066\u3093\uff09", "100%"], ["\u767e\u59d3\uff08\u3072\u3083\u304f\u3057\u3087\u3046\uff09", "farmer"], ["\u203b\u516b\u767e\u5c4b\uff08\u3084\u304a\u3084\uff09", "vegetable store"]]], "\u91ce": ["\u306e", "\u30e4", "field; the country; natural; limit", [["\u91ce\u7403\uff08\u3084\u304d\u3085\u3046\uff09", "basebal"], ["\u5206\u91ce\uff08\u3076\u3093\u3084\uff09", "field of study"], ["\u91ce\u515a\uff08\u3084\u3068\u3046\uff09", "opposition parties"], ["\u91ce\u539f\uff08\u306e\u306f\u3089\uff09", "field"], ["\u5e73\u91ce\uff08\u3078\u3044\u3084\uff09", "plain"]]], "\u7528": ["\u3082\u3061\uff08\u3044\u308b\uff09", "\u30e8\u30a6", "to use; errand", [["\u5229\u7528\uff08\u308a\u3088\u3046\uff09", "utilization"], ["\u4f7f\u7528\uff08\u3057\u3088\u3046\uff09", "use"], ["\u4fe1\u7528\uff08\u3057\u3093\u3088\u3046\uff09", "trust"], ["\u7528\u610f\uff08\u3088\u3046\u3044\uff09", "preparation"], ["\u7528\u4e8b\uff08\u3088\u3046\u3058\uff09", "errand"]]], "\u9577": ["\u306a\u304c\uff08\u3044\uff09", "\u30c1\u30e7\u30a6", "long; old age; chief, boss; to surpass", [["\u793e\u9577\uff08\u3057\u3083\u3061\u3087\u3046\uff09", "company president"], ["\u9577\u5b98\uff08\u3061\u3087\u3046\u304b\u3093\uff09", "government secretary"], ["\u6821\u9577\uff08\u3053\u3046\u3061\u3087\u3046\uff09", "principal"], ["\u90e8\u9577\uff08\u3076\u3061\u3087\u3046\uff09", "sectino head"], ["\u6210\u9577\uff08\u305b\u3044\u3061\u3087\u3046\uff09", "growth"]]], "\u51ac": ["\u3075\u3086", "\u30c8\u30a6", "winter", [["\u51ac\u5b63\uff08\u3068\u3046\u304d\uff09", "winter"], ["\u51ac\u7269\uff08\u3075\u3086\u3082\u306e\uff09", "winter clothes"], ["\u771f\u51ac\uff08\u307e\u3075\u3086\uff09", "middle of the winter"], ["\u51ac\u7a7a\uff08\u3075\u3086\u305d\u3089\uff09", "winter sky"]]], "\u5ddd": ["\u304b\u308f", "\u30bb\u30f3", "river", [["\u6cb3\u5ddd\uff08\u304b\u305b\u3093\uff09", "rivers"], ["\u5ddd\u4e0a\uff08\u304b\u308f\u304b\u307f\uff09", "upriver"], ["\u30bb\u30fc\u30cc\u5ddd", "the Seine River"], ["\u203b\u5ddd\u539f\uff08\u304b\u308f\u3089\uff09", "river bed"]]], "\u6559": ["\u304a\u3057\uff08\u3048\u308b\uff09\u30fb\u304a\u305d\uff08\u308f\u308b\uff09", "\u30ad\u30e7\u30a6", "to teach; to learn", [["\u6559\u80b2\uff08\u304d\u3087\u3046\u3044\u304f\uff09", "education"], ["\u6559\u6388\uff08\u304d\u3087\u3046\u3058\u3085\uff09", "professor"], ["\u5b97\u6559\uff08\u3057\u3085\u3046\u304d\u3087\u3046\uff09", "religion"], ["\u6559\u4f1a\uff08\u304d\u3087\u3046\u304b\u3044\uff09", "church"], ["\u6559\u5e2b\uff08\u304d\u3087\u3046\u3057\uff09", "teacher"]]], "\u5ba4": ["\u3080\u308d", "\u30b7\u30c4", "room; clan", [["\u5bdd\u5ba4\uff08\u3057\u3093\u3057\u3064\uff09", "bedroom"], ["\u6559\u5ba4\uff08\u304d\u3087\u3046\u3057\u3064\uff09", "classroom"], ["\u7687\u5ba4\uff08\u3053\u3046\u3057\u3064\uff09", "Inperial Household"], ["\u5ba4\u753a\uff08\u3080\u308d\u307e\u3061\uff09", "Muromachi"], ["\u5ba2\u5ba4\uff08\u304d\u3083\u304f\u3057\u3064\uff09", "guest room"]]], "\u5207": ["\u304d\uff08\u308b\uff09\u30fb\u304d\uff08\u308c\u308b\uff09", "\u30bb\u30c4\u30fb\uff3b\u30b5\u30a4\uff3d", "to cut; polite", [["\u5927\u5207\u306a\uff08\u305f\u3044\u305b\u3064\u306a\uff09", "important"], ["\u89aa\u5207\u306a\uff08\u3057\u3093\u305b\u3064\u306a\uff09", "kind"], ["\u4e00\u5207\uff08\u3044\u3063\u3055\u3044\uff09", "whole"], ["\u8e0f\u5207\uff08\u3075\u307f\u304d\u308a\uff09", "railroad crossing"], ["\u5207\u65ad\uff08\u305b\u3064\u3060\u3093\uff09", "amputation"]]], "\u5341": ["\u3068\u304a\u30fb\u3068", "\u30b8\u30e5\u30a6\u30fb\u30b8\u30c3", "ten", [["\u5341\u5206", "sufficient"], ["\u4e09\u5341", "30"], ["\u5341\u65e5", "the tenth day of the month"], ["\u5341\u5b57", "cross"]]], "\u5e30": ["\u304b\u3048\uff08\u308b\uff09\u30fb\u304b\u3048\uff08\u3059\uff09", "\u30ad", "to return", [["\u5e30\u56fd\uff08\u304d\u3053\u304f\uff09", "return home"], ["\u5e30\u7701\uff08\u304d\u305b\u3044\uff09", "return home"], ["\u5fa9\u5e30\uff08\u3075\u3063\u304d\uff09", "a comeback"], ["\u5e30\u5316\uff08\u304d\u304b\uff09", "naturalization"], ["\u5e30\u4eac\uff08\u304d\u304d\u3087\u3046\uff09", "return to Tokyo"]]]};
+  </script>
+  <div class="block title">けちんぼう</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/04-01-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="04-01-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-001" class="fas fa-play"></i>
+        <audio id="audio_04-01-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">むかしむかし、二人のけちんぼうがとなり合ってすんでいました。</span>
+        <span class="content-sent kanji-sent is-hidden">むかしむかし、二人のけちんぼうがとなり<a onclick="show_kanji_data('合')">合</a>ってすんでいました。</span>
+        <span class="content-sent plain-sent is-hidden">むかしむかし、二人のけちんぼうがとなり合ってすんでいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('むかし')">むかし</a><a onclick="show_vocab_data('むかし')">むかし</a>、二人の<a onclick="show_vocab_data('けちんぼう')">けちんぼう</a>がとなり合ってすんでいました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Once upon a time, two stingy men lived next to each other.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-002" class="fas fa-play"></i>
+        <audio id="audio_04-01-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ある日、一方の主人が金づちをかりに、つかいの者をとなりへ行かせました。</span>
+        <span class="content-sent kanji-sent is-hidden">ある日、<a onclick="show_kanji_data('一')">一</a>方の主人が金づちをかりに、つかいの者をとなりへ行かせました。</span>
+        <span class="content-sent plain-sent is-hidden">ある日、一方の主人が金づちをかりに、つかいの者をとなりへ行かせました。</span>
+        <span class="content-sent vocab-sent">ある日、<a onclick="show_vocab_data('一方の')">一方の</a><a onclick="show_vocab_data('主人')">主人</a>が<a onclick="show_vocab_data('金づち')">金づち</a>をかりに、<a onclick="show_vocab_data('つかいの者')">つかいの者</a>をとなりへ行かせました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">One day, one of these men sent his servant next door to borrow a hammer.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-003" class="fas fa-play"></i>
+        <audio id="audio_04-01-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">つかいの者は、となりへ行ってたのみました。</span>
+        <span class="content-sent kanji-sent is-hidden">つかいの者は、となりへ行ってたのみました。</span>
+        <span class="content-sent plain-sent is-hidden">つかいの者は、となりへ行ってたのみました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('つかいの者')">つかいの者</a>は、となりへ行って<a onclick="show_vocab_data('たのみました')">たのみました</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The servant went next door and made the request.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-004" class="fas fa-play"></i>
+        <audio id="audio_04-01-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「すみませんが、金づちを<a onclick="show_grammar_data('かしていただけませんか')">かしていただけませんか</a>。ちょっとくぎが<a onclick="show_grammar_data('うちたいのです')">うちたいのです</a>が。」</span>
+        <span class="content-sent kanji-sent is-hidden">「すみませんが、金づちをかしていただけませんか。ちょっとくぎがうちたいのですが。」</span>
+        <span class="content-sent plain-sent is-hidden">「すみませんが、金づちをかしていただけませんか。ちょっとくぎがうちたいのですが。」</span>
+        <span class="content-sent vocab-sent">「すみませんが、<a onclick="show_vocab_data('金づち')">金づち</a>を<a onclick="show_vocab_data('かして')">かして</a>いただけませんか。ちょっと<a onclick="show_vocab_data('くぎ')">くぎ</a>が<a onclick="show_vocab_data('うちたい')">うちたい</a>のですが。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;Excuse me, but won&#39;t you please lend me a hammer?  I would like to drive some nails.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-005" class="fas fa-play"></i>
+        <audio id="audio_04-01-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「はいはい。それで、そのくぎは木のくぎですか、鉄のくぎですか。」</span>
+        <span class="content-sent kanji-sent is-hidden">「はいはい。それで、そのくぎは木のくぎですか、鉄のくぎですか。」</span>
+        <span class="content-sent plain-sent is-hidden">「はいはい。それで、そのくぎは木のくぎですか、鉄のくぎですか。」</span>
+        <span class="content-sent vocab-sent">「はいはい。それで、その<a onclick="show_vocab_data('くぎ')">くぎ</a>は木の<a onclick="show_vocab_data('くぎ')">くぎ</a>ですか、<a onclick="show_vocab_data('鉄')">鉄</a>の<a onclick="show_vocab_data('くぎ')">くぎ</a>ですか。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;Yes yes.  Well, are those nails wooden nails, or are they iron nails?&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-006" class="fas fa-play"></i>
+        <audio id="audio_04-01-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「鉄のくぎです。」</span>
+        <span class="content-sent kanji-sent is-hidden">「鉄のくぎです。」</span>
+        <span class="content-sent plain-sent is-hidden">「鉄のくぎです。」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('鉄')">鉄</a>の<a onclick="show_vocab_data('くぎ')">くぎ</a>です。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;They are iron nails.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-007" class="fas fa-play"></i>
+        <audio id="audio_04-01-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この返事を聞くと、となりの主人は、「あいにく、今ちょうど金づちはほかへかしてあります。」と言って、つかいの者を帰しました。</span>
+        <span class="content-sent kanji-sent is-hidden">この返事を聞くと、となりの主人は、「あいにく、今ちょうど金づちはほかへかしてあります。」と言って、つかいの者を<a onclick="show_kanji_data('帰')">帰</a>しました。</span>
+        <span class="content-sent plain-sent is-hidden">この返事を聞くと、となりの主人は、「あいにく、今ちょうど金づちはほかへかしてあります。」と言って、つかいの者を帰しました。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('返事')">返事</a>を聞くと、となりの<a onclick="show_vocab_data('主人')">主人</a>は、「<a onclick="show_vocab_data('あいにく')">あいにく</a>、<a onclick="show_vocab_data('今')">今</a><a onclick="show_vocab_data('ちょうど')">ちょうど</a><a onclick="show_vocab_data('金づち')">金づち</a>はほかへ<a onclick="show_vocab_data('かして')">かして</a>あります。」と言って、<a onclick="show_vocab_data('つかいの者')">つかいの者</a>を帰しました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When he heard this answer, the master of the house next door said, &quot;Unfortunately, right now our hammer has been lent out to someone else,&quot; and sent the servant home.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-008" class="fas fa-play"></i>
+        <audio id="audio_04-01-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">つかいの者がうちに帰ってこの話をすると、主人はおこって言いました。</span>
+        <span class="content-sent kanji-sent is-hidden">つかいの者がうちに<a onclick="show_kanji_data('帰')">帰</a>ってこの話をすると、主人はおこって言いました。</span>
+        <span class="content-sent plain-sent is-hidden">つかいの者がうちに帰ってこの話をすると、主人はおこって言いました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('つかいの者')">つかいの者</a>がうちに帰ってこの話をすると、<a onclick="show_vocab_data('主人')">主人</a>は<a onclick="show_vocab_data('おこって')">おこって</a>言いました。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When the servant returned home and repeated this conversation, his master became angry and said,</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-009" class="fas fa-play"></i>
+        <audio id="audio_04-01-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「なんて世の中にはけちな人がいるんだろう。</span>
+        <span class="content-sent kanji-sent is-hidden">「なんて世の中にはけちな人がいるんだろう。</span>
+        <span class="content-sent plain-sent is-hidden">「なんて世の中にはけちな人がいるんだろう。</span>
+        <span class="content-sent vocab-sent">「なんて<a onclick="show_vocab_data('世の中')">世の中</a>には<a onclick="show_vocab_data('けちな')">けちな</a>人がいるんだろう。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;How is it that there are such stingy people in the world.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-010" class="fas fa-play"></i>
+        <audio id="audio_04-01-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">木のくぎか鉄のくぎかとたずねて、鉄のくぎなど分かったら、うそをついてことわった。</span>
+        <span class="content-sent kanji-sent is-hidden">木のくぎか鉄のくぎかとたずねて、鉄のくぎなど分かったら、うそをついてことわった。</span>
+        <span class="content-sent plain-sent is-hidden">木のくぎか鉄のくぎかとたずねて、鉄のくぎなど分かったら、うそをついてことわった。</span>
+        <span class="content-sent vocab-sent">木の<a onclick="show_vocab_data('くぎ')">くぎ</a>か<a onclick="show_vocab_data('鉄')">鉄</a>の<a onclick="show_vocab_data('くぎ')">くぎ</a>かと<a onclick="show_vocab_data('たずねて')">たずねて</a>、<a onclick="show_vocab_data('鉄')">鉄</a>の<a onclick="show_vocab_data('くぎ')">くぎ</a>など分かったら、<a onclick="show_vocab_data('うそ')">うそ</a>をついて<a onclick="show_vocab_data('ことわった')">ことわった</a>。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">He asks us whether they are wooden nails or iron nails, and when he found out that they are iron nails, he told a lie and turned us down.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-011" class="fas fa-play"></i>
+        <audio id="audio_04-01-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">金づちがいたむと思ったら、<a onclick="show_grammar_data('かすのがおしく')">かすのがおしく</a><a onclick="show_grammar_data('なったのだ')">なったのだ</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">金づちがいたむと<a onclick="show_kanji_data('思')">思</a>ったら、かすのがおしくなったのだ。</span>
+        <span class="content-sent plain-sent is-hidden">金づちがいたむと思ったら、かすのがおしくなったのだ。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('金づち')">金づち</a>が<a onclick="show_vocab_data('いたむ')">いたむ</a>と思ったら、<a onclick="show_vocab_data('かす')">かす</a>のが<a onclick="show_vocab_data('おしく')">おしく</a>なったのだ。</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">When he thought that his hammer would be damaged, he became reluctant to lend it.</span>
+      </td>
+    </tr>
+
+    <tr id="04-01-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04-01-012" class="fas fa-play"></i>
+        <audio id="audio_04-01-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04-01-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかたがない。それでは、うちの金づちを出してつかおう。」</span>
+        <span class="content-sent kanji-sent is-hidden">しかたがない。それでは、うちの金づちを出してつかおう。」</span>
+        <span class="content-sent plain-sent is-hidden">しかたがない。それでは、うちの金づちを出してつかおう。」</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('しかたがない')">しかたがない</a>。それでは、うちの<a onclick="show_vocab_data('金づち')">金づち</a>を出してつかおう。」</span>
+      </td>
+    </tr>
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">There&#39;s nothing we can do.  Well then, let&#39;s get our hammer out and use it.&quot;</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+
