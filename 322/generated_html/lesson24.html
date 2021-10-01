@@ -1,0 +1,1454 @@
+<html>
+
+<head>
+  <title>
+    Japanese 322
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
+}
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
+</script>
+
+<style>
+i.fa-play {
+	padding-right: 9;
+}
+
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 322</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>縦の会</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u7e26\u306e": ["\u7e26\u306e", "\u305f\u3066\u306e", "Longitudinal<br>GE"], "\u672c\u59bb": ["\u672c\u59bb", "\u307b\u3093\u3055\u3044", "one's legal wife"], "\u5177\u5408": ["\u5177\u5408", "\u3050\u3042\u3044", "condition<br>state<br>manner<br>health<br>"], "\u4e09\u65e5": ["\u4e09\u65e5", "\u307f\u3063\u304b", "three days<br>the third day <br>"], "\u99c4\u76ee": ["\u99c4\u76ee", "\u3060\u3081", "useless<br>no good<br>hopeless<br>"], "\u5f79\u306b\u7acb\u3064": ["\u5f79\u306b\u7acb\u3064", "\u3084\u304f\u306b\u305f\u3064", "to be helpful<br>to be useful<br>"], "\u5f79\u306b\u7acb\u305f\u306a\u3044": ["\u5f79\u306b\u7acb\u3064", "\u3084\u304f\u306b\u305f\u3064", "to be helpful<br>to be useful<br>"], "\u6d99\u3092\u5451\u3080": ["\u6d99\u3092\u5451\u3080", "\u306a\u307f\u3060\u3092\u306e\u3080", "to pocket an insult<br>to choke back one's tears"], "\u6d99\u3092\u5451\u3093\u3067": ["\u6d99\u3092\u5451\u3080", "\u306a\u307f\u3060\u3092\u306e\u3080", "to pocket an insult<br>to choke back one's tears"], "\u3068\u3044\u3063\u3066\u3082": ["\u3068\u3044\u3063\u3066\u3082", " ", "on the other hand<br>even if we say so"], "\u4e07\u5e74\u7b46": ["\u4e07\u5e74\u7b46", "\u307e\u3093\u306d\u3093\u3072\u3064", "fountain pen<br>"], "\u4e09\u672c": ["\u4e09\u672c", "\u3055\u3093\u307c\u3093", "three <br>"], "\u99b4\u308c\u308b": ["\u99b4\u308c\u308b", "\u306a\u308c\u308b", "to grow accustomed to<br>to become domesticated<br>to become tame<br>to get too familiar with"], "\u99b4\u308c\u305f": ["\u99b4\u308c\u308b", "\u306a\u308c\u308b", "to grow accustomed to<br>to become domesticated<br>to become tame<br>to get too familiar with"], "\u6613\u3044": ["\u6613\u3044", "\u3084\u3059\u3044", "easy<br>"], "\u4e8c\u53f7": ["\u4e8c\u53f7", "\u306b\u3054\u3046", "number two<br>concubine<br>"], "\u4e09\u756a": ["\u4e09\u756a", "\u3055\u3093\u3070\u3093", "third<br>no. three"], "\u30c6\u30ec\u30d3": ["\u30c6\u30ec\u30d3", " ", "television<br>TV<br>"], "\u30bb\u30ea\u30d5": ["\u30bb\u30ea\u30d5", " ", "serif<br>"], "\u30c9\u30e9\u30de": ["\u30c9\u30e9\u30de", " ", "drama<br>"], "\u6216\u308b\u7a0b\u5ea6": ["\u6216\u308b\u7a0b\u5ea6", "\u3042\u308b\u3066\u3044\u3069", "to some extent<br>to a certain extent"], "\u65e9\u304f": ["\u65e9\u304f", "\u306f\u3084\u304f", "early<br>fast<br>soon<br>"], "\u30c6\u30f3\u30dd": ["\u30c6\u30f3\u30dd", " ", "tempo<br>"], "\u6027\u6025": ["\u6027\u6025", "\u305b\u3044\u304d\u3085\u3046", "impatience<br>a quick temper<br>"], "\u6ed1\u308a": ["\u6ed1\u308a", "\u306c\u3081\u308a", "viscous liquid<br>slime<br>mucus<br>"], "\u3067\u306a\u3044\u3068": ["\u3067\u306a\u3044\u3068", " ", "without<br>but if"], "\u3044\u3089\u3044\u3089": ["\u3044\u3089\u3044\u3089", " ", "getting nervous<br>irritation"], "\u5bfe\u3057\u3066": ["\u5bfe\u3057\u3066", "\u305f\u3044\u3057\u3066", "for<br>in regard to<br>per"], "\u7cdf\u7ce0": ["\u7cdf\u7ce0", "\u305d\u3046\u3053\u3046", "plain food<br>simple living"], "\u30e8\u30ea": ["\u30e8\u30ea", " ", "Yori"], "\u30b5\u30ba": ["\u30b5\u30ba", " ", "Szasz"], "\u6587\u5b57\u901a\u308a": ["\u6587\u5b57\u901a\u308a", "\u3082\u3058\u3069\u304a\u308a", "literally<br>"], "\u4e0b\u306b": ["\u4e0b\u306b", "\u3057\u3082\u306b", "down<br>below<br>downward"], "\u6271\u3044": ["\u6271\u3044", "\u3042\u3064\u304b\u3044", "treatment<br>service<br>"], "\u5834\u5408": ["\u5834\u5408", "\u3070\u3042\u3044", "case<br>situation<br>"], "\u65c5\u5148": ["\u65c5\u5148", "\u305f\u3073\u3055\u304d", "destination<br>goal<br>"], "\u539f\u6a4b": ["\u539f\u6a4b", "\u306f\u3089\u306f\u3057", "Harahashi"], "\u306a\u3089\u306a\u3044": ["\u306a\u3089\u306a\u3044", " ", "cannot help ..ing<br>irresistibly<br>unbearably"], "\u9023\u308c\u3066\u884c\u304f": ["\u9023\u308c\u3066\u884c\u304f", "\u3064\u308c\u3066\u3044\u304f", "to take someone  along<br>"], "\u9023\u308c\u3066\u884c\u3063\u305f": ["\u9023\u308c\u3066\u884c\u304f", "\u3064\u308c\u3066\u3044\u304f", "to take someone  along<br>"], "\u983c\u3080": ["\u983c\u3080", "\u305f\u306e\u3080", "to request<br>to beg<br>to ask<br>"], "\u983c\u307e\u308c\u308c": ["\u983c\u3080", "\u305f\u306e\u3080", "to request<br>to beg<br>to ask<br>"], "\u4ed6\u4eba": ["\u4ed6\u4eba", "\u305f\u306b\u3093", "another person"], "\u8cb8\u3059": ["\u8cb8\u3059", "\u304b\u3059", "to lend<br>"], "\u8cb8\u3057\u305f": ["\u8cb8\u3059", "\u304b\u3059", "to lend<br>"], "\u7d76\u5bfe\u306b": ["\u7d76\u5bfe\u306b", "\u305c\u3063\u305f\u3044\u306b", "absolutely<br>unconditionally<br>"], "\u30d8\u30f3": ["\u30d8\u30f3", " ", "Henn<br>Henne"], "\u4ed6\u4eba\u69d8": ["\u4ed6\u4eba\u69d8", "\u3072\u3068\u3055\u307e", "other people<br>others"], "\u63a0\u596a": ["\u63a0\u596a", "\u308a\u3083\u304f\u3060\u3064", "pillage<br>plunder<br>looting<br>robbery"], "\u30a4\u30f3\u30af\u74f6": ["\u30a4\u30f3\u30af\u74f6", "\u30a4\u30f3\u30af\u3073\u3093", "bottle of ink"], "\u30df\u30df": ["\u30df\u30df", " ", "Mimi"], "\u98fc\u3046": ["\u98fc\u3046", "\u304b\u3046", "to keep<br>to raise<br>to feed<br>"], "\u98fc\u3063\u3066": ["\u98fc\u3046", "\u304b\u3046", "to keep<br>to raise<br>to feed<br>"], "\u610f\u5473": ["\u610f\u5473", "\u3044\u307f", "meaning<br>significance<br>"], "\u786c\u3044": ["\u786c\u3044", "\u304b\u305f\u3044", "solid<br>hard <br>unpolished writing<br>"], "\u7d30\u5b57": ["\u7d30\u5b57", "\u3055\u3044\u3058", "small type or handwriting"], "\u5927\u304d\u306a": ["\u5927\u304d\u306a", "\u304a\u304a\u304d\u306a", "big<br>large<br>great"], "\u6587\u5b57": ["\u6587\u5b57", "\u3082\u3093\u3058", "letter <br>character<br>"], "\u4f7f\u3044\u8fbc\u3080": ["\u4f7f\u3044\u8fbc\u3080", "\u3064\u304b\u3044\u3053\u3080", "to embezzle<br>to misappropriate"], "\u4f7f\u3044\u8fbc\u3093\u3067": ["\u4f7f\u3044\u8fbc\u3080", "\u3064\u304b\u3044\u3053\u3080", "to embezzle<br>to misappropriate"], "\u305d\u308d\u305d\u308d": ["\u305d\u308d\u305d\u308d", " ", "gradually<br>steadily<br>quietly<br>slowly<br>soon"], "\u592a\u3044": ["\u592a\u3044", "\u3075\u3068\u3044", "fat<br>thick<br>"], "\u592a\u304f": ["\u592a\u3044", "\u3075\u3068\u3044", "fat<br>thick<br>"], "\u606b\u559d": ["\u606b\u559d", "\u3069\u3046\u304b\u3064", "intimidation<br>threat<br>bluster"], "\u6ce3\u304d": ["\u6ce3\u304d", "\u306a\u304d", "weeping<br>lamenting<br>"], "\u843d\u3057": ["\u843d\u3057", "\u304a\u3068\u3057", "Otoshi"], "\u3042\u3089\u3086\u308b": ["\u3042\u3089\u3086\u308b", " ", "all<br>every"], "\u624b\u6bb5": ["\u624b\u6bb5", "\u3057\u3085\u3060\u3093", "means<br>way<br>measure<br>"], "\u8272\u4ed5\u639b\u3051": ["\u8272\u4ed5\u639b\u3051", "\u3044\u308d\u3058\u304b\u3051", "Venus flytrap"], "\u51fa\u7248\u793e": ["\u51fa\u7248\u793e", "\u3057\u3085\u3063\u3071\u3093\u3057\u3083", "publisher<br>"], "\u30e9\u30b8\u30aa": ["\u30e9\u30b8\u30aa", " ", "radio<br>"], "\u53f0\u672c": ["\u53f0\u672c", "\u3060\u3044\u307b\u3093", "libretto<br>scenario<br>"], "\u4e8c\u5341": ["\u4e8c\u5341", "\u306f\u305f\u3061", "20 years old<br> 20th year<br>"], "\u6620\u753b\u8a55\u8ad6\u5bb6": ["\u6620\u753b\u8a55\u8ad6\u5bb6", "\u3048\u3044\u304c\u3072\u3087\u3046\u308d\u3093\u304b", "film  critic"], "\u6e05\u6c34": ["\u6e05\u6c34", "\u3057\u307f\u305a", "spring water<br> Shimizu"], "\u4fca\u4e8c": ["\u4fca\u4e8c", "\u3057\u3085\u3093\u3058", "Shunji (proper noun)"], "\u7b2c\u4e00": ["\u7b2c\u4e00", "\u3060\u3044\u3044\u3061", "the first"], "\u4ee5\u6765": ["\u4ee5\u6765", "\u3044\u3089\u3044", "since<br>henceforth<br>"], "\u5341\u672c": ["\u5341\u672c", "\u3058\u3085\u3063\u307d\u3093", "ten"], "\u6226\u5229\u54c1": ["\u6226\u5229\u54c1", "\u305b\u3093\u308a\u3072\u3093", "spoils of war<br>booty"], "\u4e09\u5e74": ["\u4e09\u5e74", "\u3055\u3093\u306d\u3093", "three years"], "\u98df\u3079\u308b": ["\u98df\u3079\u308b", "\u305f\u3079\u308b", "to eat<br>"], "\u30c6\u30ec\u30d3\u5c40": ["\u30c6\u30ec\u30d3\u5c40", "\u30c6\u30ec\u30d3\u304d\u3087\u304f", "television station"], "\u30c7\u30a3\u30ec\u30af\u30bf\u30fc": ["\u30c7\u30a3\u30ec\u30af\u30bf\u30fc", " ", "director<br>"], "\u5a66\u4eba": ["\u5a66\u4eba", "\u3075\u3058\u3093", "woman<br>female<br>"], "\u96d1\u8a8c": ["\u96d1\u8a8c", "\u3056\u3063\u3057", "journal<br>magazine<br>"], "\u7de8\u96c6\u90e8": ["\u7de8\u96c6\u90e8", "\u3078\u3093\u3057\u3085\u3046\u3076", "editorial department"], "\u654f\u8155": ["\u654f\u8155", "\u3073\u3093\u308f\u3093", "ability<br>"], "\u5973\u53f2": ["\u5973\u53f2", "\u3058\u3087\u3057", "Ms<br>"], "\u611b\u7528": ["\u611b\u7528", "\u3042\u3044\u3088\u3046", "favorite<br>favourite<br>habitual use<br>"], "\u6b63\u59bb": ["\u6b63\u59bb", "\u305b\u3044\u3055\u3044", "legal wife"], "\u683c\u4e0a\u3052": ["\u683c\u4e0a\u3052", "\u304b\u304f\u3042\u3052", "status elevation<br>"], "\u91d1\u3092\u6255\u3046": ["\u91d1\u3092\u6255\u3046", "\u304b\u306d\u3092\u306f\u3089\u3046", "to pay money"], "\u91d1\u3092\u6255\u3063\u3066": ["\u91d1\u3092\u6255\u3046", "\u304b\u306d\u3092\u306f\u3089\u3046", "to pay money"], "\u30d1\u30ea": ["\u30d1\u30ea", " ", "Paris<br>"], "\u30aa\u30da\u30e9": ["\u30aa\u30da\u30e9", " ", "opera<br>"], "\u5c02\u9580\u5e97": ["\u5c02\u9580\u5e97", "\u305b\u3093\u3082\u3093\u3066\u3093", "specialist shops<br>"], "\u9577\u3044\u9593": ["\u9577\u3044\u9593", "\u306a\u304c\u3044\u3042\u3044\u3060", "long interval"], "\u72d9\u3046": ["\u72d9\u3046", "\u306d\u3089\u3046", "to aim at<br>"], "\u72d9\u3063\u3066": ["\u72d9\u3046", "\u306d\u3089\u3046", "to aim at<br>"], "\u8eab\u92ad": ["\u8eab\u92ad", "\u307f\u305c\u306b", "one's own money"], "\u82f1\u8a9e": ["\u82f1\u8a9e", "\u3048\u3044\u3054", "the English language<br>"], "\u91d1\u9aea": ["\u91d1\u9aea", "\u304d\u3093\u3071\u3064", "blond hair<br>"], "\u78a7\u773c": ["\u78a7\u773c", "\u3078\u304d\u304c\u3093", "blue eyes"], "\u4e2d\u5e74": ["\u4e2d\u5e74", "\u3061\u3085\u3046\u306d\u3093", "middle-aged<br>"], "\u7f8e\u5973": ["\u7f8e\u5973", "\u3073\u3058\u3087", "beautiful woman<br>"], "\u5e97\u54e1": ["\u5e97\u54e1", "\u3066\u3093\u3044\u3093", "shop assistant<br>employee<br>clerk<br>salesperson<br>"], "\u611b\u60f3": ["\u611b\u60f3", "\u3042\u3044\u305d\u3046", "civility<br>courtesy<br>compliments<br>sociability<br>graces<br>"], "\u4e16\u8a71": ["\u4e16\u8a71", "\u305b\u308f", "looking after<br>help<br>aid<br>assistance<br>"], "\u8a66\u3057": ["\u8a66\u3057", "\u305f\u3081\u3057", "trial<br>test<br>"], "\u540d\u524d": ["\u540d\u524d", "\u306a\u307e\u3048", "name<br>"], "\u3042\u308f\u3066\u3066": ["\u3042\u308f\u3066\u3066", " ", "in hot haste<br>in confusion"], "\u7a00\u4ee3": ["\u7a00\u4ee3", "\u304d\u3060\u3044", "uncommon<br>rare"], "\u60aa\u7b46": ["\u60aa\u7b46", "\u3042\u304f\u3072\u3064", "poor handwriting"], "\u65e5\u672c": ["\u65e5\u672c", "\u306b\u307b\u3093", "Japan<br>"], "\u306b\u306a\u3063\u3066": ["\u306b\u306a\u3063\u3066", " ", "becoming<br>reaching a state or condition"], "\u4eca\u9803": ["\u4eca\u9803", "\u3044\u307e\u3054\u308d", "about this time"], "\u534a\u4e03": ["\u534a\u4e03", "\u306f\u3093\u3057\u3061", "Hanshichi"], "\u66f8\u304d\u5473": ["\u66f8\u304d\u5473", "\u304b\u304d\u3042\u3058", "the feel or performance of a pen"], "\u3068\u3053\u308d\u304c": ["\u3068\u3053\u308d\u304c", " ", "however<br>but"], "\u30ce\u30f3": ["\u30ce\u30f3", " ", "no <br>"], "\u512a\u96c5": ["\u512a\u96c5", "\u3086\u3046\u304c", "elegance<br>grace<br>refinement<br>"], "\u624b\u3064\u304d": ["\u624b\u3064\u304d", "\u3066\u3064\u304d", "way of doing something"], "\u3088\u3046\u306b\u3059\u308b": ["\u3088\u3046\u306b\u3059\u308b", " ", "try ..<br>make an effort to .."], "\u306b\u3057\u3066\u306f": ["\u306b\u3057\u3066\u306f", " ", "considering that ..<br>for .."], "\u5927\u304d\u304f": ["\u5927\u304d\u304f", "\u304a\u304a\u304d\u304f", "in a big way<br>on a grand scale"], "\u4eca\u5ea6": ["\u4eca\u5ea6", "\u3053\u3093\u3069", "now<br>this time<br>next time<br>another time<br>"], "\u5c0f\u3055": ["\u5c0f\u3055", "\u3061\u3044\u3055", "small<br>little<br>tiny"], "\u304a\u3063\u304b\u306a\u3044": ["\u304a\u3063\u304b\u306a\u3044", " ", "frightening<br>huge"], "\u7247\u8a00": ["\u7247\u8a00", "\u304b\u305f\u3053\u3068", "a smattering<br>talk like a baby<br>speak haltingly"], "\u7e26\u66f8\u304d": ["\u7e26\u66f8\u304d", "\u305f\u3066\u304c\u304d", "vertical writing<br>"], "\u3057\u304b\u3057\u3001": ["\u3057\u304b\u3057\u3001", " ", "however<br>but"], "\u5149\u308b": ["\u5149\u308b", "\u3072\u304b\u308b", "to shine<br>to glitter<br>to be bright<br>"], "\u5149\u3063\u3066": ["\u5149\u308b", "\u3072\u304b\u308b", "to shine<br>to glitter<br>to be bright<br>"], "\u900f\u660e": ["\u900f\u660e", "\u3068\u3046\u3081\u3044", "transparency<br>cleanness<br>"], "\u524d\u4e09": ["\u524d\u4e09", "\u3055\u304d\u307f", "Sakimi"], "\u30bb\u30f3\u30c1": ["\u30bb\u30f3\u30c1", " ", "centimeter<br>centi-<br>10^-2<br>"], "\u6297\u8b70": ["\u6297\u8b70", "\u3053\u3046\u304e", "protest<br>objection<br>"], "\u5b50\u4f9b": ["\u5b50\u4f9b", "\u3053\u3069\u3082", "child<br>children<br>"], "\u904a\u3076": ["\u904a\u3076", "\u3042\u305d\u3076", "to play"], "\u904a\u3093\u3060": ["\u904a\u3076", "\u3042\u305d\u3076", "to play"], "\u30d3\u30fc\u7389": ["\u30d3\u30fc\u7389", "\u30d3\u30fc\u3060\u307e", "marble<br>"], "\u5f7c\u5973": ["\u5f7c\u5973", "\u304b\u306e\u3058\u3087", "she<br> girl friend<br>sweetheart<br>"], "\u767d\u3044": ["\u767d\u3044", "\u3057\u308d\u3044", "white<br>"], "\u6a2a\u66f8\u304d": ["\u6a2a\u66f8\u304d", "\u3088\u3053\u304c\u304d", "writing horizontally<br>"], "\u30b5\u30a4\u30f3": ["\u30b5\u30a4\u30f3", " ", "autograph<br>signature<br> sign<br> sine<br>"], "\u5b9f\u4f8b": ["\u5b9f\u4f8b", "\u3058\u3064\u308c\u3044", "example<br>illustration<br>"], "\u6587\u5316": ["\u6587\u5316", "\u3076\u3093\u304b", "culture<br>civilization<br>civilisation<br>"], "\u9055\u3044": ["\u9055\u3044", "\u3061\u304c\u3044", "difference<br>discrepancy<br>"], "\u662d\u548c": ["\u662d\u548c", "\u3057\u3087\u3046\u308f", "Japanese emperor <br>"], "\u82e6\u624b\u3067\u3042\u308b": ["\u82e6\u624b\u3067\u3042\u308b", "\u306b\u304c\u3066\u3067\u3042\u308b", "to be weak in<br>to be poor at<br>to be bad at"], "\u96fb\u8eca": ["\u96fb\u8eca", "\u3067\u3093\u3057\u3083", "electric train<br>"], "\u773a\u3081\u308b": ["\u773a\u3081\u308b", "\u306a\u304c\u3081\u308b", "to view<br>to gaze at<br>"], "\u770b\u677f": ["\u770b\u677f", "\u304b\u3093\u3070\u3093", "sign<br>poster<br>billboard"], "\u306b\u306a\u3063\u3066\u3044\u308b": ["\u306b\u306a\u3063\u3066\u3044\u308b", " ", "becoming<br>reaching a state or condition"], "\u4e00\u5ea6": ["\u4e00\u5ea6", "\u3044\u3061\u3069", "once<br>one time<br>on one occasion<br>"], "\u306a\u3044\u3053\u3068\u304c\u3042\u308b": ["\u306a\u3044\u3053\u3068\u304c\u3042\u308b", " ", "not to do sometimes"], "\u5927\u5206": ["\u5927\u5206", "\u3060\u3044\u3076\u3093", "considerably<br>greatly<br>a lot<br>"], "\u524d\u306e": ["\u524d\u306e", "\u307e\u3048\u306e", "in front of<br>anterior"], "\u30b7\u30cd": ["\u30b7\u30cd", " ", "Sine"], "\u968f\u5206": ["\u968f\u5206", "\u305a\u3044\u3076\u3093", "extremely<br>"], "\u8b19\u905c": ["\u8b19\u905c", "\u3051\u3093\u305d\u3093", "humble<br>humility<br>modesty<br>"], "\u611f\u5fc3": ["\u611f\u5fc3", "\u304b\u3093\u3057\u3093", "admiration<br>Well done!<br>"], "\u30ad\u30ce": ["\u30ad\u30ce", " ", "Kino"], "\u30a8\u30cd": ["\u30a8\u30cd", " ", "energy<br>"], "\u9593\u9055\u3044": ["\u9593\u9055\u3044", "\u307e\u3061\u304c\u3044", "mistake<br>"], "\u6587\u7ae0": ["\u6587\u7ae0", "\u3076\u3093\u3057\u3087\u3046", "sentence<br>article<br>"], "\u81ea\u5206": ["\u81ea\u5206", "\u3058\u3076\u3093", "myself<br>oneself<br>"], "\u82e5\u3044": ["\u82e5\u3044", "\u308f\u304b\u3044", "young<br>"], "\u4eba\u305f\u3061": ["\u4eba\u305f\u3061", "\u3072\u3068\u305f\u3061", "people"], "\u624b\u7d19": ["\u624b\u7d19", "\u3066\u304c\u307f", "letter<br>"], "\u5927\u534a": ["\u5927\u534a", "\u305f\u3044\u306f\u3093", "majority<br>mostly<br>generally<br>"], "\u7fd2\u5b57": ["\u7fd2\u5b57", "\u3057\u3085\u3046\u3058", "penmanship<br>"], "\u7fd2\u3046": ["\u7fd2\u3046", "\u306a\u3089\u3046", "to learn<br>"], "\u7fd2\u3063\u305f": ["\u7fd2\u3046", "\u306a\u3089\u3046", "to learn<br>"], "\u3068\u3044\u3046\u3088\u308a": ["\u3068\u3044\u3046\u3088\u308a", " ", "rather than<br>more .. than .."], "\u30a4\u30e9\u30b9\u30c8": ["\u30a4\u30e9\u30b9\u30c8", " ", "illustration<br>"], "\u5287\u753b": ["\u5287\u753b", "\u3052\u304d\u304c", "comic strip with dramatic story<br>"], "\u753b\u9762": ["\u753b\u9762", "\u304c\u3081\u3093", "picture<br>photo<br>screen<br>display"], "\u4e2d\u306b\u306f": ["\u4e2d\u306b\u306f", "\u306a\u304b\u306b\u306f", "some <br>among"], "\u30b0\u30ea\u30fc\u30f3": ["\u30b0\u30ea\u30fc\u30f3", " ", "green<br>environmentally friendly<br>"], "\u3055\u307e\u3056\u307e": ["\u3055\u307e\u3056\u307e", " ", "varied<br>various"], "\u30da\u30f3": ["\u30da\u30f3", " ", "pen<br>P.E.N. <br>"], "\u66f8\u304d\u5206\u3051\u308b": ["\u66f8\u304d\u5206\u3051\u308b", "\u304b\u304d\u308f\u3051\u308b", "to classify and write up"], "\u66f8\u304d\u5206\u3051\u305f": ["\u66f8\u304d\u5206\u3051\u308b", "\u304b\u304d\u308f\u3051\u308b", "to classify and write up"], "\u5f62\u5bb9\u8a5e": ["\u5f62\u5bb9\u8a5e", "\u3051\u3044\u3088\u3046\u3057", "adjective<br>"], "\u540d\u9580": ["\u540d\u9580", "\u3081\u3044\u3082\u3093", "noted family<br>noble family<br>"], "\u5973\u5b50": ["\u5973\u5b50", "\u3058\u3087\u3057", "woman<br>girl<br>"], "\u4e2d\u5b66": ["\u4e2d\u5b66", "\u3061\u3085\u3046\u304c\u304f", "middle school<br>junior high school<br>"], "\u304a\u5b22\u3055\u3093": ["\u304a\u5b22\u3055\u3093", "\u304a\u3058\u3087\u3046\u3055\u3093", "daughter<br> young lady<br>"], "\u904a\u3073": ["\u904a\u3073", "\u3042\u305d\u3073", "playing<br>"], "\u4e09\u4eba": ["\u4e09\u4eba", "\u3055\u3093\u306b\u3093", "three people<br>"], "\u82e6\u624b": ["\u82e6\u624b", "\u306b\u304c\u3066", "poor <br>weak <br>dislike <br>"], "\u30ce\u30fc\u30c8": ["\u30ce\u30fc\u30c8", " ", "notebook<br>copy-book<br>exercise book<br>"], "\u53e4\u6587": ["\u53e4\u6587", "\u3053\u3076\u3093", "ancient writing<br>classical literature<br>"], "\u672c\u5f53": ["\u672c\u5f53", "\u307b\u3093\u3068\u3046", "truth<br>reality<br>"], "\u7269\u8a9e": ["\u7269\u8a9e", "\u3082\u306e\u304c\u305f\u308a", "tale<br>story<br>legend<br>"], "\u65e5\u8a18": ["\u65e5\u8a18", "\u306b\u3063\u304d", "diary<br>journal<br>"], "\u6c11\u4e3b\u4e3b\u7fa9": ["\u6c11\u4e3b\u4e3b\u7fa9", "\u307f\u3093\u3057\u3085\u3057\u3085\u304e", "democracy<br>"], "\u8f9b\u3044": ["\u8f9b\u3044", "\u304b\u3089\u3044", "hot <br>salty<br> tough <br>adverse<br>harsh<br>"], "\u591a\u6570\u6c7a": ["\u591a\u6570\u6c7a", "\u305f\u3059\u3046\u3051\u3064", "majority rule<br>"], "\u9031\u520a\u8a8c": ["\u9031\u520a\u8a8c", "\u3057\u3085\u3046\u304b\u3093\u3057", "weekly publication<br>"], "\u65b0\u805e": ["\u65b0\u805e", "\u3057\u3093\u3076\u3093", "newspaper<br>"], "\u533a\u5f79\u6240": ["\u533a\u5f79\u6240", "\u304f\u3084\u304f\u3057\u3087", "ward office<br>council <br>"], "\u6238\u7c4d\u8b04\u672c": ["\u6238\u7c4d\u8b04\u672c", "\u3053\u305b\u304d\u3068\u3046\u307b\u3093", "official copy of the family register<br>"], "\u795e\u4e3b": ["\u795e\u4e3b", "\u304b\u3093\u306c\u3057", "Shinto priest<br>"], "\u795d\u8a5e": ["\u795d\u8a5e", "\u3057\u3085\u304f\u3057", "Shinto ritual prayer<br> congratulatory address"], "\u5e78\u305b": ["\u5e78\u305b", "\u3057\u3042\u308f\u305b", "happiness<br>good fortune<br>luck<br>blessing<br>"], "\u591a\u5206": ["\u591a\u5206", "\u305f\u3076\u3093", "perhaps<br>probably<br>"], "\u660e\u6cbb": ["\u660e\u6cbb", "\u3081\u3044\u3058", "Meiji era<br>"], "\u307b\u3068\u3093\u3069": ["\u307b\u3068\u3093\u3069", " ", "mostly<br>almost"], "\u6848\u5185": ["\u6848\u5185", "\u3042\u3093\u306a\u3044", "information<br>guidance<br>leading<br>"], "\u6210\u7530\u7a7a\u6e2f": ["\u6210\u7530\u7a7a\u6e2f", "\u306a\u308a\u305f\u304f\u3046\u3053\u3046", "Narita Airport"], "\u5916\u56fd": ["\u5916\u56fd", "\u304c\u3044\u3053\u304f", "foreign country<br>"], "\u6c17\u5206": ["\u6c17\u5206", "\u304d\u3076\u3093", "feeling<br>mood<br>"], "\u5473\u308f\u3046": ["\u5473\u308f\u3046", "\u3042\u3058\u308f\u3046", "to taste<br>to savor<br>to relish<br>"], "\u9055\u3044\u306a\u3044": ["\u9055\u3044\u306a\u3044", "\u3061\u304c\u3044\u306a\u3044", "sure<br>no mistaking it<br>for certain<br>"], "\u4ea1\u3044": ["\u4ea1\u3044", "\u306a\u3044", "dead"], "\u4ea1\u304f": ["\u4ea1\u3044", "\u306a\u3044", "dead"], "\u4f5c\u5bb6": ["\u4f5c\u5bb6", "\u3055\u3063\u304b", "author<br>writer<br>novelist<br>artist<br>"], "\u4f5c\u308a": ["\u4f5c\u308a", "\u3064\u304f\u308a", "construction<br>make-up<br> sliced raw fish<br>"], "\u8003\u3048\u308b": ["\u8003\u3048\u308b", "\u304b\u3093\u304c\u3048\u308b", "to consider<br>to think about<br>"]};
+  var grammar_json = {};
+  var kanji_json = {"\u98fc": ["\u304b(\u3046); \u304b\u3044", "\u30b7", "raise; domesticate; feed; keep", []], "\u7e26": ["\u305f\u3066", "\u30b8\u30e5\u30a6", "self-indulgent; wayward; vertical; height; length", []], "\u4fca": ["\u3068\u3057; \u3059\u3050\u308b", "\u30b7\u30e5\u30f3", "genius; excellence; sagacious", []], "\u67d0": ["\u306a\u306b\u304c\u3057; \u305d\u308c\u304c\u3057", "\u30dc\u30a6", "one; that person; a certain; so-and-so", []], "\u559d": ["", "\u30ab\u30c4", "hoarse; scold", []], "\u96c5": ["\u304a; \u307f\u3084(\u3073); \u305f\u3060\u3057; \u304b; \u307e\u3055; \u307e\u3055\u3057; \u3088\u3057; \u3046; \u306e\u308a", "\u30ac", "refined; gracious; elegant; graceful", []], "\u8b04": ["", "\u30c8\u30a6", "mimeograph; copy", []], "\u4f0a": ["\u3088\u3057; \u3053\u308c; \u3044\u3068; \u3060; \u304b\u308c; \u305f\u3060", "\u30a4", "that one; Italy", []], "\u7a00": ["\u307e\u308c; \u307e\u3070\u3089", "\u30b1; \u30ad", "dilute (acid); phenomenal; rare", []], "\u78a7": ["\u305f\u307e; \u307f\u3069\u308a; \u3042\u304a", "\u30d2\u30e3\u30af; \u30d8\u30ad", "green; blue", []]};
+  </script>
+  <div class="block title">縦の会</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/24-full.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="24-001" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-001" class="fas fa-play"></i>
+        <audio id="audio_24-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-001.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この間から本妻の具合が悪かったのだが、この二、三日は全く駄目で物の役に立たない。</span>
+        <span class="content-sent kanji-sent is-hidden">この間から本妻の具合が悪かったのだが、この二、三日は全く駄目で物の役に立たない。</span>
+        <span class="content-sent plain-sent is-hidden">この間から本妻の具合が悪かったのだが、この二、三日は全く駄目で物の役に立たない。</span>
+        <span class="content-sent vocab-sent">この間から<a onclick="show_vocab_data('本妻')">本妻</a>の<a onclick="show_vocab_data('具合')">具合</a>が悪かったのだが、この二、<a onclick="show_vocab_data('三日')">三日</a>は全く<a onclick="show_vocab_data('駄目')">駄目</a>で物の<a onclick="show_vocab_data('役に立たない')">役に立たない</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-002" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-002" class="fas fa-play"></i>
+        <audio id="audio_24-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-002.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">情に於てはしのびないが、涙を呑んですてることにした――といっても万年筆のはなしである。</span>
+        <span class="content-sent kanji-sent is-hidden">情に於てはしのびないが、涙を呑んですてることにした――といっても万年筆のはなしである。</span>
+        <span class="content-sent plain-sent is-hidden">情に於てはしのびないが、涙を呑んですてることにした――といっても万年筆のはなしである。</span>
+        <span class="content-sent vocab-sent">情に於てはしのびないが、<a onclick="show_vocab_data('涙を呑んで')">涙を呑んで</a>すてることにした――<a onclick="show_vocab_data('といっても')">といっても</a><a onclick="show_vocab_data('万年筆')">万年筆</a>のはなしである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-003" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-003" class="fas fa-play"></i>
+        <audio id="audio_24-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-003.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">私は万年筆を三本持っている。</span>
+        <span class="content-sent kanji-sent is-hidden">私は万年筆を三本持っている。</span>
+        <span class="content-sent plain-sent is-hidden">私は万年筆を三本持っている。</span>
+        <span class="content-sent vocab-sent">私は<a onclick="show_vocab_data('万年筆')">万年筆</a>を<a onclick="show_vocab_data('三本')">三本</a>持っている。</span>
+      </td>
+    </tr>
+
+    <tr id="24-004" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-004" class="fas fa-play"></i>
+        <audio id="audio_24-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-004.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">三本の中で一番書き馴れたのを本妻と呼び、次に書き易いのを二号、三番手を三号と呼んでいた。</span>
+        <span class="content-sent kanji-sent is-hidden">三本の中で一番書き馴れたのを本妻と呼び、次に書き易いのを二号、三番手を三号と呼んでいた。</span>
+        <span class="content-sent plain-sent is-hidden">三本の中で一番書き馴れたのを本妻と呼び、次に書き易いのを二号、三番手を三号と呼んでいた。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('三本')">三本</a>の中で一番書き<a onclick="show_vocab_data('馴れた')">馴れた</a>のを<a onclick="show_vocab_data('本妻')">本妻</a>と呼び、次に書き<a onclick="show_vocab_data('易い')">易い</a>のを<a onclick="show_vocab_data('二号')">二号</a>、<a onclick="show_vocab_data('三番')">三番</a>手を三号と呼んでいた。</span>
+      </td>
+    </tr>
+
+    <tr id="24-005" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-005" class="fas fa-play"></i>
+        <audio id="audio_24-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-005.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">テレビのセリフは、ほーム・ドラマを多くかくせいであろうが、或る程度早く書かないとテンポが出ない。</span>
+        <span class="content-sent kanji-sent is-hidden">テレビのセリフは、ほーム・ドラマを多くかくせいであろうが、或る程度早く書かないとテンポが出ない。</span>
+        <span class="content-sent plain-sent is-hidden">テレビのセリフは、ほーム・ドラマを多くかくせいであろうが、或る程度早く書かないとテンポが出ない。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('テレビ')">テレビ</a>の<a onclick="show_vocab_data('セリフ')">セリフ</a>は、ほーム・<a onclick="show_vocab_data('ドラマ')">ドラマ</a>を多くかくせいであろうが、<a onclick="show_vocab_data('或る程度')">或る程度</a><a onclick="show_vocab_data('早く')">早く</a>書かないと<a onclick="show_vocab_data('テンポ')">テンポ</a>が出ない。</span>
+      </td>
+    </tr>
+
+    <tr id="24-006" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-006" class="fas fa-play"></i>
+        <audio id="audio_24-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-006.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それでなくても性急（せつから）なので、万年筆は滑りがよく書き馴れたものでないと、セリフまでいつもの調子が出ないようで焦々（いらいら）する。</span>
+        <span class="content-sent kanji-sent is-hidden">それでなくても性急（せつから）なので、万年筆は滑りがよく書き馴れたものでないと、セリフまでいつもの調子が出ないようで焦々（いらいら）する。</span>
+        <span class="content-sent plain-sent is-hidden">それでなくても性急（せつから）なので、万年筆は滑りがよく書き馴れたものでないと、セリフまでいつもの調子が出ないようで焦々（いらいら）する。</span>
+        <span class="content-sent vocab-sent">それでなくても<a onclick="show_vocab_data('性急')">性急</a>（せつから）なので、<a onclick="show_vocab_data('万年筆')">万年筆</a>は<a onclick="show_vocab_data('滑り')">滑り</a>がよく書き<a onclick="show_vocab_data('馴れた')">馴れた</a>もの<a onclick="show_vocab_data('でないと')">でないと</a>、<a onclick="show_vocab_data('セリフ')">セリフ</a>までいつもの調子が出ないようで焦々（<a onclick="show_vocab_data('いらいら')">いらいら</a>）する。</span>
+      </td>
+    </tr>
+
+    <tr id="24-007" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-007" class="fas fa-play"></i>
+        <audio id="audio_24-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-007.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そんなわけだから、本妻に対しては「糟糠（そうこう）ノ妻ハ堂ヨリ下サズ」文字通り下にも置かぬ扱いをして来た。</span>
+        <span class="content-sent kanji-sent is-hidden">そんなわけだから、本妻に対しては「糟糠（そうこう）ノ妻ハ堂ヨリ下サズ」文字通り下にも置かぬ扱いをして来た。</span>
+        <span class="content-sent plain-sent is-hidden">そんなわけだから、本妻に対しては「糟糠（そうこう）ノ妻ハ堂ヨリ下サズ」文字通り下にも置かぬ扱いをして来た。</span>
+        <span class="content-sent vocab-sent">そんなわけだから、<a onclick="show_vocab_data('本妻')">本妻</a>に<a onclick="show_vocab_data('対して')">対して</a>は「<a onclick="show_vocab_data('糟糠')">糟糠</a>（そうこう）ノ妻ハ堂<a onclick="show_vocab_data('ヨリ')">ヨリ</a>下<a onclick="show_vocab_data('サズ')">サズ</a>」<a onclick="show_vocab_data('文字通り')">文字通り</a><a onclick="show_vocab_data('下に')">下に</a>も置かぬ<a onclick="show_vocab_data('扱い')">扱い</a>をして来た。</span>
+      </td>
+    </tr>
+
+    <tr id="24-008" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-008" class="fas fa-play"></i>
+        <audio id="audio_24-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-008.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">どんな場合でも、本妻はうちの外に持ち出すことをしなかった。</span>
+        <span class="content-sent kanji-sent is-hidden">どんな場合でも、本妻はうちの外に持ち出すことをしなかった。</span>
+        <span class="content-sent plain-sent is-hidden">どんな場合でも、本妻はうちの外に持ち出すことをしなかった。</span>
+        <span class="content-sent vocab-sent">どんな<a onclick="show_vocab_data('場合')">場合</a>でも、<a onclick="show_vocab_data('本妻')">本妻</a>はうちの外に持ち出すことをしなかった。</span>
+      </td>
+    </tr>
+
+    <tr id="24-009" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-009" class="fas fa-play"></i>
+        <audio id="audio_24-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-009.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">旅先や外で原橋を書かなくてはならないときは、二号や三号と連れて行った。</span>
+        <span class="content-sent kanji-sent is-hidden">旅先や外で原橋を書かなくてはならないときは、二号や三号と連れて行った。</span>
+        <span class="content-sent plain-sent is-hidden">旅先や外で原橋を書かなくてはならないときは、二号や三号と連れて行った。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('旅先')">旅先</a>や外で<a onclick="show_vocab_data('原橋')">原橋</a>を書かなくては<a onclick="show_vocab_data('ならない')">ならない</a>ときは、<a onclick="show_vocab_data('二号')">二号</a>や三号と<a onclick="show_vocab_data('連れて行った')">連れて行った</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-010" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-010" class="fas fa-play"></i>
+        <audio id="audio_24-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-010.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">二号や三号は頼まれれば、他人に貸したが、本妻だけは絶対に他人に貸さなかった。</span>
+        <span class="content-sent kanji-sent is-hidden">二号や三号は頼まれれば、他人に貸したが、本妻だけは絶対に他人に貸さなかった。</span>
+        <span class="content-sent plain-sent is-hidden">二号や三号は頼まれれば、他人に貸したが、本妻だけは絶対に他人に貸さなかった。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('二号')">二号</a>や三号は<a onclick="show_vocab_data('頼まれれ')">頼まれれ</a>ば、<a onclick="show_vocab_data('他人')">他人</a>に<a onclick="show_vocab_data('貸した')">貸した</a>が、<a onclick="show_vocab_data('本妻')">本妻</a>だけは<a onclick="show_vocab_data('絶対に')">絶対に</a><a onclick="show_vocab_data('他人')">他人</a>に貸さなかった。</span>
+      </td>
+    </tr>
+
+    <tr id="24-011" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-011" class="fas fa-play"></i>
+        <audio id="audio_24-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-011.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ヘンな書き癖が移ると大変だということもあるが、万一、床に落とされでもしたら、という恐れがあったからである。</span>
+        <span class="content-sent kanji-sent is-hidden">ヘンな書き癖が移ると大変だということもあるが、万一、床に落とされでもしたら、という恐れがあったからである。</span>
+        <span class="content-sent plain-sent is-hidden">ヘンな書き癖が移ると大変だということもあるが、万一、床に落とされでもしたら、という恐れがあったからである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ヘン')">ヘン</a>な書き癖が移ると大変だということもあるが、万一、床に落とされでもしたら、という恐れがあったからである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-012" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-012" class="fas fa-play"></i>
+        <audio id="audio_24-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-012.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この本妻も二号も、他人様からの掠奪品である。</span>
+        <span class="content-sent kanji-sent is-hidden">この本妻も二号も、他人様からの掠奪品である。</span>
+        <span class="content-sent plain-sent is-hidden">この本妻も二号も、他人様からの掠奪品である。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('本妻')">本妻</a>も<a onclick="show_vocab_data('二号')">二号</a>も、<a onclick="show_vocab_data('他人様')">他人様</a>からの<a onclick="show_vocab_data('掠奪')">掠奪</a>品である。</span>
+      </td>
+    </tr>
+
+    <tr id="24-013" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-013" class="fas fa-play"></i>
+        <audio id="audio_24-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-013.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「君はインク瓶の中に糸ミミズを飼っているんじゃないのか」</span>
+        <span class="content-sent kanji-sent is-hidden">「君はインク瓶の中に糸ミミズを<a onclick="show_kanji_data('飼')">飼</a>っているんじゃないのか」</span>
+        <span class="content-sent plain-sent is-hidden">「君はインク瓶の中に糸ミミズを飼っているんじゃないのか」</span>
+        <span class="content-sent vocab-sent">「君は<a onclick="show_vocab_data('インク瓶')">インク瓶</a>の中に糸<a onclick="show_vocab_data('ミミ')">ミミ</a>ズを<a onclick="show_vocab_data('飼って')">飼って</a>いるんじゃないのか」</span>
+      </td>
+    </tr>
+
+    <tr id="24-014" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-014" class="fas fa-play"></i>
+        <audio id="audio_24-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-014.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と言われるほど、だらしなく続いた字を書くせいか、万年筆も書き意味の硬い細字用は全く駄目である。</span>
+        <span class="content-sent kanji-sent is-hidden">と言われるほど、だらしなく続いた字を書くせいか、万年筆も書き意味の硬い細字用は全く駄目である。</span>
+        <span class="content-sent plain-sent is-hidden">と言われるほど、だらしなく続いた字を書くせいか、万年筆も書き意味の硬い細字用は全く駄目である。</span>
+        <span class="content-sent vocab-sent">と言われるほど、だらしなく続いた字を書くせいか、<a onclick="show_vocab_data('万年筆')">万年筆</a>も書き<a onclick="show_vocab_data('意味')">意味</a>の<a onclick="show_vocab_data('硬い')">硬い</a><a onclick="show_vocab_data('細字')">細字</a>用は全く<a onclick="show_vocab_data('駄目')">駄目</a>である。</span>
+      </td>
+    </tr>
+
+    <tr id="24-015" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-015" class="fas fa-play"></i>
+        <audio id="audio_24-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-015.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">大きな、やわらかい文字を書く人で、使い込んで使い込んでもうそろそろ捨てようかというほど太くなったのを持っておいでの方をみつけると、恫喝（どうかつ）、泣き落し、ありとあらゆる手段を使って、せしめてしまう。</span>
+        <span class="content-sent kanji-sent is-hidden">大きな、やわらかい文字を書く人で、使い込んで使い込んでもうそろそろ捨てようかというほど太くなったのを持っておいでの方をみつけると、恫<a onclick="show_kanji_data('喝')">喝</a>（どうかつ）、泣き落し、ありとあらゆる手段を使って、せしめてしまう。</span>
+        <span class="content-sent plain-sent is-hidden">大きな、やわらかい文字を書く人で、使い込んで使い込んでもうそろそろ捨てようかというほど太くなったのを持っておいでの方をみつけると、恫喝（どうかつ）、泣き落し、ありとあらゆる手段を使って、せしめてしまう。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('大きな')">大きな</a>、やわらかい<a onclick="show_vocab_data('文字')">文字</a>を書く人で、<a onclick="show_vocab_data('使い込んで')">使い込んで</a><a onclick="show_vocab_data('使い込んで')">使い込んで</a>もう<a onclick="show_vocab_data('そろそろ')">そろそろ</a>捨てようかというほど<a onclick="show_vocab_data('太く')">太く</a>なったのを持っておいでの方をみつけると、<a onclick="show_vocab_data('恫喝')">恫喝</a>（どうかつ）、<a onclick="show_vocab_data('泣き')">泣き</a><a onclick="show_vocab_data('落し')">落し</a>、ありと<a onclick="show_vocab_data('あらゆる')">あらゆる</a><a onclick="show_vocab_data('手段')">手段</a>を使って、せしめてしまう。</span>
+      </td>
+    </tr>
+
+    <tr id="24-016" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-016" class="fas fa-play"></i>
+        <audio id="audio_24-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-016.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">使わないのは色仕掛けだけである。</span>
+        <span class="content-sent kanji-sent is-hidden">使わないのは色仕掛けだけである。</span>
+        <span class="content-sent plain-sent is-hidden">使わないのは色仕掛けだけである。</span>
+        <span class="content-sent vocab-sent">使わないのは<a onclick="show_vocab_data('色仕掛け')">色仕掛け</a>だけである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-017" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-017" class="fas fa-play"></i>
+        <audio id="audio_24-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-017.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">出版社に勤めるかたわらラジオの台本を書き始めてから二十年になるが、映画評論家の清水俊二氏からせしめたのを掠奪第一号として、以来、十本以上の戦利品をものにして、これで間に合わせてきた。</span>
+        <span class="content-sent kanji-sent is-hidden">出版社に勤めるかたわらラジオの台本を書き始めてから二十年になるが、映画評論家の清水<a onclick="show_kanji_data('俊')">俊</a>二氏からせしめたのを掠奪第一号として、以来、十本以上の戦利品をものにして、これで間に合わせてきた。</span>
+        <span class="content-sent plain-sent is-hidden">出版社に勤めるかたわらラジオの台本を書き始めてから二十年になるが、映画評論家の清水俊二氏からせしめたのを掠奪第一号として、以来、十本以上の戦利品をものにして、これで間に合わせてきた。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('出版社')">出版社</a>に勤めるかたわら<a onclick="show_vocab_data('ラジオ')">ラジオ</a>の<a onclick="show_vocab_data('台本')">台本</a>を書き始めてから<a onclick="show_vocab_data('二十')">二十</a>年になるが、<a onclick="show_vocab_data('映画評論家')">映画評論家</a>の<a onclick="show_vocab_data('清水')">清水</a><a onclick="show_vocab_data('俊二')">俊二</a>氏からせしめたのを<a onclick="show_vocab_data('掠奪')">掠奪</a><a onclick="show_vocab_data('第一')">第一</a>号として、<a onclick="show_vocab_data('以来')">以来</a>、<a onclick="show_vocab_data('十本')">十本</a>以上の<a onclick="show_vocab_data('戦利品')">戦利品</a>をものにして、これで間に合わせてきた。</span>
+      </td>
+    </tr>
+
+    <tr id="24-018" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-018" class="fas fa-play"></i>
+        <audio id="audio_24-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-018.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">三年間私を食べさせてくれたのは、某テレビ局のディレクターのものだし、二号は某婦人雑誌編集部の敏腕女史愛用のものであった。</span>
+        <span class="content-sent kanji-sent is-hidden">三年間私を食べさせてくれたのは、<a onclick="show_kanji_data('某')">某</a>テレビ局のディレクターのものだし、二号は<a onclick="show_kanji_data('某')">某</a>婦人雑誌編集部の敏腕女史愛用のものであった。</span>
+        <span class="content-sent plain-sent is-hidden">三年間私を食べさせてくれたのは、某テレビ局のディレクターのものだし、二号は某婦人雑誌編集部の敏腕女史愛用のものであった。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('三年')">三年</a>間私を食べさせてくれたのは、某<a onclick="show_vocab_data('テレビ局')">テレビ局</a>の<a onclick="show_vocab_data('ディレクター')">ディレクター</a>のものだし、<a onclick="show_vocab_data('二号')">二号</a>は某<a onclick="show_vocab_data('婦人')">婦人</a><a onclick="show_vocab_data('雑誌')">雑誌</a><a onclick="show_vocab_data('編集部')">編集部</a>の<a onclick="show_vocab_data('敏腕')">敏腕</a><a onclick="show_vocab_data('女史')">女史</a><a onclick="show_vocab_data('愛用')">愛用</a>のものであった。</span>
+      </td>
+    </tr>
+
+    <tr id="24-019" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-019" class="fas fa-play"></i>
+        <audio id="audio_24-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-019.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">本妻が倒れたので、いずれは二号が正妻となり、三号が二号に格上げするわけだが、この三号だけが、私がお金を払って買ったものなのである。</span>
+        <span class="content-sent kanji-sent is-hidden">本妻が倒れたので、いずれは二号が正妻となり、三号が二号に格上げするわけだが、この三号だけが、私がお金を払って買ったものなのである。</span>
+        <span class="content-sent plain-sent is-hidden">本妻が倒れたので、いずれは二号が正妻となり、三号が二号に格上げするわけだが、この三号だけが、私がお金を払って買ったものなのである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('本妻')">本妻</a>が倒れたので、いずれは<a onclick="show_vocab_data('二号')">二号</a>が<a onclick="show_vocab_data('正妻')">正妻</a>となり、三号が<a onclick="show_vocab_data('二号')">二号</a>に<a onclick="show_vocab_data('格上げ')">格上げ</a>するわけだが、この三号だけが、私がお<a onclick="show_vocab_data('金を払って')">金を払って</a>買ったものなのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-020" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-020" class="fas fa-play"></i>
+        <audio id="audio_24-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-020.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">買ったのはパリの街である。</span>
+        <span class="content-sent kanji-sent is-hidden">買ったのはパリの街である。</span>
+        <span class="content-sent plain-sent is-hidden">買ったのはパリの街である。</span>
+        <span class="content-sent vocab-sent">買ったのは<a onclick="show_vocab_data('パリ')">パリ</a>の街である。</span>
+      </td>
+    </tr>
+
+    <tr id="24-021" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-021" class="fas fa-play"></i>
+        <audio id="audio_24-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-021.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">オペラ座のそばに万年筆専門店があるのを見つけ、入ってみた。</span>
+        <span class="content-sent kanji-sent is-hidden">オペラ座のそばに万年筆専門店があるのを見つけ、入ってみた。</span>
+        <span class="content-sent plain-sent is-hidden">オペラ座のそばに万年筆専門店があるのを見つけ、入ってみた。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('オペラ')">オペラ</a>座のそばに<a onclick="show_vocab_data('万年筆')">万年筆</a><a onclick="show_vocab_data('専門店')">専門店</a>があるのを見つけ、入ってみた。</span>
+      </td>
+    </tr>
+
+    <tr id="24-022" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-022" class="fas fa-play"></i>
+        <audio id="audio_24-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-022.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">長い間、他人様のを狙って来たが、これでご飯を頂いているのである。</span>
+        <span class="content-sent kanji-sent is-hidden">長い間、他人様のを狙って来たが、これでご飯を頂いているのである。</span>
+        <span class="content-sent plain-sent is-hidden">長い間、他人様のを狙って来たが、これでご飯を頂いているのである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('長い間')">長い間</a>、<a onclick="show_vocab_data('他人様')">他人様</a>のを<a onclick="show_vocab_data('狙って')">狙って</a>来たが、これでご飯を頂いているのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-023" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-023" class="fas fa-play"></i>
+        <audio id="audio_24-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-023.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">たまには身銭を切らなくてはと思ったのである。</span>
+        <span class="content-sent kanji-sent is-hidden">たまには身銭を切らなくてはと思ったのである。</span>
+        <span class="content-sent plain-sent is-hidden">たまには身銭を切らなくてはと思ったのである。</span>
+        <span class="content-sent vocab-sent">たまには<a onclick="show_vocab_data('身銭')">身銭</a>を切らなくてはと思ったのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-024" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-024" class="fas fa-play"></i>
+        <audio id="audio_24-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-024.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">英語の話せる金髪碧眼中年美女の店員が、愛想よく世話をやいてくれる。</span>
+        <span class="content-sent kanji-sent is-hidden">英語の話せる金髪<a onclick="show_kanji_data('碧')">碧</a>眼中年美女の店員が、愛想よく世話をやいてくれる。</span>
+        <span class="content-sent plain-sent is-hidden">英語の話せる金髪碧眼中年美女の店員が、愛想よく世話をやいてくれる。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('英語')">英語</a>の話せる<a onclick="show_vocab_data('金髪')">金髪</a><a onclick="show_vocab_data('碧眼')">碧眼</a><a onclick="show_vocab_data('中年')">中年</a><a onclick="show_vocab_data('美女')">美女</a>の<a onclick="show_vocab_data('店員')">店員</a>が、<a onclick="show_vocab_data('愛想')">愛想</a>よく<a onclick="show_vocab_data('世話')">世話</a>をやいてくれる。</span>
+      </td>
+    </tr>
+
+    <tr id="24-025" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-025" class="fas fa-play"></i>
+        <audio id="audio_24-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-025.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">試し書きをしてもよいかとたずねると、どうぞどうぞと、店名の入った便箋を差し出した。</span>
+        <span class="content-sent kanji-sent is-hidden">試し書きをしてもよいかとたずねると、どうぞどうぞと、店名の入った便箋を差し出した。</span>
+        <span class="content-sent plain-sent is-hidden">試し書きをしてもよいかとたずねると、どうぞどうぞと、店名の入った便箋を差し出した。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('試し')">試し</a>書きをしてもよいかとたずねると、どうぞどうぞと、店名の入った便箋を差し出した。</span>
+      </td>
+    </tr>
+
+    <tr id="24-026" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-026" class="fas fa-play"></i>
+        <audio id="audio_24-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-026.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">私は名前を書きかけ、あわてて消した。</span>
+        <span class="content-sent kanji-sent is-hidden">私は名前を書きかけ、あわてて消した。</span>
+        <span class="content-sent plain-sent is-hidden">私は名前を書きかけ、あわてて消した。</span>
+        <span class="content-sent vocab-sent">私は<a onclick="show_vocab_data('名前')">名前</a>を書きかけ、<a onclick="show_vocab_data('あわてて')">あわてて</a>消した。</span>
+      </td>
+    </tr>
+
+    <tr id="24-027" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-027" class="fas fa-play"></i>
+        <audio id="audio_24-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-027.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">稀代の悪筆なので、日本の恥になってはと恐れたのである。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('稀')">稀</a>代の悪筆なので、日本の恥になってはと恐れたのである。</span>
+        <span class="content-sent plain-sent is-hidden">稀代の悪筆なので、日本の恥になってはと恐れたのである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('稀代')">稀代</a>の<a onclick="show_vocab_data('悪筆')">悪筆</a>なので、<a onclick="show_vocab_data('日本')">日本</a>の恥<a onclick="show_vocab_data('になって')">になって</a>はと恐れたのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-028" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-028" class="fas fa-play"></i>
+        <audio id="audio_24-028" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-028.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「今頃は半七さん」</span>
+        <span class="content-sent kanji-sent is-hidden">「今頃は半七さん」</span>
+        <span class="content-sent plain-sent is-hidden">「今頃は半七さん」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('今頃')">今頃</a>は<a onclick="show_vocab_data('半七')">半七</a>さん」</span>
+      </td>
+    </tr>
+
+    <tr id="24-029" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-029" class="fas fa-play"></i>
+        <audio id="audio_24-029" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-029.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">私は大きな字でこう書いた。</span>
+        <span class="content-sent kanji-sent is-hidden">私は大きな字でこう書いた。</span>
+        <span class="content-sent plain-sent is-hidden">私は大きな字でこう書いた。</span>
+        <span class="content-sent vocab-sent">私は<a onclick="show_vocab_data('大きな')">大きな</a>字でこう書いた。</span>
+      </td>
+    </tr>
+
+    <tr id="24-030" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-030" class="fas fa-play"></i>
+        <audio id="audio_24-030" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-030.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">少し硬いが、書き味は悪くない。</span>
+        <span class="content-sent kanji-sent is-hidden">少し硬いが、書き味は悪くない。</span>
+        <span class="content-sent plain-sent is-hidden">少し硬いが、書き味は悪くない。</span>
+        <span class="content-sent vocab-sent">少し<a onclick="show_vocab_data('硬い')">硬い</a>が、<a onclick="show_vocab_data('書き味')">書き味</a>は悪くない。</span>
+      </td>
+    </tr>
+
+    <tr id="24-031" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-031" class="fas fa-play"></i>
+        <audio id="audio_24-031" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-031.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、金髪碧眼中年美女は、</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、金髪<a onclick="show_kanji_data('碧')">碧</a>眼中年美女は、</span>
+        <span class="content-sent plain-sent is-hidden">ところが、金髪碧眼中年美女は、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ところが')">ところが</a>、<a onclick="show_vocab_data('金髪')">金髪</a><a onclick="show_vocab_data('碧眼')">碧眼</a><a onclick="show_vocab_data('中年')">中年</a><a onclick="show_vocab_data('美女')">美女</a>は、</span>
+      </td>
+    </tr>
+
+    <tr id="24-032" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-032" class="fas fa-play"></i>
+        <audio id="audio_24-032" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-032.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「ノン」</span>
+        <span class="content-sent kanji-sent is-hidden">「ノン」</span>
+        <span class="content-sent plain-sent is-hidden">「ノン」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('ノン')">ノン</a>」</span>
+      </td>
+    </tr>
+
+    <tr id="24-033" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-033" class="fas fa-play"></i>
+        <audio id="audio_24-033" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-033.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">優雅な手つきで私の手を止めるようにする。</span>
+        <span class="content-sent kanji-sent is-hidden">優<a onclick="show_kanji_data('雅')">雅</a>な手つきで私の手を止めるようにする。</span>
+        <span class="content-sent plain-sent is-hidden">優雅な手つきで私の手を止めるようにする。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('優雅')">優雅</a>な<a onclick="show_vocab_data('手つき')">手つき</a>で私の手を止める<a onclick="show_vocab_data('ようにする')">ようにする</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-034" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-034" class="fas fa-play"></i>
+        <audio id="audio_24-034" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-034.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">試し書きにしては、荒っぽく大きく書き過ぎたのかと思い、今度は小さ目の字で、</span>
+        <span class="content-sent kanji-sent is-hidden">試し書きにしては、荒っぽく大きく書き過ぎたのかと思い、今度は小さ目の字で、</span>
+        <span class="content-sent plain-sent is-hidden">試し書きにしては、荒っぽく大きく書き過ぎたのかと思い、今度は小さ目の字で、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('試し')">試し</a>書き<a onclick="show_vocab_data('にしては')">にしては</a>、荒っぽく<a onclick="show_vocab_data('大きく')">大きく</a>書き過ぎたのかと思い、<a onclick="show_vocab_data('今度')">今度</a>は<a onclick="show_vocab_data('小さ')">小さ</a>目の字で、</span>
+      </td>
+    </tr>
+
+    <tr id="24-035" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-035" class="fas fa-play"></i>
+        <audio id="audio_24-035" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-035.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「どこにどうしておじゃろうやら」</span>
+        <span class="content-sent kanji-sent is-hidden">「どこにどうしておじゃろうやら」</span>
+        <span class="content-sent plain-sent is-hidden">「どこにどうしておじゃろうやら」</span>
+        <span class="content-sent vocab-sent">「どこにどうしておじゃろうやら」</span>
+      </td>
+    </tr>
+
+    <tr id="24-036" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-036" class="fas fa-play"></i>
+        <audio id="audio_24-036" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-036.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と続け、ことのついでに、</span>
+        <span class="content-sent kanji-sent is-hidden">と続け、ことのついでに、</span>
+        <span class="content-sent plain-sent is-hidden">と続け、ことのついでに、</span>
+        <span class="content-sent vocab-sent">と続け、ことのついでに、</span>
+      </td>
+    </tr>
+
+    <tr id="24-037" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-037" class="fas fa-play"></i>
+        <audio id="audio_24-037" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-037.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「てんてれつくてれつくてん」</span>
+        <span class="content-sent kanji-sent is-hidden">「てんてれつくてれつくてん」</span>
+        <span class="content-sent plain-sent is-hidden">「てんてれつくてれつくてん」</span>
+        <span class="content-sent vocab-sent">「てんてれつくてれつくてん」</span>
+      </td>
+    </tr>
+
+    <tr id="24-038" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-038" class="fas fa-play"></i>
+        <audio id="audio_24-038" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-038.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と書きかけたら、金髪碧眼は、もっとおっかない顔で、</span>
+        <span class="content-sent kanji-sent is-hidden">と書きかけたら、金髪<a onclick="show_kanji_data('碧')">碧</a>眼は、もっとおっかない顔で、</span>
+        <span class="content-sent plain-sent is-hidden">と書きかけたら、金髪碧眼は、もっとおっかない顔で、</span>
+        <span class="content-sent vocab-sent">と書きかけたら、<a onclick="show_vocab_data('金髪')">金髪</a><a onclick="show_vocab_data('碧眼')">碧眼</a>は、もっと<a onclick="show_vocab_data('おっかない')">おっかない</a>顔で、</span>
+      </td>
+    </tr>
+
+    <tr id="24-039" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-039" class="fas fa-play"></i>
+        <audio id="audio_24-039" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-039.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「ノン！ノン！」</span>
+        <span class="content-sent kanji-sent is-hidden">「ノン！ノン！」</span>
+        <span class="content-sent plain-sent is-hidden">「ノン！ノン！」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('ノン')">ノン</a>！<a onclick="show_vocab_data('ノン')">ノン</a>！」</span>
+      </td>
+    </tr>
+
+    <tr id="24-040" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-040" class="fas fa-play"></i>
+        <audio id="audio_24-040" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-040.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と万年筆を取り上げてしまった。</span>
+        <span class="content-sent kanji-sent is-hidden">と万年筆を取り上げてしまった。</span>
+        <span class="content-sent plain-sent is-hidden">と万年筆を取り上げてしまった。</span>
+        <span class="content-sent vocab-sent">と<a onclick="show_vocab_data('万年筆')">万年筆</a>を取り上げてしまった。</span>
+      </td>
+    </tr>
+
+    <tr id="24-041" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-041" class="fas fa-play"></i>
+        <audio id="audio_24-041" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-041.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">片言の英語でわけをたずね、判ったのだが、縦書きがいけなかったのだある。</span>
+        <span class="content-sent kanji-sent is-hidden">片言の英語でわけをたずね、判ったのだが、<a onclick="show_kanji_data('縦')">縦</a>書きがいけなかったのだある。</span>
+        <span class="content-sent plain-sent is-hidden">片言の英語でわけをたずね、判ったのだが、縦書きがいけなかったのだある。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('片言')">片言</a>の<a onclick="show_vocab_data('英語')">英語</a>でわけをたずね、判ったのだが、<a onclick="show_vocab_data('縦書き')">縦書き</a>がいけなかったのだある。</span>
+      </td>
+    </tr>
+
+    <tr id="24-042" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-042" class="fas fa-play"></i>
+        <audio id="audio_24-042" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-042.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「あなたが必ず買上げてくれるのならかまわない。</span>
+        <span class="content-sent kanji-sent is-hidden">「あなたが必ず買上げてくれるのならかまわない。</span>
+        <span class="content-sent plain-sent is-hidden">「あなたが必ず買上げてくれるのならかまわない。</span>
+        <span class="content-sent vocab-sent">「あなたが必ず買上げてくれるのならかまわない。</span>
+      </td>
+    </tr>
+
+    <tr id="24-043" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-043" class="fas fa-play"></i>
+        <audio id="audio_24-043" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-043.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、ほかの人は横に書くのです。」</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、ほかの人は横に書くのです。」</span>
+        <span class="content-sent plain-sent is-hidden">しかし、ほかの人は横に書くのです。」</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('しかし、')">しかし、</a>ほかの人は横に書くのです。」</span>
+      </td>
+    </tr>
+
+    <tr id="24-044" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-044" class="fas fa-play"></i>
+        <audio id="audio_24-044" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-044.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">青目玉は激すると光って透明になる。</span>
+        <span class="content-sent kanji-sent is-hidden">青目玉は激すると光って透明になる。</span>
+        <span class="content-sent plain-sent is-hidden">青目玉は激すると光って透明になる。</span>
+        <span class="content-sent vocab-sent">青目玉は激すると<a onclick="show_vocab_data('光って')">光って</a><a onclick="show_vocab_data('透明')">透明</a>になる。</span>
+      </td>
+    </tr>
+
+    <tr id="24-045" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-045" class="fas fa-play"></i>
+        <audio id="audio_24-045" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-045.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">目の前三十センチほどで抗議する青目玉を見ていたら、子供の頃遊んだビー玉を思い出した。</span>
+        <span class="content-sent kanji-sent is-hidden">目の前三十センチほどで抗議する青目玉を見ていたら、子供の頃遊んだビー玉を思い出した。</span>
+        <span class="content-sent plain-sent is-hidden">目の前三十センチほどで抗議する青目玉を見ていたら、子供の頃遊んだビー玉を思い出した。</span>
+        <span class="content-sent vocab-sent">目の<a onclick="show_vocab_data('前三')">前三</a>十<a onclick="show_vocab_data('センチ')">センチ</a>ほどで<a onclick="show_vocab_data('抗議')">抗議</a>する青目玉を見ていたら、<a onclick="show_vocab_data('子供')">子供</a>の頃<a onclick="show_vocab_data('遊んだ')">遊んだ</a><a onclick="show_vocab_data('ビー玉')">ビー玉</a>を思い出した。</span>
+      </td>
+    </tr>
+
+    <tr id="24-046" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-046" class="fas fa-play"></i>
+        <audio id="audio_24-046" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-046.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">彼女の白い指が、私から取り上げた万年筆で、横書きならかまわないと、サインの実例を示している。</span>
+        <span class="content-sent kanji-sent is-hidden">彼女の白い指が、私から取り上げた万年筆で、横書きならかまわないと、サインの実例を示している。</span>
+        <span class="content-sent plain-sent is-hidden">彼女の白い指が、私から取り上げた万年筆で、横書きならかまわないと、サインの実例を示している。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('彼女')">彼女</a>の<a onclick="show_vocab_data('白い')">白い</a>指が、私から取り上げた<a onclick="show_vocab_data('万年筆')">万年筆</a>で、<a onclick="show_vocab_data('横書き')">横書き</a>ならかまわないと、<a onclick="show_vocab_data('サイン')">サイン</a>の<a onclick="show_vocab_data('実例')">実例</a>を示している。</span>
+      </td>
+    </tr>
+
+    <tr id="24-047" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-047" class="fas fa-play"></i>
+        <audio id="audio_24-047" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-047.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それを見ていたら、東と西の文化の違いがよく判った。</span>
+        <span class="content-sent kanji-sent is-hidden">それを見ていたら、東と西の文化の違いがよく判った。</span>
+        <span class="content-sent plain-sent is-hidden">それを見ていたら、東と西の文化の違いがよく判った。</span>
+        <span class="content-sent vocab-sent">それを見ていたら、東と西の<a onclick="show_vocab_data('文化')">文化</a>の<a onclick="show_vocab_data('違い')">違い</a>がよく判った。</span>
+      </td>
+    </tr>
+
+    <tr id="24-048" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-048" class="fas fa-play"></i>
+        <audio id="audio_24-048" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-048.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">昭和ひと桁（けた）生れのせいか、横書きが苦手である。</span>
+        <span class="content-sent kanji-sent is-hidden">昭和ひと桁（けた）生れのせいか、横書きが苦手である。</span>
+        <span class="content-sent plain-sent is-hidden">昭和ひと桁（けた）生れのせいか、横書きが苦手である。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('昭和')">昭和</a>ひと桁（けた）生れのせいか、<a onclick="show_vocab_data('横書き')">横書き</a>が<a onclick="show_vocab_data('苦手である')">苦手である</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-049" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-049" class="fas fa-play"></i>
+        <audio id="audio_24-049" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-049.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">電車の窓から眺める看板も、横書きになっていると、一度では頭に入らないことがある。</span>
+        <span class="content-sent kanji-sent is-hidden">電車の窓から眺める看板も、横書きになっていると、一度では頭に入らないことがある。</span>
+        <span class="content-sent plain-sent is-hidden">電車の窓から眺める看板も、横書きになっていると、一度では頭に入らないことがある。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('電車')">電車</a>の窓から<a onclick="show_vocab_data('眺める')">眺める</a><a onclick="show_vocab_data('看板')">看板</a>も、<a onclick="show_vocab_data('横書き')">横書き</a><a onclick="show_vocab_data('になっている')">になっている</a>と、<a onclick="show_vocab_data('一度')">一度</a>では頭に入ら<a onclick="show_vocab_data('ないことがある')">ないことがある</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-050" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-050" class="fas fa-play"></i>
+        <audio id="audio_24-050" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-050.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">大分前のことだが、</span>
+        <span class="content-sent kanji-sent is-hidden">大分前のことだが、</span>
+        <span class="content-sent plain-sent is-hidden">大分前のことだが、</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('大分')">大分</a><a onclick="show_vocab_data('前の')">前の</a>ことだが、</span>
+      </td>
+    </tr>
+
+    <tr id="24-051" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-051" class="fas fa-play"></i>
+        <audio id="audio_24-051" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-051.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">キノネエしょう油という看板をみかけて、随分謙遜したものだと感心したら、キノエネの間違いであった。</span>
+        <span class="content-sent kanji-sent is-hidden">キノネエしょう油という看板をみかけて、随分謙遜したものだと感心したら、キノエネの間違いであった。</span>
+        <span class="content-sent plain-sent is-hidden">キノネエしょう油という看板をみかけて、随分謙遜したものだと感心したら、キノエネの間違いであった。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('キノ')">キノ</a>ネエしょう油という<a onclick="show_vocab_data('看板')">看板</a>をみかけて、<a onclick="show_vocab_data('随分')">随分</a><a onclick="show_vocab_data('謙遜')">謙遜</a>したものだと<a onclick="show_vocab_data('感心')">感心</a>したら、<a onclick="show_vocab_data('キノ')">キノ</a><a onclick="show_vocab_data('エネ')">エネ</a>の<a onclick="show_vocab_data('間違い')">間違い</a>であった。</span>
+      </td>
+    </tr>
+
+    <tr id="24-052" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-052" class="fas fa-play"></i>
+        <audio id="audio_24-052" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-052.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">文章でも、横書きのものは、一度自分の頭の中で縦書きに直して読んでいる。</span>
+        <span class="content-sent kanji-sent is-hidden">文章でも、横書きのものは、一度自分の頭の中で<a onclick="show_kanji_data('縦')">縦</a>書きに直して読んでいる。</span>
+        <span class="content-sent plain-sent is-hidden">文章でも、横書きのものは、一度自分の頭の中で縦書きに直して読んでいる。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('文章')">文章</a>でも、<a onclick="show_vocab_data('横書き')">横書き</a>のものは、<a onclick="show_vocab_data('一度')">一度</a><a onclick="show_vocab_data('自分')">自分</a>の頭の中で<a onclick="show_vocab_data('縦書き')">縦書き</a>に直して読んでいる。</span>
+      </td>
+    </tr>
+
+    <tr id="24-053" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-053" class="fas fa-play"></i>
+        <audio id="audio_24-053" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-053.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、若い人たちからくる手紙は、大半が横書きなのである。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、若い人たちからくる手紙は、大半が横書きなのである。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、若い人たちからくる手紙は、大半が横書きなのである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ところが')">ところが</a>、<a onclick="show_vocab_data('若い')">若い</a><a onclick="show_vocab_data('人たち')">人たち</a>からくる<a onclick="show_vocab_data('手紙')">手紙</a>は、<a onclick="show_vocab_data('大半')">大半</a>が<a onclick="show_vocab_data('横書き')">横書き</a>なのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-054" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-054" class="fas fa-play"></i>
+        <audio id="audio_24-054" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-054.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">字も、お習字で習った字というより、イラストである。</span>
+        <span class="content-sent kanji-sent is-hidden">字も、お習字で習った字というより、イラストである。</span>
+        <span class="content-sent plain-sent is-hidden">字も、お習字で習った字というより、イラストである。</span>
+        <span class="content-sent vocab-sent">字も、お<a onclick="show_vocab_data('習字')">習字</a>で<a onclick="show_vocab_data('習った')">習った</a>字<a onclick="show_vocab_data('というより')">というより</a>、<a onclick="show_vocab_data('イラスト')">イラスト</a>である。</span>
+      </td>
+    </tr>
+
+    <tr id="24-055" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-055" class="fas fa-play"></i>
+        <audio id="audio_24-055" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-055.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">劇画の画面の吹き出しで、「ギャは！」などと書いてある、あんな字なのである。</span>
+        <span class="content-sent kanji-sent is-hidden">劇画の画面の吹き出しで、「ギャは！」などと書いてある、あんな字なのである。</span>
+        <span class="content-sent plain-sent is-hidden">劇画の画面の吹き出しで、「ギャは！」などと書いてある、あんな字なのである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('劇画')">劇画</a>の<a onclick="show_vocab_data('画面')">画面</a>の吹き出しで、「ギャは！」などと書いてある、あんな字なのである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-056" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-056" class="fas fa-play"></i>
+        <audio id="audio_24-056" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-056.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">中にはイラスト入りのものもあるし、赤やグリーンなどさまざまなペンで書き分けたのもある。</span>
+        <span class="content-sent kanji-sent is-hidden">中にはイラスト入りのものもあるし、赤やグリーンなどさまざまなペンで書き分けたのもある。</span>
+        <span class="content-sent plain-sent is-hidden">中にはイラスト入りのものもあるし、赤やグリーンなどさまざまなペンで書き分けたのもある。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('中には')">中には</a><a onclick="show_vocab_data('イラスト')">イラスト</a>入りのものもあるし、赤や<a onclick="show_vocab_data('グリーン')">グリーン</a>など<a onclick="show_vocab_data('さまざま')">さまざま</a>な<a onclick="show_vocab_data('ペン')">ペン</a>で<a onclick="show_vocab_data('書き分けた')">書き分けた</a>のもある。</span>
+      </td>
+    </tr>
+
+    <tr id="24-057" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-057" class="fas fa-play"></i>
+        <audio id="audio_24-057" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-057.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">形容詞を英語で書いているのもまじっている。</span>
+        <span class="content-sent kanji-sent is-hidden">形容詞を英語で書いているのもまじっている。</span>
+        <span class="content-sent plain-sent is-hidden">形容詞を英語で書いているのもまじっている。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('形容詞')">形容詞</a>を<a onclick="show_vocab_data('英語')">英語</a>で書いているのもまじっている。</span>
+      </td>
+    </tr>
+
+    <tr id="24-058" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-058" class="fas fa-play"></i>
+        <audio id="audio_24-058" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-058.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この間も、ある名門の女子中学に通っているお嬢さん方が遊びに来たので聞いてみたところ、三人が三人とも縦書きは全く苦手だという。</span>
+        <span class="content-sent kanji-sent is-hidden">この間も、ある名門の女子中学に通っているお嬢さん方が遊びに来たので聞いてみたところ、三人が三人とも<a onclick="show_kanji_data('縦')">縦</a>書きは全く苦手だという。</span>
+        <span class="content-sent plain-sent is-hidden">この間も、ある名門の女子中学に通っているお嬢さん方が遊びに来たので聞いてみたところ、三人が三人とも縦書きは全く苦手だという。</span>
+        <span class="content-sent vocab-sent">この間も、ある<a onclick="show_vocab_data('名門')">名門</a>の<a onclick="show_vocab_data('女子')">女子</a><a onclick="show_vocab_data('中学')">中学</a>に通っている<a onclick="show_vocab_data('お嬢さん')">お嬢さん</a>方が<a onclick="show_vocab_data('遊び')">遊び</a>に来たので聞いてみたところ、<a onclick="show_vocab_data('三人')">三人</a>が<a onclick="show_vocab_data('三人')">三人</a>とも<a onclick="show_vocab_data('縦書き')">縦書き</a>は全く<a onclick="show_vocab_data('苦手')">苦手</a>だという。</span>
+      </td>
+    </tr>
+
+    <tr id="24-059" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-059" class="fas fa-play"></i>
+        <audio id="audio_24-059" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-059.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「縦書きのノート使っているのは古文ぐらいかしら」</span>
+        <span class="content-sent kanji-sent is-hidden">「<a onclick="show_kanji_data('縦')">縦</a>書きのノート使っているのは古文ぐらいかしら」</span>
+        <span class="content-sent plain-sent is-hidden">「縦書きのノート使っているのは古文ぐらいかしら」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('縦書き')">縦書き</a>の<a onclick="show_vocab_data('ノート')">ノート</a>使っているのは<a onclick="show_vocab_data('古文')">古文</a>ぐらいかしら」</span>
+      </td>
+    </tr>
+
+    <tr id="24-060" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-060" class="fas fa-play"></i>
+        <audio id="audio_24-060" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-060.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「本当は横にしないと頭に入らないんだけど」</span>
+        <span class="content-sent kanji-sent is-hidden">「本当は横にしないと頭に入らないんだけど」</span>
+        <span class="content-sent plain-sent is-hidden">「本当は横にしないと頭に入らないんだけど」</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('本当')">本当</a>は横にしないと頭に入らないんだけど」</span>
+      </td>
+    </tr>
+
+    <tr id="24-061" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-061" class="fas fa-play"></i>
+        <audio id="audio_24-061" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-061.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">横書きにされては伊勢物語や土佐日記もびっくりだと思うが、彼女たちに言わせると、縦に書くと、字がだらしなく長くなって嫌だという。</span>
+        <span class="content-sent kanji-sent is-hidden">横書きにされては<a onclick="show_kanji_data('伊')">伊</a>勢物語や土佐日記もびっくりだと思うが、彼女たちに言わせると、<a onclick="show_kanji_data('縦')">縦</a>に書くと、字がだらしなく長くなって嫌だという。</span>
+        <span class="content-sent plain-sent is-hidden">横書きにされては伊勢物語や土佐日記もびっくりだと思うが、彼女たちに言わせると、縦に書くと、字がだらしなく長くなって嫌だという。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('横書き')">横書き</a>にされては伊勢<a onclick="show_vocab_data('物語')">物語</a>や土佐<a onclick="show_vocab_data('日記')">日記</a>もびっくりだと思うが、<a onclick="show_vocab_data('彼女')">彼女</a>たちに言わせると、縦に書くと、字がだらしなく長くなって嫌だという。</span>
+      </td>
+    </tr>
+
+    <tr id="24-062" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-062" class="fas fa-play"></i>
+        <audio id="audio_24-062" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-062.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「私は横に書くと、字が蟹（かに）みたいになるけど」</span>
+        <span class="content-sent kanji-sent is-hidden">「私は横に書くと、字が蟹（かに）みたいになるけど」</span>
+        <span class="content-sent plain-sent is-hidden">「私は横に書くと、字が蟹（かに）みたいになるけど」</span>
+        <span class="content-sent vocab-sent">「私は横に書くと、字が蟹（かに）みたいになるけど」</span>
+      </td>
+    </tr>
+
+    <tr id="24-063" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-063" class="fas fa-play"></i>
+        <audio id="audio_24-063" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-063.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">と言う私を、不思議そうに見て笑っていた。</span>
+        <span class="content-sent kanji-sent is-hidden">と言う私を、不思議そうに見て笑っていた。</span>
+        <span class="content-sent plain-sent is-hidden">と言う私を、不思議そうに見て笑っていた。</span>
+        <span class="content-sent vocab-sent">と言う私を、不思議そうに見て笑っていた。</span>
+      </td>
+    </tr>
+
+    <tr id="24-064" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-064" class="fas fa-play"></i>
+        <audio id="audio_24-064" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-064.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">民主主義の辛いところは、多数決ということである。</span>
+        <span class="content-sent kanji-sent is-hidden">民主主義の辛いところは、多数決ということである。</span>
+        <span class="content-sent plain-sent is-hidden">民主主義の辛いところは、多数決ということである。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('民主主義')">民主主義</a>の<a onclick="show_vocab_data('辛い')">辛い</a>ところは、<a onclick="show_vocab_data('多数決')">多数決</a>ということである。</span>
+      </td>
+    </tr>
+
+    <tr id="24-065" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-065" class="fas fa-play"></i>
+        <audio id="audio_24-065" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-065.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このままでゆくと、日本はいずれ横書きの国になる。</span>
+        <span class="content-sent kanji-sent is-hidden">このままでゆくと、日本はいずれ横書きの国になる。</span>
+        <span class="content-sent plain-sent is-hidden">このままでゆくと、日本はいずれ横書きの国になる。</span>
+        <span class="content-sent vocab-sent">このままでゆくと、<a onclick="show_vocab_data('日本')">日本</a>はいずれ<a onclick="show_vocab_data('横書き')">横書き</a>の国になる。</span>
+      </td>
+    </tr>
+
+    <tr id="24-066" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-066" class="fas fa-play"></i>
+        <audio id="audio_24-066" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-066.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">週刊誌も新聞も、区役所の戸籍謄本もみな横になる。</span>
+        <span class="content-sent kanji-sent is-hidden">週刊誌も新聞も、区役所の戸籍<a onclick="show_kanji_data('謄')">謄</a>本もみな横になる。</span>
+        <span class="content-sent plain-sent is-hidden">週刊誌も新聞も、区役所の戸籍謄本もみな横になる。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('週刊誌')">週刊誌</a>も<a onclick="show_vocab_data('新聞')">新聞</a>も、<a onclick="show_vocab_data('区役所')">区役所</a>の<a onclick="show_vocab_data('戸籍謄本')">戸籍謄本</a>もみな横になる。</span>
+      </td>
+    </tr>
+
+    <tr id="24-067" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-067" class="fas fa-play"></i>
+        <audio id="audio_24-067" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-067.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">縦書きは、神主さんの読む「祝詞（のりと）」ぐらいになってしまう。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('縦')">縦</a>書きは、神主さんの読む「祝詞（のりと）」ぐらいになってしまう。</span>
+        <span class="content-sent plain-sent is-hidden">縦書きは、神主さんの読む「祝詞（のりと）」ぐらいになってしまう。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('縦書き')">縦書き</a>は、<a onclick="show_vocab_data('神主')">神主</a>さんの読む「<a onclick="show_vocab_data('祝詞')">祝詞</a>（のりと）」ぐらい<a onclick="show_vocab_data('になって')">になって</a>しまう。</span>
+      </td>
+    </tr>
+
+    <tr id="24-068" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-068" class="fas fa-play"></i>
+        <audio id="audio_24-068" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-068.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">それでもいいという人は幸せだが、私は駄目である。</span>
+        <span class="content-sent kanji-sent is-hidden">それでもいいという人は幸せだが、私は駄目である。</span>
+        <span class="content-sent plain-sent is-hidden">それでもいいという人は幸せだが、私は駄目である。</span>
+        <span class="content-sent vocab-sent">それでもいいという人は<a onclick="show_vocab_data('幸せ')">幸せ</a>だが、私は<a onclick="show_vocab_data('駄目')">駄目</a>である。</span>
+      </td>
+    </tr>
+
+    <tr id="24-069" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-069" class="fas fa-play"></i>
+        <audio id="audio_24-069" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-069.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">多分何を読んでも、今の明治生れの人たちが、ほとんど英語で案内の書かれた成田空港に来たように、自分の国に居ながら外国にいるような気分を味わうに違いない。</span>
+        <span class="content-sent kanji-sent is-hidden">多分何を読んでも、今の明治生れの人たちが、ほとんど英語で案内の書かれた成田空港に来たように、自分の国に居ながら外国にいるような気分を味わうに違いない。</span>
+        <span class="content-sent plain-sent is-hidden">多分何を読んでも、今の明治生れの人たちが、ほとんど英語で案内の書かれた成田空港に来たように、自分の国に居ながら外国にいるような気分を味わうに違いない。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('多分')">多分</a>何を読んでも、今の<a onclick="show_vocab_data('明治')">明治</a>生れの<a onclick="show_vocab_data('人たち')">人たち</a>が、<a onclick="show_vocab_data('ほとんど')">ほとんど</a><a onclick="show_vocab_data('英語')">英語</a>で<a onclick="show_vocab_data('案内')">案内</a>の書かれた<a onclick="show_vocab_data('成田空港')">成田空港</a>に来たように、<a onclick="show_vocab_data('自分')">自分</a>の国に居ながら<a onclick="show_vocab_data('外国')">外国</a>にいるような<a onclick="show_vocab_data('気分')">気分</a>を<a onclick="show_vocab_data('味わう')">味わう</a>に<a onclick="show_vocab_data('違いない')">違いない</a>。</span>
+      </td>
+    </tr>
+
+    <tr id="24-070" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_24-070" class="fas fa-play"></i>
+        <audio id="audio_24-070" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/24-070.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">だから私は、今のうちに、亡くなった某作家のひそみにならって、縦の会を作りたいな、と考えることがある。</span>
+        <span class="content-sent kanji-sent is-hidden">だから私は、今のうちに、亡くなった<a onclick="show_kanji_data('某')">某</a>作家のひそみにならって、<a onclick="show_kanji_data('縦')">縦</a>の会を作りたいな、と考えることがある。</span>
+        <span class="content-sent plain-sent is-hidden">だから私は、今のうちに、亡くなった某作家のひそみにならって、縦の会を作りたいな、と考えることがある。</span>
+        <span class="content-sent vocab-sent">だから私は、今のうちに、<a onclick="show_vocab_data('亡く')">亡く</a>なった某<a onclick="show_vocab_data('作家')">作家</a>のひそみにならって、<a onclick="show_vocab_data('縦の')">縦の</a>会を<a onclick="show_vocab_data('作り')">作り</a>たいな、と<a onclick="show_vocab_data('考える')">考える</a>ことがある。</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

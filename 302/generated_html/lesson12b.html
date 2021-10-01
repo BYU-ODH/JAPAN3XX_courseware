@@ -4,7 +4,7 @@
   <title>
     Japanese 302
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -184,6 +226,11 @@ nav.navbar.is-fixed-bottom > .field {
     </li>
   </ul>
 </nav>
+  <script>
+  var vocab_json = {"\u72ec\u7acb": ["\u72ec\u7acb", "\u3069\u304f\u308a\u3064", "independence"], "\u547d\u3092 \u304b\u3051\u305f": ["\u547d\u3092\u304b\u3051\u305f", "MISSING KANA", "to risk one's life"], "\u8a00\u8449": ["\u8a00\u8449", "\u3053\u3068\u3070", "word(s)"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "very; extremely"], "\u6709\u540d": ["\u6709\u540d", "\u3086\u3046\u3081\u3044", "famous; well-known"], "\u7d04": ["\u7d04", "\u3084\u304f", "about"], "\u540c\u3058": ["\u540c\u3058", "\u304a\u306a\u3058", "same; equal"], "\u660e\u6cbb\u7dad\u65b0": ["\u660e\u6cbb\u7dad\u65b0", "\u3081\u3044\u3058\u3044\u3057\u3093", "the Meiji Restoration"], "\u65b0\u3057\u3044": ["\u65b0\u3057\u3044", "\u3042\u305f\u3089\u3057\u3044", "new"], "\u653f\u6cbb": ["\u653f\u6cbb", "\u305b\u3044\u3058", "government; politics"], "\u59cb\u3081": ["\u59cb\u3081\u308b", "\u306f\u3058\u3081\u308b", "to begin; start"], "\u4e2d\u592e\u653f\u5e9c": ["\u4e2d\u592e\u653f\u5e9c", "\u3061\u3085\u3046\u304a\u3046\u305b\u3044\u3075", "central government"], "\u4e3b\u8981\u306a": ["\u4e3b\u8981\u306a", "\u3057\u3085\u3088\u3046\u306a", "main; principal; leading"], "\u5b98\u540f\u8077": ["\u5b98\u540f\u8077", "\u304b\u3093\u308a\u3057\u3087\u304f", "position as a government official"], "\u5360\u3081\u3001": ["\u5360\u3081\u308b", "\u3057\u3081\u308b", "to occupy; take up"], "\u63e1\u3063\u3066": ["\u63e1\u308b", "\u306b\u304e\u308b", "to be in power; hold"], "\u5012\u5e55": ["\u5012\u5e55", "\u3068\u3046\u3070\u304f", "to overthrow the shogunate"], "\u6d3b\u8e8d\u3057": ["\u6d3b\u8e8d\u3059\u308b", "\u304b\u3064\u3084\u304f\u3059\u308b", "to play an active part; be active"], "\u85a9\u6469": ["\u85a9\u6469", "\u3055\u3064\u307e", "name of a fief (modern Kagoshima prefecture)"], "\u9577\u5dde\u85e9": ["\u9577\u5dde\u85e9", "\u3061\u3087\u3046\u3057\u3085\u3046\u306f\u3093", "Ch\u014dsh\u016b Fief"], "\u51fa\u8eab": ["\u51fa\u8eab", "\u3057\u3085\u3063\u3057\u3093", "to come from (a place)"], "\u65b0\u653f\u5e9c": ["\u65b0\u653f\u5e9c", "\u3057\u3093\u305b\u3044\u3075", "the new government: the Meiji government"], "\u4e0d\u6e80": ["\u4e0d\u6e80", "\u3075\u307e\u3093", "dissatisfaction; discontent"], "\u7279\u306b": ["\u7279\u306b", "\u3068\u304f\u306b", "specially; particularly"], "\u4ed6": ["\u4ed6", "\u305f", "other"], "\u85e9": ["\u85e9", "\u306f\u3093", "feudal fief"], "\u5143\u6b66\u58eb": ["\u5143\u6b66\u58eb", "\u3082\u3068\u3076\u3057", "originally of a samurai family"], "\u4e2d\u5fc3": ["\u4e2d\u5fc3", "\u3061\u3085\u3046\u3057\u3093", "the center; the middle"], "\u53cd\u5bfe": ["\u53cd\u5bfe\u3059\u308b", "\u306f\u3093\u305f\u3044\u3059\u308b", "to oppose; be against"], "\u6614": ["\u6614", "\u3080\u304b\u3057", "ancient times; old days"], "\u9055\u3044": ["\u9055\u3046", "\u3061\u304c\u3046", "different; to vary"], "\u6b66\u529b": ["\u6b66\u529b", "\u3076\u308a\u3087\u304f", "military power"], "\u8a00\u8ad6": ["\u8a00\u8ad6", "\u3052\u3093\u308d\u3093", "speech"], "\u653b\u6483": ["\u653b\u6483", "\u3053\u3046\u3052\u304d", "an attack"], "\u677f\u57a3\u9000\u52a9": ["\u677f\u57a3\u9000\u52a9(1837-1919)", "\u3044\u305f\u304c\u304d\u305f\u3044\u3059\u3051", "a politician"], "\u653f\u5e9c": ["\u653f\u5e9c", "\u305b\u3044\u3075", "a government; the Government; the Administration"], "\u4e0e\u3048\u308b": ["\u4e0e\u3048\u308b", "\u3042\u305f\u3048\u308b", "to give; bestow"], "\u56fd\u6c11": ["\u56fd\u6c11", "\u3053\u304f\u307f\u3093", "a nation; a citizen"], "\u8b70\u4f1a": ["\u8b70\u4f1a", "\u304e\u304b\u3044", "national assembly"], "\u6a29\u5229": ["\u6a29\u5229", "\u3051\u3093\u308a", "right; claim; privilege"], "\u5b88\u308b": ["\u5b88\u308b", "\u307e\u3082\u308b", "to protect; defend"], "\u8aac\u304d": ["\u8aac\u304f", "\u3068\u304f", "to explain; preach; advocate"], "\u5168\u56fd\u5404\u5730": ["\u5168\u56fd\u5404\u5730", "\u305c\u3093\u3053\u304f\u304b\u304f\u3061", "all over the country"], "\u6f14\u8aac\u4f1a": ["\u6f14\u8aac\u4f1a", "\u3048\u3093\u305c\u3064\u304b\u3044", "a speech meeting"], "\u8cdb\u6210\u3057": ["\u8cdb\u6210\u3059\u308b", "\u3055\u3093\u305b\u3044\u3059\u308b", "to agree; approve"], "\u652f\u6301\u3059\u308b": ["\u652f\u6301\u3059\u308b", "\u3057\u3058\u3059\u308b", "to support"], "\u5897\u3084\u3057": ["\u5897\u3084\u3059", "\u3075\u3084\u3059", "to increase"], "\u521d\u3081\u3066": ["\u521d\u3081\u3066", "\u306f\u3058\u3081\u3066", "for the first time; first"], "\u653f\u515a": ["\u653f\u515a", "\u305b\u3044\u3068\u3046", "political party"], "\u81ea\u7531\u515a": ["\u81ea\u7531\u515a", "\u3058\u3086\u3046\u3068\u3046", "the Liberal Party"], "\u521d\u4ee3\u306e": ["\u521d\u4ee3\u306e", "\u3057\u3087\u3060\u3044\u306e", "the first\u301c"], "\u515a\u9996": ["\u515a\u9996", "\u3068\u3046\u3057\u3085", "head of the party"], "\u5727\u529b": ["\u5727\u529b", "\u3042\u3064\u308a\u3087\u304f", "pressure"], "\u9078\u6319": ["\u9078\u6319", "\u305b\u3093\u304d\u3087", "election"], "\u4ee3\u8868\u8005": ["\u4ee3\u8868\u8005", "\u3060\u3044\u3072\u3087\u3046\u3057\u3083", "a representative"], "\u56fd\u4f1a": ["\u56fd\u4f1a", "\u3053\u3063\u304b\u3044", "the Diet; Congress"], "\u5b88": ["\u5b88\u308b", "\u307e\u3082\u308b", "to obey; keep"], "\u81ea\u7531\u6c11\u6a29\u904b\u52d5": ["\u81ea\u7531\u6c11\u6a29\u904b\u52d5", "\u3058\u3086\u3046\u307f\u3093\u3051\u3093\u3046\u3093\u3069\u3046", "a movement for democratic rights"], "\u3082\u3061\u308d\u3093": ["\u3082\u3061\u308d\u3093", "MISSING KANA", "of course"], "\u4ee5\u5916": ["\u4ee5\u5916", "\u3044\u304c\u3044", "except"], "\u8feb\u5bb3": ["\u8feb\u5bb3", "\u306f\u304f\u304c\u3044", "persecution"], "\u5927\u5206": ["\u5927\u5206", "\u3060\u3044\u3076", "very; greatly"], "\u5c90\u961c": ["\u5c90\u961c", "\u304e\u3075", "Gifu prefecture"], "\u53cd\u5bfe\u6d3e": ["\u53cd\u5bfe\u6d3e", "\u306f\u3093\u305f\u3044\u306f", "opposition party"], "\u9752\u5e74": ["\u9752\u5e74", "\u305b\u3044\u306d\u3093", "a young man"], "\u4e0d\u610f\u306b": ["\u4e0d\u610f\u306b", "\u3075\u3044\u306b", "suddenly; unexpectedly"], "\u8972\u308f\u308c": ["\u8972\u308f\u308c\u308b", "\u304a\u305d\u308f\u308c\u308b", "to be attacked"], "\u8840\u307e\u307f\u308c": ["\u8840\u307e\u307f\u308c", "\u3061\u307e\u307f\u308c", "bloody"], "\u5012\u308c\u3066": ["\u5012\u308c\u308b", "\u305f\u304a\u308c\u308b", "to fall; collapse; be overthrown"], "\u6b7b\u3059": ["\u6b7b\u306c", "\u3057\u306c", "to die"], "\u660e\u6cbb": ["\u660e\u6cbb", "\u3081\u3044\u3058", "the Meiji era (1868-1912)"], "\u540d\u8a00": ["\u540d\u8a00", "\u3081\u3044\u3052\u3093", "famous words"], "\u76db\u3093\u306b\u306a\u308a": ["\u76db\u3093\u306b\u306a\u308b", "\u3055\u304b\u3093\u306b\u306a\u308b", "to spread; flourish"], "\u5fc5\u8981\u6027": ["\u5fc5\u8981\u6027", "\u3072\u3064\u3088\u3046\u305b\u3044", "necessity"], "\u8a8d\u3081": ["\u8a8d\u3081\u308b", "\u307f\u3068\u3081\u308b", "to recognize"], "\u4f0a\u85e4\u535a\u6587": ["\u4f0a\u85e4\u535a\u6587(1841-1909)", "\u3044\u3068\u3046\u3072\u308d\u3076\u307f", "a politician"], "\u61b2\u6cd5": ["\u61b2\u6cd5", "\u3051\u3093\u307d\u3046", "the constitution"], "\u7dcf\u9078\u6319": ["\u7dcf\u9078\u6319", "\u305d\u3046\u305b\u3093\u304d\u3087", "general election"], "\u8b70\u54e1": ["\u8b70\u54e1", "\u304e\u3044\u3093", "Diet member"], "\u6295\u7968": ["\u6295\u7968", "\u3068\u3046\u3072\u3087\u3046", "vote"], "\u9078\u3070": ["\u9078\u3076", "\u3048\u3089\u3076", "to choose"], "\u72a0\u7272": ["\u72a0\u7272", "\u304e\u305b\u3044", "sacrifice"], "\u901a\u3057\u3066": ["\u901a\u3057\u3066", "\u3068\u304a\u3057\u3066", "through"], "\u8fd1\u4ee3\u56fd\u5bb6": ["\u8fd1\u4ee3\u56fd\u5bb6", "\u304d\u3093\u3060\u3044\u3053\u3063\u304b", "modern nation"], "\u5f62": ["\u5f62", "\u304b\u305f\u3061", "form"], "\u6574\u3063\u3066": ["\u6574\u3046", "\u3068\u3068\u306e\u3046", "to be in order"]};
+  var grammar_json = {"\u6614\u3068\u306f\u9055\u3044\u3001": [" N \u3068\u9055\u3046", " different from N <br/><br/> The particle \u3068 is a difficult particle to master. Predicates of comparison such as \u9055\u3046 and \u540c\u3058 take the particle \u3068. ", [["\u6614\u3068\u9055\u3046", "different from the olden days"], ["\u660e\u6cbb\u6642\u4ee3\u3068\u540c\u3058\u3088\u3046\u306a\u3053\u3068\u3092\u3057\u3066\u3044\u308b\u3002", "We are doing things as they did in the Meiji Era."]]]};
+  var kanji_json = {"\u592e": ["", "\u30aa\u30a6", "CENTER; CENTRAL", []], "\u677f": ["\u3044\u305f", "\u30cf\u30f3\u30fb\u30d0\u30f3", "BOARD; PLANK", []], "\u6f14": ["", "\u30a8\u30f3", "PERFORM", []], "\u8cdb": ["", "\u30b5\u30f3", "HELP; PRAISE", []], "\u515a": ["", "\u30c8\u30a6", "GROUP; COMPANY", []], "\u8a8d": ["\u307f\u3068\uff08\u3081\u308b\uff09", "\u30cb\u30f3", "RECOGNIZE; DISCRIMINATE", []], "\u7dcf": ["", "\u30bd\u30a6", "ALL; TOGETHER; COLLECT; GENERAL", []], "\u54e1": ["", "\u30a4\u30f3", "MEMBER; ROUND; NUMBER OF PEOPLE", []], "\u7968": ["", "\u30d2\u30e7\u30a6", "VOTE", []]};
+  </script>
   <div class="block title">板垣退助</div>
   <hr>
   <div class="block is-centered">
@@ -197,14 +244,15 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="12b_01" class="sentence">
+    <tr id="12b-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_01" class="fas fa-play"></i>
-        <audio id="audio_12b_01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_01.mp3" type="audio/mpeg">
+        <i id="play_12b-01" class="fas fa-play"></i>
+        <audio id="audio_12b-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -212,9 +260,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">アメリカの独立に命をかけたパトリック・ヘンリーの「ギブ・ミー・リバティー・オア・ギブ・ミー・デス」という言葉は非常に有名ですが、その約百年後、日本でも同じようなことを言った人がいました。</span>
         <span class="content-sent kanji-sent is-hidden">アメリカの独立に命をかけたパトリック・ヘンリーの「ギブ・ミー・リバティー・オア・ギブ・ミー・デス」という言葉は非常に有名ですが、その約百年後、日本でも同じようなことを言った人がいました。</span>
         <span class="content-sent plain-sent is-hidden">アメリカの独立に命をかけたパトリック・ヘンリーの「ギブ・ミー・リバティー・オア・ギブ・ミー・デス」という言葉は非常に有名ですが、その約百年後、日本でも同じようなことを言った人がいました。</span>
-        <span class="content-sent vocab-sent">アメリカの<a onclick="show('./vocab/1088.html')">独立</a>に<a onclick="show('./vocab/9999.html')">命を かけた</a>パトリック・ヘンリーの「ギブ・ミー・リバティー・オア・ギブ・ミー・デス」という<a onclick="show('./vocab/2096.html')">言葉</a>は<a onclick="show('./vocab/709.html')">非常に</a><a onclick="show('./vocab/1588.html')">有名</a>ですが、その<a onclick="show('./vocab/1584.html')">約</a>百年後、日本でも<a onclick="show('./vocab/1713.html')">同じ</a>ようなことを言った人がいました。</span>
+        <span class="content-sent vocab-sent">アメリカの<a onclick="show_vocab_data('独立')">独立</a>に命をかけたパトリック・ヘンリーの「ギブ・ミー・リバティー・オア・ギブ・ミー・デス」という<a onclick="show_vocab_data('言葉')">言葉</a>は<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('有名')">有名</a>ですが、その<a onclick="show_vocab_data('約')">約</a>百年後、日本でも<a onclick="show_vocab_data('同じ')">同じ</a>ようなことを言った人がいました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -226,22 +275,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_02" class="sentence">
+    <tr id="12b-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_02" class="fas fa-play"></i>
-        <audio id="audio_12b_02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_02.mp3" type="audio/mpeg">
+        <i id="play_12b-02" class="fas fa-play"></i>
+        <audio id="audio_12b-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">日本は明治維新後、いろいろと新しい政治を始めましたが、中央政府の主要な官吏職を占め、政治の主権を握っていたのは倒幕に活躍した薩摩や長州藩出身の人々だけでした。</span>
-        <span class="content-sent kanji-sent is-hidden">日本は明治維新後、いろいろと新しい政治を始めましたが、中<a onclick="show('./kanji/296.html')">央</a>政府の主要な官吏職を占め、政治の主権を握っていたのは倒幕に活躍した薩摩や長州藩出身の人々だけでした。</span>
+        <span class="content-sent kanji-sent is-hidden">日本は明治維新後、いろいろと新しい政治を始めましたが、中<a onclick="show_kanji_data('央')">央</a>政府の主要な官吏職を占め、政治の主権を握っていたのは倒幕に活躍した薩摩や長州藩出身の人々だけでした。</span>
         <span class="content-sent plain-sent is-hidden">日本は明治維新後、いろいろと新しい政治を始めましたが、中央政府の主要な官吏職を占め、政治の主権を握っていたのは倒幕に活躍した薩摩や長州藩出身の人々だけでした。</span>
-        <span class="content-sent vocab-sent">日本は<a onclick="show('./vocab/777.html')">明治維新</a>後、いろいろと<a onclick="show('./vocab/1661.html')">新しい</a><a onclick="show('./vocab/26.html')">政治</a>を<a onclick="show('./vocab/1660.html')">始め</a>ましたが、<a onclick="show('./vocab/1141.html')">中央政府</a>の<a onclick="show('./vocab/1142.html')">主要な</a><a onclick="show('./vocab/1143.html')">官吏職</a>を<a onclick="show('./vocab/2174.html')">占め、</a>政治の主権を<a onclick="show('./vocab/2072.html')">握って</a>いたのは<a onclick="show('./vocab/2073.html')">倒幕</a>に<a onclick="show('./vocab/951.html')">活躍し</a>た<a onclick="show('./vocab/2066.html')">薩摩</a>や<a onclick="show('./vocab/1025.html')">長州藩</a><a onclick="show('./vocab/1146.html')">出身</a>の人々だけでした。</span>
+        <span class="content-sent vocab-sent">日本は<a onclick="show_vocab_data('明治維新')">明治維新</a>後、いろいろと<a onclick="show_vocab_data('新しい')">新しい</a><a onclick="show_vocab_data('政治')">政治</a>を<a onclick="show_vocab_data('始め')">始め</a>ましたが、<a onclick="show_vocab_data('中央政府')">中央政府</a>の<a onclick="show_vocab_data('主要な')">主要な</a><a onclick="show_vocab_data('官吏職')">官吏職</a>を<a onclick="show_vocab_data('占め、')">占め、</a><a onclick="show_vocab_data('政治')">政治</a>の主権を<a onclick="show_vocab_data('握って')">握って</a>いたのは<a onclick="show_vocab_data('倒幕')">倒幕</a>に<a onclick="show_vocab_data('活躍し')">活躍し</a>た<a onclick="show_vocab_data('薩摩')">薩摩</a>や<a onclick="show_vocab_data('長州藩')">長州藩</a><a onclick="show_vocab_data('出身')">出身</a>の人々だけでした。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -253,12 +303,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_03" class="sentence">
+    <tr id="12b-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_03" class="fas fa-play"></i>
-        <audio id="audio_12b_03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_03.mp3" type="audio/mpeg">
+        <i id="play_12b-03" class="fas fa-play"></i>
+        <audio id="audio_12b-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -266,9 +316,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">そこで、新政府に不満を持つ者、特に他の藩出身の元武士だった人々が中心になって政府に反対をするようになりました。</span>
         <span class="content-sent kanji-sent is-hidden">そこで、新政府に不満を持つ者、特に他の藩出身の元武士だった人々が中心になって政府に反対をするようになりました。</span>
         <span class="content-sent plain-sent is-hidden">そこで、新政府に不満を持つ者、特に他の藩出身の元武士だった人々が中心になって政府に反対をするようになりました。</span>
-        <span class="content-sent vocab-sent">そこで、<a onclick="show('./vocab/1968.html')">新政府</a>に<a onclick="show('./vocab/324.html')">不満</a>を持つ者、<a onclick="show('./vocab/1605.html')">特に</a><a onclick="show('./vocab/1696.html')">他</a>の<a onclick="show('./vocab/787.html')">藩</a><a onclick="show('./vocab/1146.html')">出身</a>の<a onclick="show('./vocab/1148.html')">元武士</a>だった人々が<a onclick="show('./vocab/1699.html')">中心</a>になって政府に<a onclick="show('./vocab/2076.html')">反対</a>をするようになりました。</span>
+        <span class="content-sent vocab-sent">そこで、<a onclick="show_vocab_data('新政府')">新政府</a>に<a onclick="show_vocab_data('不満')">不満</a>を持つ者、<a onclick="show_vocab_data('特に')">特に</a><a onclick="show_vocab_data('他')">他</a>の<a onclick="show_vocab_data('藩')">藩</a><a onclick="show_vocab_data('出身')">出身</a>の<a onclick="show_vocab_data('元武士')">元武士</a>だった人々が<a onclick="show_vocab_data('中心')">中心</a>になって<a onclick="show_vocab_data('政府')">政府</a>に<a onclick="show_vocab_data('反対')">反対</a>をするようになりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -280,22 +331,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_04" class="sentence">
+    <tr id="12b-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_04" class="fas fa-play"></i>
-        <audio id="audio_12b_04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_04.mp3" type="audio/mpeg">
+        <i id="play_12b-04" class="fas fa-play"></i>
+        <audio id="audio_12b-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">しかし、<a onclick="show('./grammar/87.html')">昔とは違い、</a>武力を使わず言論を使って攻撃しました。</span>
+        <span class="content-sent grammar-sent is-hidden">しかし、<a onclick="show_grammar_data('昔とは違い、')">昔とは違い、</a>武力を使わず言論を使って攻撃しました。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、昔とは違い、武力を使わず言論を使って攻撃しました。</span>
         <span class="content-sent plain-sent is-hidden">しかし、昔とは違い、武力を使わず言論を使って攻撃しました。</span>
-        <span class="content-sent vocab-sent">しかし、<a onclick="show('./vocab/1599.html')">昔</a>とは<a onclick="show('./vocab/2074.html')">違い</a>、<a onclick="show('./vocab/1149.html')">武力</a>を使わず<a onclick="show('./vocab/1150.html')">言論</a>を使って<a onclick="show('./vocab/1151.html')">攻撃</a>しました。</span>
+        <span class="content-sent vocab-sent">しかし、<a onclick="show_vocab_data('昔')">昔</a>とは<a onclick="show_vocab_data('違い')">違い</a>、<a onclick="show_vocab_data('武力')">武力</a>を使わず<a onclick="show_vocab_data('言論')">言論</a>を使って<a onclick="show_vocab_data('攻撃')">攻撃</a>しました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -307,22 +359,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_05" class="sentence">
+    <tr id="12b-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_05" class="fas fa-play"></i>
-        <audio id="audio_12b_05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_05.mp3" type="audio/mpeg">
+        <i id="play_12b-05" class="fas fa-play"></i>
+        <audio id="audio_12b-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">その中心となったのが板垣退助です。</span>
-        <span class="content-sent kanji-sent is-hidden">その中心となったのが<a onclick="show('./kanji/285.html')">板</a>垣退助です。</span>
+        <span class="content-sent kanji-sent is-hidden">その中心となったのが<a onclick="show_kanji_data('板')">板</a>垣退助です。</span>
         <span class="content-sent plain-sent is-hidden">その中心となったのが板垣退助です。</span>
-        <span class="content-sent vocab-sent">その<a onclick="show('./vocab/1699.html')">中心</a>となったのが<a onclick="show('./vocab/1966.html')">板垣退助</a>です。</span>
+        <span class="content-sent vocab-sent">その<a onclick="show_vocab_data('中心')">中心</a>となったのが<a onclick="show_vocab_data('板垣退助')">板垣退助</a>です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -334,22 +387,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_06" class="sentence">
+    <tr id="12b-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_06" class="fas fa-play"></i>
-        <audio id="audio_12b_06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_06.mp3" type="audio/mpeg">
+        <i id="play_12b-06" class="fas fa-play"></i>
+        <audio id="audio_12b-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">板垣は、政府だけに政治の力を与えるのではなく、国民の代表が集まって議会を開き、人々の権利や自由を守るべきだと説きました。</span>
-        <span class="content-sent kanji-sent is-hidden"><a onclick="show('./kanji/285.html')">板</a>垣は、政府だけに政治の力を与えるのではなく、国民の代表が集まって議会を開き、人々の権利や自由を守るべきだと説きました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('板')">板</a>垣は、政府だけに政治の力を与えるのではなく、国民の代表が集まって議会を開き、人々の権利や自由を守るべきだと説きました。</span>
         <span class="content-sent plain-sent is-hidden">板垣は、政府だけに政治の力を与えるのではなく、国民の代表が集まって議会を開き、人々の権利や自由を守るべきだと説きました。</span>
-        <span class="content-sent vocab-sent">板垣は、<a onclick="show('./vocab/1649.html')">政府</a>だけに<a onclick="show('./vocab/26.html')">政治</a>の力を<a onclick="show('./vocab/1152.html')">与える</a>のではなく、<a onclick="show('./vocab/19.html')">国民</a>の 代表が集まって<a onclick="show('./vocab/1153.html')">議会</a>を開き、人々の<a onclick="show('./vocab/1154.html')">権利</a>や自由を<a onclick="show('./vocab/1155.html')">守る</a>べきだと<a onclick="show('./vocab/1156.html')">説き</a>ました。</span>
+        <span class="content-sent vocab-sent">板垣は、<a onclick="show_vocab_data('政府')">政府</a>だけに<a onclick="show_vocab_data('政治')">政治</a>の力を<a onclick="show_vocab_data('与える')">与える</a>のではなく、<a onclick="show_vocab_data('国民')">国民</a>の代表が集まって<a onclick="show_vocab_data('議会')">議会</a>を開き、人々の<a onclick="show_vocab_data('権利')">権利</a>や自由を<a onclick="show_vocab_data('守る')">守る</a>べきだと<a onclick="show_vocab_data('説き')">説き</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -361,22 +415,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_07" class="sentence">
+    <tr id="12b-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_07" class="fas fa-play"></i>
-        <audio id="audio_12b_07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_07.mp3" type="audio/mpeg">
+        <i id="play_12b-07" class="fas fa-play"></i>
+        <audio id="audio_12b-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">そして全国各地で演説会を開き、自分の意見に賛成し支持する人を増やしていきました。</span>
-        <span class="content-sent kanji-sent is-hidden">そして全国各地で<a onclick="show('./kanji/298.html')">演</a>説会を開き、自分の意見に<a onclick="show('./kanji/300.html')">賛</a>成し支持する人を増やしていきました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして全国各地で<a onclick="show_kanji_data('演')">演</a>説会を開き、自分の意見に<a onclick="show_kanji_data('賛')">賛</a>成し支持する人を増やしていきました。</span>
         <span class="content-sent plain-sent is-hidden">そして全国各地で演説会を開き、自分の意見に賛成し支持する人を増やしていきました。</span>
-        <span class="content-sent vocab-sent">そして<a onclick="show('./vocab/1157.html')">全国各地</a>で<a onclick="show('./vocab/1158.html')">演説会</a>を開き、自分の意見に<a onclick="show('./vocab/1159.html')">賛成し</a><a onclick="show('./vocab/1973.html')">支持する</a>人を<a onclick="show('./vocab/144.html')">増やし</a>ていきました。</span>
+        <span class="content-sent vocab-sent">そして<a onclick="show_vocab_data('全国各地')">全国各地</a>で<a onclick="show_vocab_data('演説会')">演説会</a>を開き、自分の意見に<a onclick="show_vocab_data('賛成し')">賛成し</a><a onclick="show_vocab_data('支持する')">支持する</a>人を<a onclick="show_vocab_data('増やし')">増やし</a>ていきました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -388,22 +443,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_08" class="sentence">
+    <tr id="12b-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_08" class="fas fa-play"></i>
-        <audio id="audio_12b_08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_08.mp3" type="audio/mpeg">
+        <i id="play_12b-08" class="fas fa-play"></i>
+        <audio id="audio_12b-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">そして１８８１年、日本で初めての政党、自由党が作られ、板垣がその初代の党首になり、政府に圧力をかけるようになりました。</span>
-        <span class="content-sent kanji-sent is-hidden">そして１８８１年、日本で初めての政<a onclick="show('./kanji/299.html')">党</a>、自由党が作られ、<a onclick="show('./kanji/285.html')">板</a>垣がその初代の党首になり、政府に圧力をかけるようになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして１８８１年、日本で初めての政<a onclick="show_kanji_data('党')">党</a>、自由<a onclick="show_kanji_data('党')">党</a>が作られ、<a onclick="show_kanji_data('板')">板</a>垣がその初代の<a onclick="show_kanji_data('党')">党</a>首になり、政府に圧力をかけるようになりました。</span>
         <span class="content-sent plain-sent is-hidden">そして１８８１年、日本で初めての政党、自由党が作られ、板垣がその初代の党首になり、政府に圧力をかけるようになりました。</span>
-        <span class="content-sent vocab-sent">そして１８８１年、日本で<a onclick="show('./vocab/1561.html')">初めて</a>の<a onclick="show('./vocab/1160.html')">政党</a>、<a onclick="show('./vocab/1161.html')">自由党</a>が作られ、板垣がその<a onclick="show('./vocab/1091.html')">初代の</a><a onclick="show('./vocab/1162.html')">党首</a>になり、<a onclick="show('./vocab/1649.html')">政府</a>に<a onclick="show('./vocab/1163.html')">圧力</a>をかけるようになりました。</span>
+        <span class="content-sent vocab-sent">そして１８８１年、日本で<a onclick="show_vocab_data('初めて')">初めて</a>の<a onclick="show_vocab_data('政党')">政党</a>、<a onclick="show_vocab_data('自由党')">自由党</a>が作られ、板垣がその<a onclick="show_vocab_data('初代の')">初代の</a><a onclick="show_vocab_data('党首')">党首</a>になり、<a onclick="show_vocab_data('政府')">政府</a>に<a onclick="show_vocab_data('圧力')">圧力</a>をかけるようになりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -415,12 +471,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_09" class="sentence">
+    <tr id="12b-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_09" class="fas fa-play"></i>
-        <audio id="audio_12b_09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_09.mp3" type="audio/mpeg">
+        <i id="play_12b-09" class="fas fa-play"></i>
+        <audio id="audio_12b-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -428,9 +484,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">このように、選挙をして代表者を国会に送り、人々の権利と自由を守ろうと言う運動を自由民権運動と呼んでいますが、もちろん、政府はこれに強く反対しました。</span>
         <span class="content-sent kanji-sent is-hidden">このように、選挙をして代表者を国会に送り、人々の権利と自由を守ろうと言う運動を自由民権運動と呼んでいますが、もちろん、政府はこれに強く反対しました。</span>
         <span class="content-sent plain-sent is-hidden">このように、選挙をして代表者を国会に送り、人々の権利と自由を守ろうと言う運動を自由民権運動と呼んでいますが、もちろん、政府はこれに強く反対しました。</span>
-        <span class="content-sent vocab-sent">このように、<a onclick="show('./vocab/2075.html')">選挙</a>をして<a onclick="show('./vocab/2113.html')">代表者</a>を<a onclick="show('./vocab/1164.html')">国会</a>に送り、人々の<a onclick="show('./vocab/1154.html')">権利</a>と自由を<a onclick="show('./vocab/37.html')">守</a>ろうと言う運動を<a onclick="show('./vocab/1090.html')">自由民権運動</a>と呼んでいますが、<a onclick="show('./vocab/176.html')">もちろん</a>、<a onclick="show('./vocab/1649.html')">政府</a>はこれに強く<a onclick="show('./vocab/2076.html')">反対</a>しました。</span>
+        <span class="content-sent vocab-sent">このように、<a onclick="show_vocab_data('選挙')">選挙</a>をして<a onclick="show_vocab_data('代表者')">代表者</a>を<a onclick="show_vocab_data('国会')">国会</a>に送り、人々の<a onclick="show_vocab_data('権利')">権利</a>と自由を<a onclick="show_vocab_data('守')">守</a>ろうと言う運動を<a onclick="show_vocab_data('自由民権運動')">自由民権運動</a>と呼んでいますが、<a onclick="show_vocab_data('もちろん')">もちろん</a>、<a onclick="show_vocab_data('政府')">政府</a>はこれに強く<a onclick="show_vocab_data('反対')">反対</a>しました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -442,12 +499,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_10" class="sentence">
+    <tr id="12b-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_10" class="fas fa-play"></i>
-        <audio id="audio_12b_10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_10.mp3" type="audio/mpeg">
+        <i id="play_12b-10" class="fas fa-play"></i>
+        <audio id="audio_12b-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -455,9 +512,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">また政府以外にも、この自由民権運動者を迫害する者が大分いました。</span>
         <span class="content-sent kanji-sent is-hidden">また政府以外にも、この自由民権運動者を迫害する者が大分いました。</span>
         <span class="content-sent plain-sent is-hidden">また政府以外にも、この自由民権運動者を迫害する者が大分いました。</span>
-        <span class="content-sent vocab-sent">また<a onclick="show('./vocab/1649.html')">政府</a><a onclick="show('./vocab/1799.html')">以外</a>にも、この<a onclick="show('./vocab/1090.html')">自由民権運動</a>者を<a onclick="show('./vocab/407.html')">迫害</a>する者が<a onclick="show('./vocab/1643.html')">大分</a>いました。</span>
+        <span class="content-sent vocab-sent">また<a onclick="show_vocab_data('政府')">政府</a><a onclick="show_vocab_data('以外')">以外</a>にも、この<a onclick="show_vocab_data('自由民権運動')">自由民権運動</a>者を<a onclick="show_vocab_data('迫害')">迫害</a>する者が<a onclick="show_vocab_data('大分')">大分</a>いました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -469,22 +527,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_11" class="sentence">
+    <tr id="12b-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_11" class="fas fa-play"></i>
-        <audio id="audio_12b_11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_11.mp3" type="audio/mpeg">
+        <i id="play_12b-11" class="fas fa-play"></i>
+        <audio id="audio_12b-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">１８８２年のことです。板垣が岐阜の演説会場で反対派の一人の青年に不意に襲われました。</span>
-        <span class="content-sent kanji-sent is-hidden">１８８２年のことです。<a onclick="show('./kanji/285.html')">板</a>垣が岐阜の<a onclick="show('./kanji/298.html')">演</a>説会場で反対派の一人の青年に不意に襲われました。</span>
+        <span class="content-sent kanji-sent is-hidden">１８８２年のことです。<a onclick="show_kanji_data('板')">板</a>垣が岐阜の<a onclick="show_kanji_data('演')">演</a>説会場で反対派の一人の青年に不意に襲われました。</span>
         <span class="content-sent plain-sent is-hidden">１８８２年のことです。板垣が岐阜の演説会場で反対派の一人の青年に不意に襲われました。</span>
-        <span class="content-sent vocab-sent">１８８２年のことです。板垣が<a onclick="show('./vocab/1166.html')">岐阜</a>の<a onclick="show('./vocab/1158.html')">演説会</a>場で<a onclick="show('./vocab/1168.html')">反対派</a>の一人の<a onclick="show('./vocab/1138.html')">青年</a>に<a onclick="show('./vocab/619.html')">不意に</a><a onclick="show('./vocab/1841.html')">襲われ</a>ました。</span>
+        <span class="content-sent vocab-sent">１８８２年のことです。板垣が<a onclick="show_vocab_data('岐阜')">岐阜</a>の<a onclick="show_vocab_data('演説会')">演説会</a>場で<a onclick="show_vocab_data('反対派')">反対派</a>の一人の<a onclick="show_vocab_data('青年')">青年</a>に<a onclick="show_vocab_data('不意に')">不意に</a><a onclick="show_vocab_data('襲われ')">襲われ</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -496,22 +555,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_12" class="sentence">
+    <tr id="12b-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_12" class="fas fa-play"></i>
-        <audio id="audio_12b_12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_12.mp3" type="audio/mpeg">
+        <i id="play_12b-12" class="fas fa-play"></i>
+        <audio id="audio_12b-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">血まみれになって倒れていく板垣退助が、「板垣死すとも、自由は死なず」と言った言葉は、明治の名言の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
-        <span class="content-sent kanji-sent is-hidden">血まみれになって倒れていく<a onclick="show('./kanji/285.html')">板</a>垣退助が、「板垣死すとも、自由は死なず」と言った言葉は、明治の名言の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
+        <span class="content-sent kanji-sent is-hidden">血まみれになって倒れていく<a onclick="show_kanji_data('板')">板</a>垣退助が、「<a onclick="show_kanji_data('板')">板</a>垣死すとも、自由は死なず」と言った言葉は、明治の名言の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
         <span class="content-sent plain-sent is-hidden">血まみれになって倒れていく板垣退助が、「板垣死すとも、自由は死なず」と言った言葉は、明治の名言の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1169.html')">血まみれ</a>になって<a onclick="show('./vocab/1048.html')">倒れて</a>いく<a onclick="show('./vocab/1966.html')">板垣退助</a>が、「板垣<a onclick="show('./vocab/2077.html')">死す</a>とも、自由は死なず」と言った<a onclick="show('./vocab/2096.html')">言葉</a>は、<a onclick="show('./vocab/1396.html')">明治</a>の<a onclick="show('./vocab/1170.html')">名言</a>の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('血まみれ')">血まみれ</a>になって<a onclick="show_vocab_data('倒れて')">倒れて</a>いく<a onclick="show_vocab_data('板垣退助')">板垣退助</a>が、「板垣<a onclick="show_vocab_data('死す')">死す</a>とも、自由は死なず」と言った<a onclick="show_vocab_data('言葉')">言葉</a>は、<a onclick="show_vocab_data('明治')">明治</a>の<a onclick="show_vocab_data('名言')">名言</a>の一つとして、いつまでも日本人の間で口にされるようになったのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -523,22 +583,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12b_13" class="sentence">
+    <tr id="12b-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_13" class="fas fa-play"></i>
-        <audio id="audio_12b_13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_13.mp3" type="audio/mpeg">
+        <i id="play_12b-13" class="fas fa-play"></i>
+        <audio id="audio_12b-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">このように、自由民権運動が盛んになり、政府も国会を開く必要性を認め、伊藤博文を中心に憲法を作り、１８９０年、初めての総選挙が行われ、議員が国民の投票で選ばれるようになりました。</span>
-        <span class="content-sent kanji-sent is-hidden">このように、自由民権運動が盛んになり、政府も国会を開く必要性を<a onclick="show('./kanji/384.html')">認</a>め、伊藤博文を中心に憲法を作り、１８９０年、初めての<a onclick="show('./kanji/286.html')">総</a>選挙が行われ、議<a onclick="show('./kanji/397.html')">員</a>が国民の投<a onclick="show('./kanji/303.html')">票</a>で選ばれるようになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">このように、自由民権運動が盛んになり、政府も国会を開く必要性を<a onclick="show_kanji_data('認')">認</a>め、伊藤博文を中心に憲法を作り、１８９０年、初めての<a onclick="show_kanji_data('総')">総</a>選挙が行われ、議<a onclick="show_kanji_data('員')">員</a>が国民の投<a onclick="show_kanji_data('票')">票</a>で選ばれるようになりました。</span>
         <span class="content-sent plain-sent is-hidden">このように、自由民権運動が盛んになり、政府も国会を開く必要性を認め、伊藤博文を中心に憲法を作り、１８９０年、初めての総選挙が行われ、議員が国民の投票で選ばれるようになりました。</span>
-        <span class="content-sent vocab-sent">このように、<a onclick="show('./vocab/1090.html')">自由民権運動</a>が<a onclick="show('./vocab/1171.html')">盛んになり</a>、<a onclick="show('./vocab/1649.html')">政府</a>も<a onclick="show('./vocab/1164.html')">国会</a>を開く<a onclick="show('./vocab/1172.html')">必要性</a>を<a onclick="show('./vocab/1173.html')">認め</a>、<a onclick="show('./vocab/1965.html')">伊藤博文</a>を<a onclick="show('./vocab/1699.html')">中心</a>に<a onclick="show('./vocab/1969.html')">憲法</a>を作り、１８９０年、<a onclick="show('./vocab/1561.html')">初めて</a>の<a onclick="show('./vocab/1174.html')">総選挙</a>が行われ、<a onclick="show('./vocab/1175.html')">議員</a>が<a onclick="show('./vocab/19.html')">国民</a>の<a onclick="show('./vocab/1176.html')">投票</a>で<a onclick="show('./vocab/2078.html')">選ば</a>れるようになりました。</span>
+        <span class="content-sent vocab-sent">このように、<a onclick="show_vocab_data('自由民権運動')">自由民権運動</a>が<a onclick="show_vocab_data('盛んになり')">盛んになり</a>、<a onclick="show_vocab_data('政府')">政府</a>も<a onclick="show_vocab_data('国会')">国会</a>を開く<a onclick="show_vocab_data('必要性')">必要性</a>を<a onclick="show_vocab_data('認め')">認め</a>、<a onclick="show_vocab_data('伊藤博文')">伊藤博文</a>を<a onclick="show_vocab_data('中心')">中心</a>に<a onclick="show_vocab_data('憲法')">憲法</a>を作り、１８９０年、<a onclick="show_vocab_data('初めて')">初めて</a>の<a onclick="show_vocab_data('総選挙')">総選挙</a>が行われ、<a onclick="show_vocab_data('議員')">議員</a>が<a onclick="show_vocab_data('国民')">国民</a>の<a onclick="show_vocab_data('投票')">投票</a>で<a onclick="show_vocab_data('選ば')">選ば</a>れるようになりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -546,26 +607,27 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">Thus, the freedom movement flourished, and the government, recognizing the need to open a national assembly, established a constitution with Itō Hirobumi as the central figure;  and in 1890 the first general elections were held resulting in representatives being elected by popular vote.</span>
+        <span class="trans is-invisible">Thus, the freedom movement flourished, and the government, recognizing the need to open a national assembly, established a constitution with Itō Hirobumi as the central figure; and in 1890 the first general elections were held resulting in representatives being elected by popular vote.</span>
       </td>
     </tr>
 
-    <tr id="12b_14" class="sentence">
+    <tr id="12b-14" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12b_14" class="fas fa-play"></i>
-        <audio id="audio_12b_14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12b_14.mp3" type="audio/mpeg">
+        <i id="play_12b-14" class="fas fa-play"></i>
+        <audio id="audio_12b-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12b-14.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">日本も、板垣退助のような人の犠牲を通してやっと国会も開かれるようになり、近代国家としての形が整っていったのです。</span>
-        <span class="content-sent kanji-sent is-hidden">日本も、<a onclick="show('./kanji/285.html')">板</a>垣退助のような人の犠牲を通してやっと国会も開かれるようになり、近代国家としての形が整っていったのです。</span>
+        <span class="content-sent kanji-sent is-hidden">日本も、<a onclick="show_kanji_data('板')">板</a>垣退助のような人の犠牲を通してやっと国会も開かれるようになり、近代国家としての形が整っていったのです。</span>
         <span class="content-sent plain-sent is-hidden">日本も、板垣退助のような人の犠牲を通してやっと国会も開かれるようになり、近代国家としての形が整っていったのです。</span>
-        <span class="content-sent vocab-sent">日本も、<a onclick="show('./vocab/1966.html')">板垣退助</a>のような人の<a onclick="show('./vocab/1177.html')">犠牲</a>を<a onclick="show('./vocab/840.html')">通して</a>やっと<a onclick="show('./vocab/1164.html')">国会</a>も開かれるようになり、<a onclick="show('./vocab/1045.html')">近代国家</a>としての<a onclick="show('./vocab/1590.html')">形</a>が<a onclick="show('./vocab/1178.html')">整って</a>いったのです。</span>
+        <span class="content-sent vocab-sent">日本も、<a onclick="show_vocab_data('板垣退助')">板垣退助</a>のような人の<a onclick="show_vocab_data('犠牲')">犠牲</a>を<a onclick="show_vocab_data('通して')">通して</a>やっと<a onclick="show_vocab_data('国会')">国会</a>も開かれるようになり、<a onclick="show_vocab_data('近代国家')">近代国家</a>としての<a onclick="show_vocab_data('形')">形</a>が<a onclick="show_vocab_data('整って')">整って</a>いったのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -583,9 +645,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

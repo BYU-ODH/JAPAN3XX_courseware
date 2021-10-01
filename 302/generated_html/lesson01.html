@@ -4,7 +4,7 @@
   <title>
     Japanese 302
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -184,6 +226,11 @@ nav.navbar.is-fixed-bottom > .field {
     </li>
   </ul>
 </nav>
+  <script>
+  var vocab_json = {"\u7d00\u5143": ["\u7d00\u5143", "\u304d\u3052\u3093", "an era"], "\u4e2d\u56fd": ["\u4e2d\u56fd", "\u3061\u3085\u3046\u3054\u304f", "China"], "\u90fd": ["\u90fd", "\u307f\u3084\u3053", "a capital; a city; a town"], "\u9577\u5b89": ["\u9577\u5b89", "\u3061\u3087\u3046\u3042\u3093", "Changan (a city in China)"], "\u5bae\u6bbf": ["\u5bae\u6bbf", "\u304d\u3085\u3046\u3067\u3093", "a palace"], "\u5c0f\u91ce\u59b9\u5b50": ["\u5c0f\u91ce\u59b9\u5b50", "\u304a\u306e\u306e\u3044\u3082\u3053", "a government official"], "\u4f7f\u3044": ["\u4f7f\u3044", "\u3064\u304b\u3044", "a messenger"], "\u5230\u7740": ["\u5230\u7740\u3059\u308b", "\u3068\u3046\u3061\u3083\u304f\u3059\u308b", "to arrive"], "\u65c5": ["\u65c5", "\u305f\u3073", "travel"], "\u5927\u4e8b": ["\u5927\u4e8b", "\u3060\u3044\u3058", "important"], "\u653f\u5e9c": ["\u653f\u5e9c", "\u305b\u3044\u3075", "a government; the Government; the Administration"], "\u624b\u7d19": ["\u624b\u7d19", "\u3066\u304c\u307f", "a letter"], "\u3075\u3068\u3053\u308d": ["\u3075\u3068\u3053\u308d", "MISSING KANA", "inside breast pocket"], "\u59cb\u3081": ["\u59cb\u3081\u308b", "\u306f\u3058\u3081\u308b", "to begin; start"], "\u51fa\u305a\u308b": ["\u51fa\u305a\u308b", "\u3044\u305a\u308b", "to come out"], "\u51e6": ["\u51e6", "\u3068\u3053\u308d", "a place"], "\u5929\u5b50": ["\u5929\u5b50", "\u3066\u3093\u3057", "Son of Heaven (emperor)"], "\u66f8\u3092": ["\u66f8", "\u3057\u3087", "a letter"], "\u6ca1\u3059\u308b": ["\u6ca1\u3059\u308b", "\u307c\u3063\u3059\u308b", "to set; go down; sink"], "\u3044\u305f\u3059": ["\u3044\u305f\u3059", "MISSING KANA", "to send"], "\u3064\u3064\u304c\u306a\u304d\u3084": ["\u3064\u3064\u304c\u306a\u3044", "MISSING KANA", "safe and sound"], "\u5f53\u6642": ["\u5f53\u6642", "\u3068\u3046\u3058", "at the time"], "\u6442\u653f": ["\u6442\u653f", "\u305b\u3063\u3057\u3087\u3046", "regency; a regent"], "\u526f\u5927\u7d71\u9818": ["\u526f\u5927\u7d71\u9818", "\u3075\u304f\u3060\u3044\u3068\u3046\u308a\u3087\u3046", "vice president of a country"], "\u5730\u4f4d": ["\u5730\u4f4d", "\u3061\u3044", "rank; position; status"], "\u6cbb\u3081\u3066": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to rule; govern"], "\u8056\u5fb3\u592a\u5b50": ["\u8056\u5fb3\u592a\u5b50(574-622)", "\u3057\u3087\u3046\u3068\u304f\u305f\u3044\u3057", "a prince of Emperor Y\u014dmei"], "\u66f8\u304d\u51fa\u3057": ["\u66f8\u304d\u51fa\u3057", "\u304b\u304d\u3060\u3057", "the opening passage of a story or article"], "\u592a\u967d": ["\u592a\u967d", "\u305f\u3044\u3088\u3046", "the sun"], "\u6c88": ["\u6c88\u3080", "\u3057\u305a\u3080", "to go down; sink"], "\u904e\u3054\u3057": ["\u904e\u3054\u3059", "\u3059\u3054\u3059", "to live"], "\u610f\u5473": ["\u610f\u5473", "\u3044\u307f", "meaning"], "\u6587\u7ae0": ["\u6587\u7ae0", "\u3076\u3093\u3057\u3087\u3046", "a sentence"], "\u9803": ["\u9803", "\u3053\u308d\uff08\u3054\u308d\uff09", "time; about; when; around the time"], "\u4e16\u754c": ["\u4e16\u754c", "\u305b\u304b\u3044", "the world"], "\u4e00\u756a": ["\u4e00\u756a", "\u3044\u3061\u3070\u3093", "the most"], "\u5f37\u3044": ["\u5f37\u3044", "\u3064\u3088\u3044", "strong"], "\u81ea\u6162": ["\u81ea\u6162", "\u3058\u307e\u3093", "proud; a boast"], "\u7687\u5e1d": ["\u7687\u5e1d", "\u3053\u3046\u3066\u3044", "an emperor"], "\u805e\u3044\u3066": ["\u805e\u304f", "\u304d\u304f", "to listen to"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "very; extremely"], "\u304a\u3053\u3063\u3066": ["\u304a\u3053\u308b", "\u304a\u3053\u308b", "to become angry"], "\u5bfe\u7b49": ["\u5bfe\u7b49", "\u305f\u3044\u3068\u3046", "equality"], "\u4ea4\u969b": ["\u4ea4\u969b", "\u3053\u3046\u3055\u3044", "association; relations"], "\u8868\u3057": ["\u8868\u3059", "\u3042\u3089\u308f\u3059", "to show; indicate; display"], "\u56fd\u6c11": ["\u56fd\u6c11", "\u3053\u304f\u307f\u3093", "a nation; a citizen"], "\u611b\u56fd\u5fc3": ["\u611b\u56fd\u5fc3", "\u3042\u3044\u3053\u304f\u3057\u3093", "patriotism"], "\u6df1\u3081\u308b": ["\u6df1\u3081\u308b", "\u3075\u304b\u3081\u308b", "to deepen"], "\u3067\u304d\u3054\u3068": ["\u3067\u304d\u3054\u3068", "MISSING KANA", "incident; occurrence; happening"], "\u4f1d\u3048": ["\u4f1d\u3048\u308b", "\u3064\u305f\u3048\u308b", "to tell; convey"], "\u5927\u548c": ["\u5927\u548c", "\u3084\u307e\u3068", "Yamato (old name for Japan)"], "\u547c\u3070": ["\u547c\u3076", "\u3088\u3076", "to call"], "\u7531\u6765\u3059\u308b": ["\u7531\u6765\u3059\u308b", "\u3086\u3089\u3044\u3059\u308b", "to originate (in); result (from)"], "\u3053\u306e\u307b\u304b\u306b": ["\u3053\u306e\u307b\u304b\u306b", "MISSING KANA", "besides this; besides these"], "\u56fd\u5185": ["\u56fd\u5185", "\u3053\u304f\u306a\u3044", "domestic; within the country"], "\u6570\u591a\u304f": ["\u6570\u591a\u304f", "\u304b\u305a\u304a\u304a\u304f", "many"], "\u65b0\u3057\u3044": ["\u65b0\u3057\u3044", "\u3042\u305f\u3089\u3057\u3044", "new"], "\u653f\u6cbb": ["\u653f\u6cbb", "\u305b\u3044\u3058", "government; politics"], "\u884c\u3044": ["\u884c\u3046", "\u304a\u3053\u306a\u3046", "to do"], "\u5bb6\u65cf\u4e2d\u5fc3": ["\u5bb6\u65cf\u4e2d\u5fc3", "\u304b\u305e\u304f\u3061\u3085\u3046\u3057\u3093", "family-centered"], "\u5f79\u4eba": ["\u5f79\u4eba", "\u3084\u304f\u306b\u3093", "public officials"], "\u8eab\u5206": ["\u8eab\u5206", "\u307f\u3076\u3093", "social class"], "\u6607\u683c": ["\u6607\u683c\u3059\u308b", "\u3057\u3087\u3046\u304b\u304f\u3059\u308b", "to be elevated to a higher status, be promoted"], "\u4ed5\u65b9": ["\u4ed5\u65b9", "\u3057\u304b\u305f", "method; way"], "\u6539\u3081": ["\u6539\u3081\u308b", "\u3042\u3089\u305f\u3081\u308b", "to renew"], "\u672c\u5f53\u306b": ["\u672c\u5f53\u306b", "\u307b\u3093\u3068\u3046\u306b", "really; truly; actually"], "\u624d\u80fd": ["\u624d\u80fd", "\u3055\u3044\u306e\u3046", "talent"], "\u968e\u7d1a": ["\u968e\u7d1a", "\u304b\u3044\u304d\u3085\u3046", "class; rank"], "\u51a0\u4f4d\u5341\u4e8c\u968e": ["\u51a0\u4f4d\u5341\u4e8c\u968e", "\u304b\u3093\u3044\u3058\u3085\u3046\u306b\u304b\u3044", "twelve-step merit system"], "\u65b9\u6cd5": ["\u65b9\u6cd5", "\u307b\u3046\u307b\u3046", "method; way"], "\u53d6\u308a\u5165\u308c": ["\u53d6\u308a\u5165\u308c\u308b", "\u3068\u308a\u3044\u308c\u308b", "to adopt; borrow; introduce"], "\u898f\u5f8b": ["\u898f\u5f8b", "\u304d\u308a\u3064", "regulations"], "\u6cd5\u5247": ["\u6cd5\u5247", "\u307b\u3046\u305d\u304f", "a law"], "\u5b88": ["\u5b88\u308b", "\u307e\u3082\u308b", "to obey; keep"], "\u521d\u3081\u3066": ["\u521d\u3081\u3066", "\u306f\u3058\u3081\u3066", "for the first time; first"], "\u61b2\u6cd5": ["\u61b2\u6cd5", "\u3051\u3093\u307d\u3046", "the constitution"], "\u5341\u4e03\u6761": ["\u5341\u4e03\u6761", "\u3058\u3085\u3046\u306a\u306a\u3058\u3087\u3046", "seventeen articles"], "\u5b9a\u3081": ["\u5b9a\u3081\u308b", "\u3055\u3060\u3081\u308b", "to establish; lay down"], "\u4e00\u6761\u306b": ["\u4e00\u6761\u306b", "\u3044\u3061\u3058\u3087\u3046\u306b", "in one of the articles"], "\u3042\u3064\u304f": ["\u539a\u304f", "\u3042\u3064\u304f", "heartily"], "\u4ecf\u6559": ["\u4ecf\u6559", "\u3076\u3063\u304d\u3087\u3046", "Buddhism"], "\u656c": ["\u656c\u3046", "\u3046\u3084\u307e\u3046", "to respect"], "\u6559\u3048": ["\u6559\u3048", "\u304a\u3057\u3048", "a lesson; teachings"], "\u57fa": ["\u57fa", "TOO MUCH TO PARSE\u3082\u3068; \u3082\u3068\u3044", "the foundation; the basis"], "\u6cbb\u3081": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to govern;  control"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3056\u3044", "the present time; at present"], "\u5948\u826f": ["\u5948\u826f", "\u306a\u3089", "an ancient capital of Japan"], "\u6b8b\u3063\u3066": ["\u6b8b\u308b", "\u306e\u3053\u308b", "to remain"], "\u6700\u53e4": ["\u6700\u53e4", "\u3055\u3044\u3053", "the oldest"], "\u6728\u9020\u5efa\u7bc9": ["\u6728\u9020\u5efa\u7bc9", "\u3082\u304f\u305e\u3046\u3051\u3093\u3061\u304f", "construction using wood"], "\u6cd5\u9686\u5bfa": ["\u6cd5\u9686\u5bfa", "\u307b\u3046\u308a\u3085\u3046\u3058", "name of a temple; built in 607 in a town called Ikaruga of Nara."], "\u7236": ["\u7236", "\u3061\u3061", "a father"], "\u7528\u660e\u5929\u7687": ["\u7528\u660e\u5929\u7687(", "TOO MUCH TO PARSE-587) \u3088\u3046\u3081\u3044\u3066\u3093\u306e\u3046", "Emperor Y\u014dmei"], "\u796d\u3063": ["\u796d\u308b", "\u307e\u3064\u308b", "to worship; deify"], "\u5efa\u3066": ["\u5efa\u3066\u308b", "\u305f\u3066\u308b", "to build"], "\u7d4c\u5178": ["\u7d4c\u5178", "\u304d\u3087\u3046\u3066\u3093", "sacred books; Buddhist scriptures"], "\u8aac\u660e": ["\u8aac\u660e\u3059\u308b", "\u305b\u3064\u3081\u3044\u3059\u308b", "to explain"], "\u4e09\u7d4c\u7fa9\u758f": ["\u4e09\u7d4c\u7fa9\u758f", "\u3055\u3093\u304e\u3087\u3046\u304e\u3057\u3087", "Three annotated editions of 1) Hoke-ky\u014d \u6cd5\u83ef\u7d4c that consists of Seihoke-ky\u014d \u6b63\u6cd5\u83ef\u7d4c, My\u014dh\u014drenge-ky\u014d \u5999\u6cd5\u84ee\u83ef\u7d4c, and Tenpinmy\u014dh\u014drenge-ky\u014d \u6dfb\u54c1\u5999\u6cd5\u84ee\u83ef\u7d4c,  2) Yuima-ky\u014d \u7dad\u6469\u7d4c, and 3) Sh\u014dman-ky\u014d \u52dd\u307e\u3093\u7d4c."], "\u89e3\u8aac\u66f8": ["\u89e3\u8aac\u66f8", "\u304b\u3044\u305b\u3064\u3057\u3087", "commentary"], "\u591a\u304f": ["\u591a\u304f", "\u304a\u304a\u304f", "many; much"], "\u653f\u6cbb\u5bb6": ["\u653f\u6cbb\u5bb6", "\u305b\u3044\u3058\u304b", "a politician"], "\u3060\u3051\u3067\u306a\u304f": ["\u3060\u3051\u3067\u306a\u304f", "MISSING KANA", "not only"], "\u5b97\u6559": ["\u5b97\u6559", "\u3057\u3085\u3046\u304d\u3087\u3046", "religion"], "\u5b66\u8005": ["\u5b66\u8005", "\u304c\u304f\u3057\u3083", "scholar"], "\u3088\u308a\u826f\u3044": ["\u3088\u308a\u826f\u3044", "\u3088\u308a\u3088\u3044", "better"], "\u9020": ["\u9020\u308b", "\u3064\u304f\u308b", "to build"], "\u52aa\u529b": ["\u52aa\u529b", "\u3069\u308a\u3087\u304f", "effort"], "\u4ea1\u304f\u306a\u308b": ["\u4ea1\u304f\u306a\u308b", "\u306a\u304f\u306a\u308b", "to pass away"], "\u4ee5\u524d": ["\u4ee5\u524d", "\u3044\u305c\u3093", "before"], "\u53a9\u6238\u8c4a\u8061\u8033\u7687\u5b50": ["\u53a9\u6238\u8c4a\u8061\u8033\u7687\u5b50", "\u3046\u307e\u3084\u3069\u3068\u3088\u3068\u307f\u307f\u306e\u304a\u3046\u3058", "another name for Sh\u014dtoku Taishi"], "\u3046\u307e\u3084": ["\u3046\u307e\u3084", "\u3046\u307e\u3084", "a stable"], "\u6025\u306b": ["\u6025\u306b", "\u304d\u3085\u3046\u306b", "at short notice; suddenly"], "\u4f55\u4eba\u3082\u306e\u8a71": ["\u4f55\u4eba\u3082\u306e\u8a71", "\u306a\u3093\u306b\u3093\u3082\u306e\u306f\u306a\u3057", "The conversation of many people"], "\u540c\u6642\u306b": ["\u540c\u6642\u306b", "\u3069\u3046\u3058\u306b", "at the same time; simultaneously"], "\u805e\u304d\u5206\u3051\u305f": ["\u805e\u304d\u5206\u3051\u305f", "\u304d\u304d\u308f\u3051\u308b", "to listen to reason; evaluate what is heard"], "\u8a00\u3044\u4f1d\u3048": ["\u8a00\u3044\u4f1d\u3048", "\u3044\u3044\u3064\u305f\u3048", "legend"], "\u4fe1\u3058": ["\u4fe1\u3058\u308b", "\u3057\u3093\u3058\u308b", "to believe"], "\u6b73": ["\u6b73", "\u3055\u3044", "age; years"], "\u4ee5\u4e0a": ["\u4ee5\u4e0a", "\u3044\u3058\u3087\u3046", "more than; beyond"], "\u8ce2": ["\u8ce2\u3044", "\u304b\u3057\u3053\u3044", "wise; clever; intelligent"], "\u4f3c\u3066": ["\u4f3c\u308b", "\u306b\u308b", "to be similar; resemble"], "\u304a\u3082\u3057\u308d\u3044": ["\u304a\u3082\u3057\u308d\u3044", "MISSING KANA", "interesting"]};
+  var grammar_json = {"\u4ecf\u306e\u6559\u3048\u3092\u57fa\u306b": [" N\u3092\u57fa\u306b", " based upon N <br/><br/> \u3082\u3068 is sometimes written in kanji \u57fa \"foundation or basis,\" or in another case \u5143 \"source or origin.\" The meaning of the sentence becomes much clearer when it is written in kanji; the noun preceding \u57fa\u306b is the base of the action of the main clause. ", [["\u81ea\u5206\u306e\u7d4c\u9a13\uff08\u3051\u3044\u3051\u3093\uff09\u3092\u57fa\u306b\u672c\u3092\u66f8\u3044\u305f\u3002", "He wrote a book based upon his own experiences."], ["\u3044\u305f\u3060\u3044\u305f\u304a\u91d1\u3092\u57fa\u306b\u5546\u58f2\u3092\u3057\u3066\u307f\u307e\u3059\u3002", "I will go into business using the money I have received."]]], "\u6cbb\u3081\u3088\u3046\u3068\u3057\u307e\u3057\u305f": [" V \u3088\u3046(\u304a\u3046\uff09\u3068\u3059\u308b", " try to V <br/><br/> This pattern expresses the intention or the volition of the speaker to do the verb. Note that the bases are different for the ichidan and godan verbs. Ichidan verbs take \"yoo (\u3088\u3046)\" after the verb stem while the godan verbs take \"oo (Base V + \u3046)\" after the stem. In both cases the accent drops before the final \u3046 in standard Japanese. ", [["\u7acb\u3068\u3046\u3068\u3057\u305f\u304c\u8db3\u304c\u3057\u3073\u308c\u3066\u7acb\u3066\u306a\u304b\u3063\u305f\u3002", "He tried to stand up, but his legs were asleep so he couldn't."], ["\u6238\u3092\u958b\u3051\u3088\u3046\u3068\u3057\u3066\u3053\u308f\u3057\u3066\u3057\u307e\u3063\u305f\u3002", "Trying to open the door, he broke it."]]], "\u52aa\u529b\u3057\u305f\u306e\u304c": [" \u301c \u306e\u304c (\u306f) X \u3060", " the one who/that \u301c is/was X <br/><br/> \u306e here refers to what comes in X. X can refer to people, things, places, times, reasons, etc. X is usually a noun, a noun phrase, or a noun plus a preposition. ", [["\u76bf\u3092\u3053\u308f\u3057\u305f\u306e\u306f\u7530\u4e2d\u3067\u3059\u3002", "It is Tanaka that broke the plate."], ["\u65e5\u672c\u3078\u6765\u305f\u306e\u306f\u52c9\u5f37\u3059\u308b\u305f\u3081\u3067\u3001\u3042\u305d\u3076\u305f\u3081\u3067\u306f\u3042\u308a\u307e\u305b\u3093\u3002", "I came to Japan to study, not to play."]]]};
+  var kanji_json = {"\u5b89": ["\u3084\u3059\uff08\u3044\uff09", "\u30a2\u30f3", "PEACEFUL; CHEAP", []], "\u4f7f": ["\u3064\u304b\uff08\u3046\uff09", "\u30b7", "USE; MESSENGER", []], "\u51e6": ["[\u3068\u3053\u308d]", "\u30b7\u30e7", "MANAGE; DEAL WITH; [PLACE]", []], "\u526f": ["", "\u30d5\u30af", "AFFIX; ATTACH; A COPY; ASSISTANT", []], "\u7d71": ["\u3059\uff08\u3079\u308b\uff09", "\u30c8\u30a6", "LINE; CONTINUATION; RULE; GOVERN", []], "\u9818": ["", "\u30ea\u30e7\u30a6", "DOMINION; TERRITORY; POSSESSION; RECEIVE; ACCEPT", []], "\u8056": ["", "\u30bb\u30a4", "HOLINESS; SAINT; GREAT MASTER", []], "\u967d": ["", "\u30e8\u30a6", "THE SUN; SOUTH; BRIGHT", []], "\u904e": ["\u3059\uff08\u304e\u308b)\u30fb\u3059\uff08\u3054\u3059\uff09\u30fb\u3042\u3084\u307e\uff08\u3064\uff09\u30fb\u3042\u3084\u307e\uff08\u3061\uff09", "\u30ab", "PASS BY; EXCEED; MISTAKE", []], "\u7ae0": ["", "\u30b7\u30e7\u30a6", "SECTION; GAP; INTERVAL; SIGN; MARK", []], "\u7687": ["", "\u30b3\u30a6\u30fb\u30aa\u30a6", "EMPEROR", []], "\u975e": ["", "\u30d2", "IS NOT; GO AGAINST; NOT GOOD", []], "\u5e38": ["\u3064\u306d\u30fb\u3068\u3053", "\u30b8\u30e7\u30a6", "USUAL; REGULAR", []], "\u5bfe": ["", "\u30bf\u30a4\u30fb\u30c4\u30a4", "BE OPPOSITE TO; FACE (SOMEONE); PAIR", []], "\u6c11": ["\u305f\u307f", "\u30df\u30f3", "THE PEOPLE; SUBJECT; CITIZENS", []], "\u5185": ["\u3046\u3061", "\u30ca\u30a4\u30fb\u30c0\u30a4", "INSIDE; WITHIN", []], "\u5f79": ["", "\u30e4\u30af\u30fb\u30a8\u30ad", "ROLE; WORK; DUTY; WAR", []], "\u6539": ["\u3042\u3089\u305f\uff08\u3081\u308b\uff09\u30fb\u3042\u3089\u305f\uff08\u307e\u308b\uff09", "\u30ab\u30a4", "CHANGE; REFORM", []], "\u968e": ["", "\u30ab\u30a4", "STORY (IN A BUILDING); LEVEL; SOCIAL STATUS", []], "\u7d1a": ["", "\u30ad\u30e5\u30a6", "CLASS; RANK; ORDER", []], "\u898f": ["", "\u30ad", "COMPASS; RULES; COPY; MODEL", []], "\u5f8b": ["", "\u30ea\u30c4\u30fb\u30ea\u30c1", "LAW; REGULATION; RHYTHM", []], "\u5247": ["", "\u30bd\u30af", "RULES; LAWS", []], "\u5b88": ["\u307e\u3082\uff08\u308b\uff09\u30fb\u3082\uff08\u308a\uff09", "\u30b7\u30e5\u30fb\u30b9", "PROTECT; OBEY; MANAGE; DEFEND", []], "\u61b2": ["", "\u30b1\u30f3", "LAW; CONSTITUTION", []], "\u6761": ["", "\u30b8\u30e7\u30a6", "ITEM; REGULATIONS; ARTICLES; TREATY", []], "\u5b9a": ["\u3055\u3060\uff08\u3081\u308b\uff09\u30fb\u3055\u3060\uff08\u307e\u308b\uff09\u30fb\u3055\u3060\uff08\u304b\uff09", "\u30c6\u30a4\u30fb\u30b8\u30e7\u30a6", "ESTABLISH; SETTLE DOWN; DETERMINE; DEFINE", []], "\u4ecf": ["\u307b\u3068\u3051", "\u30d6\u30c4", "BUDDHA", []], "\u656c": ["\u3046\u3084\u307e\uff08\u3046\uff09", "\u30b1\u30a4", "RESPECT; HONOR; REVERE; VENERATE", []], "\u826f": ["\u3088\uff08\u3044\uff09", "\u30ea\u30e7\u30a6", "GOOD", []], "\u5efa": ["\u305f\u3066\uff08\u308b\uff09\u30fb\u305f\uff08\u3064\uff09", "\u30b1\u30f3\u30fb\u30b3\u30f3", "BUILD; STAND; RAISE; ESTABLISH; FORM", []], "\u5178": ["", "\u30c6\u30f3", "RULE; REGULATION; ETIQUETTE; MODEL; BASIS", []], "\u7fa9": ["", "\u30ae", "TRUTH; MEANING; DUTY", []], "\u89e3": ["\u3068\uff08\u304f\uff09\u30fb\u3068\uff08\u304b\u3059\uff09\u30fb\u3068\uff08\u3051\u308b\uff09", "\u30ab\u30a4\u30fb\u30b2", "SOLVE; CANCEL; ANSWER", []], "\u5b97": ["", "\u30b7\u30e5\u30a6\u30fb\u30bd\u30a6", "RELIGION", []], "\u4ea1": ["\u306a\uff08\u3044\uff09", "\u30dc\u30fb\u30e2\u30a6", "DIE; PASS AWAY", []], "\u8c4a": ["\u3086\u305f\uff08\u304b\uff09", "\u30db\u30a6", "FULL; PLENTIFUL; BOUNTIFUL", []], "\u4fe1": ["", "\u30b7\u30f3", "TRUST; BELIEVE; A LETTER; SIGNAL", []]};
+  </script>
   <div class="block title">聖徳太子</div>
   <hr>
   <div class="block is-centered">
@@ -197,24 +244,26 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="01_01" class="sentence">
+    <tr id="01-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_01" class="fas fa-play"></i>
-        <audio id="audio_01_01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_01.mp3" type="audio/mpeg">
+        <i id="play_01-01" class="fas fa-play"></i>
+        <audio id="audio_01-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">紀元６０７年７月、中国の都、長安にある宮殿に小野妹子という日本からの使いが到着しました。</span>
-        <span class="content-sent kanji-sent is-hidden">紀元６０７年７月、中国の都、長<a onclick="show('./kanji/1.html')">安</a>にある宮殿に小野妹子という日本からの<a onclick="show('./kanji/2.html')">使</a>いが到着しました。</span>
+        <span class="content-sent kanji-sent is-hidden">紀元６０７年７月、中国の都、長<a onclick="show_kanji_data('安')">安</a>にある宮殿に小野妹子という日本からの<a onclick="show_kanji_data('使')">使</a>いが到着しました。</span>
         <span class="content-sent plain-sent is-hidden">紀元６０７年７月、中国の都、長安にある宮殿に小野妹子という日本からの使いが到着しました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1535.html')">紀元</a>６０７年７月、<a onclick="show('./vocab/1992.html')">中国</a>の<a onclick="show('./vocab/1.html')">都</a>、<a onclick="show('./vocab/2.html')">長安</a>にある<a onclick="show('./vocab/3.html')">宮殿</a>に<a onclick="show('./vocab/1536.html')">小野妹子</a>という日本からの<a onclick="show('./vocab/4.html')">使い</a>が<a onclick="show('./vocab/5.html')">到着</a>しました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('紀元')">紀元</a>６０７年７月、<a onclick="show_vocab_data('中国')">中国</a>の<a onclick="show_vocab_data('都')">都</a>、<a onclick="show_vocab_data('長安')">長安</a>にある<a onclick="show_vocab_data('宮殿')">宮殿</a>に<a onclick="show_vocab_data('小野妹子')">小野妹子</a>という日本からの<a onclick="show_vocab_data('使い')">使い</a>が<a onclick="show_vocab_data('到着')">到着</a>しました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -226,12 +275,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_02" class="sentence">
+    <tr id="01-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_02" class="fas fa-play"></i>
-        <audio id="audio_01_02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_02.mp3" type="audio/mpeg">
+        <i id="play_01-02" class="fas fa-play"></i>
+        <audio id="audio_01-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -239,9 +288,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">長い、海の旅の間ずっと大事に持って来た政府からの手紙をふところから取り出すと、ゆっくりと読み始めました。</span>
         <span class="content-sent kanji-sent is-hidden">長い、海の旅の間ずっと大事に持って来た政府からの手紙をふところから取り出すと、ゆっくりと読み始めました。</span>
         <span class="content-sent plain-sent is-hidden">長い、海の旅の間ずっと大事に持って来た政府からの手紙をふところから取り出すと、ゆっくりと読み始めました。</span>
-        <span class="content-sent vocab-sent">長い、海の<a onclick="show('./vocab/1993.html')">旅</a>の間ずっと<a onclick="show('./vocab/1537.html')">大事</a>に持って来た<a onclick="show('./vocab/1649.html')">政府</a>からの<a onclick="show('./vocab/1539.html')">手紙</a>を<a onclick="show('./vocab/6.html')">ふところ</a>から取り出すと、ゆっくりと読み<a onclick="show('./vocab/1660.html')">始め</a>ました。</span>
+        <span class="content-sent vocab-sent">長い、海の<a onclick="show_vocab_data('旅')">旅</a>の間ずっと<a onclick="show_vocab_data('大事')">大事</a>に持って来た<a onclick="show_vocab_data('政府')">政府</a>からの<a onclick="show_vocab_data('手紙')">手紙</a>を<a onclick="show_vocab_data('ふところ')">ふところ</a>から取り出すと、ゆっくりと読み<a onclick="show_vocab_data('始め')">始め</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -249,26 +299,27 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">After taking from his pocket a letter from the government he had         carefully carried through the long journey over the ocean, he slowly began         to read.</span>
+        <span class="trans is-invisible">After taking from his pocket a letter from the government he had carefully carried through the long journey over the ocean, he slowly began to read.</span>
       </td>
     </tr>
 
-    <tr id="01_03" class="sentence">
+    <tr id="01-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_03" class="fas fa-play"></i>
-        <audio id="audio_01_03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_03.mp3" type="audio/mpeg">
+        <i id="play_01-03" class="fas fa-play"></i>
+        <audio id="audio_01-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">「日出ずる処の天子、書を日没する処の天子にいたす。つつがなきや．．．。」</span>
-        <span class="content-sent kanji-sent is-hidden">「日出ずる<a onclick="show('./kanji/3.html')">処</a>の天子、書を日没する処の天子にいたす。つつがなきや．．．。」</span>
+        <span class="content-sent kanji-sent is-hidden">「日出ずる<a onclick="show_kanji_data('処')">処</a>の天子、書を日没する<a onclick="show_kanji_data('処')">処</a>の天子にいたす。つつがなきや．．．。」</span>
         <span class="content-sent plain-sent is-hidden">「日出ずる処の天子、書を日没する処の天子にいたす。つつがなきや．．．。」</span>
-        <span class="content-sent vocab-sent">「日<a onclick="show('./vocab/1541.html')">出ずる</a><a onclick="show('./vocab/1542.html')">処</a>の<a onclick="show('./vocab/13.html')">天子</a>、<a onclick="show('./vocab/1543.html')">書を</a>日<a onclick="show('./vocab/1544.html')">没する</a>処の天子に<a onclick="show('./vocab/1989.html')">いたす</a>。<a onclick="show('./vocab/1545.html')">つつがなきや</a>．．．。」</span>
+        <span class="content-sent vocab-sent">「日<a onclick="show_vocab_data('出ずる')">出ずる</a><a onclick="show_vocab_data('処')">処</a>の<a onclick="show_vocab_data('天子')">天子</a>、<a onclick="show_vocab_data('書を')">書を</a>日<a onclick="show_vocab_data('没する')">没する</a><a onclick="show_vocab_data('処')">処</a>の<a onclick="show_vocab_data('天子')">天子</a>に<a onclick="show_vocab_data('いたす')">いたす</a>。<a onclick="show_vocab_data('つつがなきや')">つつがなきや</a>．．．。」</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -276,26 +327,27 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">&quot;I, Emperor of the Land of the Rising Sun, send this letter to the Emperor of the Land of the Setting Sun.  I trust you are well....&quot;</span>
+        <span class="trans is-invisible">&quot;I, Emperor of the Land of the Rising Sun, send this letter to the Emperor of the Land of the Setting Sun. I trust you are well....&quot;</span>
       </td>
     </tr>
 
-    <tr id="01_04" class="sentence">
+    <tr id="01-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_04" class="fas fa-play"></i>
-        <audio id="audio_01_04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_04.mp3" type="audio/mpeg">
+        <i id="play_01-04" class="fas fa-play"></i>
+        <audio id="audio_01-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">これは、その当時、摂政（今のアメリカの副大統領のような地位）として日本の国を治めていた聖徳太子の書いた手紙の書き出しの文で、「太陽の出てくるところの国の天子であるわたくしは、この手紙を太陽の沈む国の天子に送ります。いかがお過ごしですか．．．。」という意味の文章です。</span>
-        <span class="content-sent kanji-sent is-hidden">これは、その当時、摂政（今のアメリカの<a onclick="show('./kanji/4.html')">副</a>大<a onclick="show('./kanji/5.html')">統</a><a onclick="show('./kanji/6.html')">領</a>のような地位）として日本の国を治めていた<a onclick="show('./kanji/340.html')">聖</a>徳太子の書いた手紙の書き出しの文で、「太<a onclick="show('./kanji/7.html')">陽</a>の出てくるところの国の天子であるわたくしは、この手紙を太陽の沈む国の天子に送ります。いかがお<a onclick="show('./kanji/8.html')">過</a>ごしですか．．．。」という意味の文<a onclick="show('./kanji/9.html')">章</a>です。</span>
+        <span class="content-sent kanji-sent is-hidden">これは、その当時、摂政（今のアメリカの<a onclick="show_kanji_data('副')">副</a>大<a onclick="show_kanji_data('統')">統</a><a onclick="show_kanji_data('領')">領</a>のような地位）として日本の国を治めていた<a onclick="show_kanji_data('聖')">聖</a>徳太子の書いた手紙の書き出しの文で、「太<a onclick="show_kanji_data('陽')">陽</a>の出てくるところの国の天子であるわたくしは、この手紙を太<a onclick="show_kanji_data('陽')">陽</a>の沈む国の天子に送ります。いかがお<a onclick="show_kanji_data('過')">過</a>ごしですか．．．。」という意味の文<a onclick="show_kanji_data('章')">章</a>です。</span>
         <span class="content-sent plain-sent is-hidden">これは、その当時、摂政（今のアメリカの副大統領のような地位）として日本の国を治めていた聖徳太子の書いた手紙の書き出しの文で、「太陽の出てくるところの国の天子であるわたくしは、この手紙を太陽の沈む国の天子に送ります。いかがお過ごしですか．．．。」という意味の文章です。</span>
-        <span class="content-sent vocab-sent">これは、その<a onclick="show('./vocab/51.html')">当時</a>、<a onclick="show('./vocab/7.html')">摂政</a>（今のアメリカの<a onclick="show('./vocab/8.html')">副大統領</a>のような<a onclick="show('./vocab/62.html')">地位</a>）として日本の国を<a onclick="show('./vocab/10.html')">治めて</a>いた<a onclick="show('./vocab/1548.html')">聖徳太子</a>の書いた<a onclick="show('./vocab/1539.html')">手紙</a>の<a onclick="show('./vocab/188.html')">書き出し</a>の文で、「<a onclick="show('./vocab/704.html')">太陽</a>の出てくるところの国の<a onclick="show('./vocab/13.html')">天子</a>であるわたくしは、この手紙を太陽の<a onclick="show('./vocab/1549.html')">沈</a>む国の天子に送ります。いかがお<a onclick="show('./vocab/14.html')">過ごし</a>ですか．．．。」という<a onclick="show('./vocab/1597.html')">意味</a>の<a onclick="show('./vocab/15.html')">文章</a>です。</span>
+        <span class="content-sent vocab-sent">これは、その<a onclick="show_vocab_data('当時')">当時</a>、<a onclick="show_vocab_data('摂政')">摂政</a>（今のアメリカの<a onclick="show_vocab_data('副大統領')">副大統領</a>のような<a onclick="show_vocab_data('地位')">地位</a>）として日本の国を<a onclick="show_vocab_data('治めて')">治めて</a>いた<a onclick="show_vocab_data('聖徳太子')">聖徳太子</a>の書いた<a onclick="show_vocab_data('手紙')">手紙</a>の<a onclick="show_vocab_data('書き出し')">書き出し</a>の文で、「<a onclick="show_vocab_data('太陽')">太陽</a>の出てくるところの国の<a onclick="show_vocab_data('天子')">天子</a>であるわたくしは、この<a onclick="show_vocab_data('手紙')">手紙</a>を<a onclick="show_vocab_data('太陽')">太陽</a>の<a onclick="show_vocab_data('沈')">沈</a>む国の<a onclick="show_vocab_data('天子')">天子</a>に送ります。いかがお<a onclick="show_vocab_data('過ごし')">過ごし</a>ですか．．．。」という<a onclick="show_vocab_data('意味')">意味</a>の<a onclick="show_vocab_data('文章')">文章</a>です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -303,26 +355,27 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">That was the first line of a letter from Shōtoku Taishi, who governed Japan as Regent (a position similar to that of Vice President in America today) ; the meaning of the sentence is &quot;I, Emperor (Son of Heaven) of the land from which the sun emerges, send this letter to the Emperor of the land where the sun goes down.  How are things with you?&quot;</span>
+        <span class="trans is-invisible">That was the first line of a letter from Shōtoku Taishi, who governed Japan as Regent (a position similar to that of Vice President in America today) ; the meaning of the sentence is &quot;I, Emperor (Son of Heaven) of the land from which the sun emerges, send this letter to the Emperor of the land where the sun goes down. How are things with you?&quot;</span>
       </td>
     </tr>
 
-    <tr id="01_05" class="sentence">
+    <tr id="01-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_05" class="fas fa-play"></i>
-        <audio id="audio_01_05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_05.mp3" type="audio/mpeg">
+        <i id="play_01-05" class="fas fa-play"></i>
+        <audio id="audio_01-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">その頃、自分の国が世界で一番大きくて強い国だと自慢していた中国の皇帝は、これを聞いて非常におこってしまいました。</span>
-        <span class="content-sent kanji-sent is-hidden">その頃、自分の国が世界で一番大きくて強い国だと自慢していた中国の<a onclick="show('./kanji/361.html')">皇</a>帝は、これを聞いて<a onclick="show('./kanji/10.html')">非</a><a onclick="show('./kanji/11.html')">常</a>におこってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">その頃、自分の国が世界で一番大きくて強い国だと自慢していた中国の<a onclick="show_kanji_data('皇')">皇</a>帝は、これを聞いて<a onclick="show_kanji_data('非')">非</a><a onclick="show_kanji_data('常')">常</a>におこってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">その頃、自分の国が世界で一番大きくて強い国だと自慢していた中国の皇帝は、これを聞いて非常におこってしまいました。</span>
-        <span class="content-sent vocab-sent">その<a onclick="show('./vocab/1586.html')">頃</a>、自分の国が<a onclick="show('./vocab/1550.html')">世界</a>で<a onclick="show('./vocab/1551.html')">一番</a>大きくて<a onclick="show('./vocab/1552.html')">強い</a>国だと<a onclick="show('./vocab/1988.html')">自慢</a>していた<a onclick="show('./vocab/1992.html')">中国</a>の<a onclick="show('./vocab/16.html')">皇帝</a>は、これを<a onclick="show('./vocab/1553.html')">聞いて</a><a onclick="show('./vocab/709.html')">非常に</a><a onclick="show('./vocab/17.html')">おこって</a>しまいました。</span>
+        <span class="content-sent vocab-sent">その<a onclick="show_vocab_data('頃')">頃</a>、自分の国が<a onclick="show_vocab_data('世界')">世界</a>で<a onclick="show_vocab_data('一番')">一番</a>大きくて<a onclick="show_vocab_data('強い')">強い</a>国だと<a onclick="show_vocab_data('自慢')">自慢</a>していた<a onclick="show_vocab_data('中国')">中国</a>の<a onclick="show_vocab_data('皇帝')">皇帝</a>は、これを<a onclick="show_vocab_data('聞いて')">聞いて</a><a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('おこって')">おこって</a>しまいました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -334,22 +387,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_06" class="sentence">
+    <tr id="01-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_06" class="fas fa-play"></i>
-        <audio id="audio_01_06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_06.mp3" type="audio/mpeg">
+        <i id="play_01-06" class="fas fa-play"></i>
+        <audio id="audio_01-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">この話は、日本が中国のような大きな国とでも対等に交際ができるようになったことをよく表しており、国民のプライドを高め、愛国心を深めるできごととして伝えられています。</span>
-        <span class="content-sent kanji-sent is-hidden">この話は、日本が中国のような大きな国とでも<a onclick="show('./kanji/12.html')">対</a>等に交際ができるようになったことをよく表しており、国<a onclick="show('./kanji/13.html')">民</a>のプライドを高め、愛国心を深めるできごととして伝えられています。</span>
+        <span class="content-sent kanji-sent is-hidden">この話は、日本が中国のような大きな国とでも<a onclick="show_kanji_data('対')">対</a>等に交際ができるようになったことをよく表しており、国<a onclick="show_kanji_data('民')">民</a>のプライドを高め、愛国心を深めるできごととして伝えられています。</span>
         <span class="content-sent plain-sent is-hidden">この話は、日本が中国のような大きな国とでも対等に交際ができるようになったことをよく表しており、国民のプライドを高め、愛国心を深めるできごととして伝えられています。</span>
-        <span class="content-sent vocab-sent">この話は、日本が<a onclick="show('./vocab/1992.html')">中国</a>のような大きな国とでも<a onclick="show('./vocab/18.html')">対等</a>に<a onclick="show('./vocab/1012.html')">交際</a>ができるようになったことをよく<a onclick="show('./vocab/1554.html')">表し</a>ており、<a onclick="show('./vocab/19.html')">国民</a>のプライドを高め、<a onclick="show('./vocab/20.html')">愛国心</a>を<a onclick="show('./vocab/1990.html')">深める</a><a onclick="show('./vocab/21.html')">できごと</a>として<a onclick="show('./vocab/1555.html')">伝え</a>られています。</span>
+        <span class="content-sent vocab-sent">この話は、日本が<a onclick="show_vocab_data('中国')">中国</a>のような大きな国とでも<a onclick="show_vocab_data('対等')">対等</a>に<a onclick="show_vocab_data('交際')">交際</a>ができるようになったことをよく<a onclick="show_vocab_data('表し')">表し</a>ており、<a onclick="show_vocab_data('国民')">国民</a>のプライドを高め、<a onclick="show_vocab_data('愛国心')">愛国心</a>を<a onclick="show_vocab_data('深める')">深める</a><a onclick="show_vocab_data('できごと')">できごと</a>として<a onclick="show_vocab_data('伝え')">伝え</a>られています。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -361,12 +415,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_07" class="sentence">
+    <tr id="01-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_07" class="fas fa-play"></i>
-        <audio id="audio_01_07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_07.mp3" type="audio/mpeg">
+        <i id="play_01-07" class="fas fa-play"></i>
+        <audio id="audio_01-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -374,9 +428,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">それまで大和と呼ばれていたのが日本と呼ばれるようになったのも、このできごとに由来するとも言われています。</span>
         <span class="content-sent kanji-sent is-hidden">それまで大和と呼ばれていたのが日本と呼ばれるようになったのも、このできごとに由来するとも言われています。</span>
         <span class="content-sent plain-sent is-hidden">それまで大和と呼ばれていたのが日本と呼ばれるようになったのも、このできごとに由来するとも言われています。</span>
-        <span class="content-sent vocab-sent">それまで<a onclick="show('./vocab/22.html')">大和</a>と<a onclick="show('./vocab/1556.html')">呼ば</a>れていたのが日本と呼ばれるようになったのも、この<a onclick="show('./vocab/21.html')">できごと</a>に<a onclick="show('./vocab/23.html')">由来する</a>とも言われています。</span>
+        <span class="content-sent vocab-sent">それまで<a onclick="show_vocab_data('大和')">大和</a>と<a onclick="show_vocab_data('呼ば')">呼ば</a>れていたのが日本と<a onclick="show_vocab_data('呼ば')">呼ば</a>れるようになったのも、この<a onclick="show_vocab_data('できごと')">できごと</a>に<a onclick="show_vocab_data('由来する')">由来する</a>とも言われています。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -384,26 +439,27 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">It is also said that the change in the name of Japan from Yamato,         which had been the name to that point, to Nihon [origin of the sun] resulted         from this incident.</span>
+        <span class="trans is-invisible">It is also said that the change in the name of Japan from Yamato, which had been the name to that point, to Nihon [origin of the sun] resulted from this incident.</span>
       </td>
     </tr>
 
-    <tr id="01_08" class="sentence">
+    <tr id="01-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_08" class="fas fa-play"></i>
-        <audio id="audio_01_08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_08.mp3" type="audio/mpeg">
+        <i id="play_01-08" class="fas fa-play"></i>
+        <audio id="audio_01-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">聖徳太子はこのほかに国内でも数多くの新しい政治を行いました。</span>
-        <span class="content-sent kanji-sent is-hidden"><a onclick="show('./kanji/340.html')">聖</a>徳太子はこのほかに国<a onclick="show('./kanji/14.html')">内</a>でも数多くの新しい政治を行いました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('聖')">聖</a>徳太子はこのほかに国<a onclick="show_kanji_data('内')">内</a>でも数多くの新しい政治を行いました。</span>
         <span class="content-sent plain-sent is-hidden">聖徳太子はこのほかに国内でも数多くの新しい政治を行いました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1548.html')">聖徳太子</a>は<a onclick="show('./vocab/2120.html')">このほかに</a><a onclick="show('./vocab/24.html')">国内</a>でも<a onclick="show('./vocab/25.html')">数多く</a>の<a onclick="show('./vocab/1661.html')">新しい</a><a onclick="show('./vocab/26.html')">政治</a>を<a onclick="show('./vocab/1557.html')">行い</a>ました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('聖徳太子')">聖徳太子</a>は<a onclick="show_vocab_data('このほかに')">このほかに</a><a onclick="show_vocab_data('国内')">国内</a>でも<a onclick="show_vocab_data('数多く')">数多く</a>の<a onclick="show_vocab_data('新しい')">新しい</a><a onclick="show_vocab_data('政治')">政治</a>を<a onclick="show_vocab_data('行い')">行い</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -415,22 +471,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_09" class="sentence">
+    <tr id="01-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_09" class="fas fa-play"></i>
-        <audio id="audio_01_09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_09.mp3" type="audio/mpeg">
+        <i id="play_01-09" class="fas fa-play"></i>
+        <audio id="audio_01-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">それまで家族中心であった役人の身分昇格の仕方を改め、本当に才能のある人が高い階級につけるように冠位十二階という方法を取り入れました。</span>
-        <span class="content-sent kanji-sent is-hidden">それまで家族中心であった<a onclick="show('./kanji/15.html')">役</a>人の身分昇格の仕方を<a onclick="show('./kanji/16.html')">改</a>め、本当に才能のある人が高い<a onclick="show('./kanji/17.html')">階</a><a onclick="show('./kanji/18.html')">級</a>につけるように冠位十二階という方法を取り入れました。</span>
+        <span class="content-sent kanji-sent is-hidden">それまで家族中心であった<a onclick="show_kanji_data('役')">役</a>人の身分昇格の仕方を<a onclick="show_kanji_data('改')">改</a>め、本当に才能のある人が高い<a onclick="show_kanji_data('階')">階</a><a onclick="show_kanji_data('級')">級</a>につけるように冠位十二<a onclick="show_kanji_data('階')">階</a>という方法を取り入れました。</span>
         <span class="content-sent plain-sent is-hidden">それまで家族中心であった役人の身分昇格の仕方を改め、本当に才能のある人が高い階級につけるように冠位十二階という方法を取り入れました。</span>
-        <span class="content-sent vocab-sent">それまで<a onclick="show('./vocab/27.html')">家族中心</a>であった<a onclick="show('./vocab/28.html')">役人</a>の<a onclick="show('./vocab/666.html')">身分</a><a onclick="show('./vocab/30.html')">昇格</a>の<a onclick="show('./vocab/1558.html')">仕方</a>を<a onclick="show('./vocab/31.html')">改め</a>、<a onclick="show('./vocab/1559.html')">本当に</a><a onclick="show('./vocab/175.html')">才能</a>のある人が高い<a onclick="show('./vocab/33.html')">階級</a>につけるように<a onclick="show('./vocab/34.html')">冠位十二階</a>という<a onclick="show('./vocab/1560.html')">方法</a>を<a onclick="show('./vocab/35.html')">取り入れ</a>ました。</span>
+        <span class="content-sent vocab-sent">それまで<a onclick="show_vocab_data('家族中心')">家族中心</a>であった<a onclick="show_vocab_data('役人')">役人</a>の<a onclick="show_vocab_data('身分')">身分</a><a onclick="show_vocab_data('昇格')">昇格</a>の<a onclick="show_vocab_data('仕方')">仕方</a>を<a onclick="show_vocab_data('改め')">改め</a>、<a onclick="show_vocab_data('本当に')">本当に</a><a onclick="show_vocab_data('才能')">才能</a>のある人が高い<a onclick="show_vocab_data('階級')">階級</a>につけるように<a onclick="show_vocab_data('冠位十二階')">冠位十二階</a>という<a onclick="show_vocab_data('方法')">方法</a>を<a onclick="show_vocab_data('取り入れ')">取り入れ</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -442,22 +499,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_10" class="sentence">
+    <tr id="01-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_10" class="fas fa-play"></i>
-        <audio id="audio_01_10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_10.mp3" type="audio/mpeg">
+        <i id="play_01-10" class="fas fa-play"></i>
+        <audio id="audio_01-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">また役人が正しく規律法則を守れるよう、日本で初めての憲法と言われる十七条の憲法も定めました。</span>
-        <span class="content-sent kanji-sent is-hidden">また<a onclick="show('./kanji/15.html')">役</a>人が正しく<a onclick="show('./kanji/19.html')">規</a><a onclick="show('./kanji/20.html')">律</a>法<a onclick="show('./kanji/21.html')">則</a>を<a onclick="show('./kanji/22.html')">守</a>れるよう、日本で初めての<a onclick="show('./kanji/23.html')">憲</a>法と言われる十七<a onclick="show('./kanji/24.html')">条</a>の憲法も<a onclick="show('./kanji/25.html')">定</a>めました。</span>
+        <span class="content-sent kanji-sent is-hidden">また<a onclick="show_kanji_data('役')">役</a>人が正しく<a onclick="show_kanji_data('規')">規</a><a onclick="show_kanji_data('律')">律</a>法<a onclick="show_kanji_data('則')">則</a>を<a onclick="show_kanji_data('守')">守</a>れるよう、日本で初めての<a onclick="show_kanji_data('憲')">憲</a>法と言われる十七<a onclick="show_kanji_data('条')">条</a>の<a onclick="show_kanji_data('憲')">憲</a>法も<a onclick="show_kanji_data('定')">定</a>めました。</span>
         <span class="content-sent plain-sent is-hidden">また役人が正しく規律法則を守れるよう、日本で初めての憲法と言われる十七条の憲法も定めました。</span>
-        <span class="content-sent vocab-sent">また<a onclick="show('./vocab/28.html')">役人</a>が正しく<a onclick="show('./vocab/36.html')">規律</a><a onclick="show('./vocab/710.html')">法則</a>を<a onclick="show('./vocab/37.html')">守</a>れるよう、日本で<a onclick="show('./vocab/1561.html')">初めて</a>の<a onclick="show('./vocab/1969.html')">憲法</a>と言われる<a onclick="show('./vocab/1562.html')">十七条</a>の憲法も<a onclick="show('./vocab/39.html')">定め</a>ました。</span>
+        <span class="content-sent vocab-sent">また<a onclick="show_vocab_data('役人')">役人</a>が正しく<a onclick="show_vocab_data('規律')">規律</a><a onclick="show_vocab_data('法則')">法則</a>を<a onclick="show_vocab_data('守')">守</a>れるよう、日本で<a onclick="show_vocab_data('初めて')">初めて</a>の<a onclick="show_vocab_data('憲法')">憲法</a>と言われる<a onclick="show_vocab_data('十七条')">十七条</a>の<a onclick="show_vocab_data('憲法')">憲法</a>も<a onclick="show_vocab_data('定め')">定め</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -469,22 +527,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_11" class="sentence">
+    <tr id="01-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_11" class="fas fa-play"></i>
-        <audio id="audio_01_11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_11.mp3" type="audio/mpeg">
+        <i id="play_01-11" class="fas fa-play"></i>
+        <audio id="audio_01-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">また、この憲法の一条に「あつく仏教を敬え。」とあるように、<a onclick="show('./grammar/1.html')">仏の教えを基に</a>国を<a onclick="show('./grammar/38.html')">治めようとしました</a>。</span>
-        <span class="content-sent kanji-sent is-hidden">また、この<a onclick="show('./kanji/23.html')">憲</a>法の一<a onclick="show('./kanji/24.html')">条</a>に「あつく<a onclick="show('./kanji/26.html')">仏</a>教を<a onclick="show('./kanji/152.html')">敬</a>え。」とあるように、仏の教えを基に国を治めようとしました。</span>
+        <span class="content-sent grammar-sent is-hidden">また、この憲法の一条に「あつく仏教を敬え。」とあるように、<a onclick="show_grammar_data('仏の教えを基に')">仏の教えを基に</a>国を<a onclick="show_grammar_data('治めようとしました')">治めようとしました</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">また、この<a onclick="show_kanji_data('憲')">憲</a>法の一<a onclick="show_kanji_data('条')">条</a>に「あつく<a onclick="show_kanji_data('仏')">仏</a>教を<a onclick="show_kanji_data('敬')">敬</a>え。」とあるように、<a onclick="show_kanji_data('仏')">仏</a>の教えを基に国を治めようとしました。</span>
         <span class="content-sent plain-sent is-hidden">また、この憲法の一条に「あつく仏教を敬え。」とあるように、仏の教えを基に国を治めようとしました。</span>
-        <span class="content-sent vocab-sent">また、この<a onclick="show('./vocab/1969.html')">憲法</a>の<a onclick="show('./vocab/2121.html')">一条に</a>「<a onclick="show('./vocab/1991.html')">あつく</a><a onclick="show('./vocab/40.html')">仏教</a>を<a onclick="show('./vocab/1776.html')">敬</a>え。」とあるように、仏の<a onclick="show('./vocab/1564.html')">教え</a>を<a onclick="show('./vocab/1243.html')">基</a>に国を<a onclick="show('./vocab/601.html')">治め</a>ようとしました。</span>
+        <span class="content-sent vocab-sent">また、この<a onclick="show_vocab_data('憲法')">憲法</a>の<a onclick="show_vocab_data('一条に')">一条に</a>「<a onclick="show_vocab_data('あつく')">あつく</a><a onclick="show_vocab_data('仏教')">仏教</a>を<a onclick="show_vocab_data('敬')">敬</a>え。」とあるように、仏の<a onclick="show_vocab_data('教え')">教え</a>を<a onclick="show_vocab_data('基')">基</a>に国を<a onclick="show_vocab_data('治め')">治め</a>ようとしました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -496,22 +555,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_12" class="sentence">
+    <tr id="01-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_12" class="fas fa-play"></i>
-        <audio id="audio_01_12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_12.mp3" type="audio/mpeg">
+        <i id="play_01-12" class="fas fa-play"></i>
+        <audio id="audio_01-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">現在、奈良に残っている世界最古の木造建築、法隆寺は、聖徳太子が父、用明天皇を祭って建てたと言われています。</span>
-        <span class="content-sent kanji-sent is-hidden">現在、奈<a onclick="show('./kanji/27.html')">良</a>に残っている世界最古の木造<a onclick="show('./kanji/28.html')">建</a>築、法隆寺は、<a onclick="show('./kanji/340.html')">聖</a>徳太子が父、用明天<a onclick="show('./kanji/361.html')">皇</a>を祭って建てたと言われています。</span>
+        <span class="content-sent kanji-sent is-hidden">現在、奈<a onclick="show_kanji_data('良')">良</a>に残っている世界最古の木造<a onclick="show_kanji_data('建')">建</a>築、法隆寺は、<a onclick="show_kanji_data('聖')">聖</a>徳太子が父、用明天<a onclick="show_kanji_data('皇')">皇</a>を祭って<a onclick="show_kanji_data('建')">建</a>てたと言われています。</span>
         <span class="content-sent plain-sent is-hidden">現在、奈良に残っている世界最古の木造建築、法隆寺は、聖徳太子が父、用明天皇を祭って建てたと言われています。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1565.html')">現在</a>、<a onclick="show('./vocab/42.html')">奈良</a>に<a onclick="show('./vocab/1566.html')">残って</a>いる<a onclick="show('./vocab/1550.html')">世界</a><a onclick="show('./vocab/1567.html')">最古</a>の<a onclick="show('./vocab/43.html')">木造建築</a>、<a onclick="show('./vocab/44.html')">法隆寺</a>は、<a onclick="show('./vocab/1548.html')">聖徳太子</a>が<a onclick="show('./vocab/1568.html')">父</a>、<a onclick="show('./vocab/1569.html')">用明天皇</a>を<a onclick="show('./vocab/1570.html')">祭っ</a>て<a onclick="show('./vocab/1571.html')">建て</a>たと言われています。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('現在')">現在</a>、<a onclick="show_vocab_data('奈良')">奈良</a>に<a onclick="show_vocab_data('残って')">残って</a>いる<a onclick="show_vocab_data('世界')">世界</a><a onclick="show_vocab_data('最古')">最古</a>の<a onclick="show_vocab_data('木造建築')">木造建築</a>、<a onclick="show_vocab_data('法隆寺')">法隆寺</a>は、<a onclick="show_vocab_data('聖徳太子')">聖徳太子</a>が<a onclick="show_vocab_data('父')">父</a>、<a onclick="show_vocab_data('用明天皇')">用明天皇</a>を<a onclick="show_vocab_data('祭っ')">祭っ</a>て<a onclick="show_vocab_data('建て')">建て</a>たと言われています。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -523,22 +583,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_13" class="sentence">
+    <tr id="01-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_13" class="fas fa-play"></i>
-        <audio id="audio_01_13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_13.mp3" type="audio/mpeg">
+        <i id="play_01-13" class="fas fa-play"></i>
+        <audio id="audio_01-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">このほか、仏教の経典をわかりやすく説明した「三経義疏」という解説書も書いて、仏教を多くの人に教えようとしました。</span>
-        <span class="content-sent kanji-sent is-hidden">このほか、<a onclick="show('./kanji/26.html')">仏</a>教の経<a onclick="show('./kanji/29.html')">典</a>をわかりやすく説明した「三経<a onclick="show('./kanji/30.html')">義</a>疏」という<a onclick="show('./kanji/32.html')">解</a>説書も書いて、仏教を多くの人に教えようとしました。</span>
+        <span class="content-sent kanji-sent is-hidden">このほか、<a onclick="show_kanji_data('仏')">仏</a>教の経<a onclick="show_kanji_data('典')">典</a>をわかりやすく説明した「三経<a onclick="show_kanji_data('義')">義</a>疏」という<a onclick="show_kanji_data('解')">解</a>説書も書いて、<a onclick="show_kanji_data('仏')">仏</a>教を多くの人に教えようとしました。</span>
         <span class="content-sent plain-sent is-hidden">このほか、仏教の経典をわかりやすく説明した「三経義疏」という解説書も書いて、仏教を多くの人に教えようとしました。</span>
-        <span class="content-sent vocab-sent">このほか、<a onclick="show('./vocab/40.html')">仏教</a>の<a onclick="show('./vocab/396.html')">経典</a>をわかりやすく<a onclick="show('./vocab/1572.html')">説明</a>した「<a onclick="show('./vocab/1987.html')">三経義疏</a>」という<a onclick="show('./vocab/47.html')">解説書</a>も書いて、仏教を<a onclick="show('./vocab/1700.html')">多く</a>の人に<a onclick="show('./vocab/1564.html')">教え</a>ようとしました。</span>
+        <span class="content-sent vocab-sent">このほか、<a onclick="show_vocab_data('仏教')">仏教</a>の<a onclick="show_vocab_data('経典')">経典</a>をわかりやすく<a onclick="show_vocab_data('説明')">説明</a>した「<a onclick="show_vocab_data('三経義疏')">三経義疏</a>」という<a onclick="show_vocab_data('解説書')">解説書</a>も書いて、<a onclick="show_vocab_data('仏教')">仏教</a>を<a onclick="show_vocab_data('多く')">多く</a>の人に<a onclick="show_vocab_data('教え')">教え</a>ようとしました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -550,22 +611,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_14" class="sentence">
+    <tr id="01-14" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_14" class="fas fa-play"></i>
-        <audio id="audio_01_14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_14.mp3" type="audio/mpeg">
+        <i id="play_01-14" class="fas fa-play"></i>
+        <audio id="audio_01-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-14.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">このように、政治家としてだけでなく宗教家として、また学者として、より良い日本を造り上げようと<a onclick="show('./grammar/2.html')">努力したのが</a>聖徳太子です。</span>
-        <span class="content-sent kanji-sent is-hidden">このように、政治家としてだけでなく<a onclick="show('./kanji/362.html')">宗</a>教家として、また学者として、より<a onclick="show('./kanji/27.html')">良</a>い日本を造り上げようと努力したのが<a onclick="show('./kanji/340.html')">聖</a>徳太子です。</span>
+        <span class="content-sent grammar-sent is-hidden">このように、政治家としてだけでなく宗教家として、また学者として、より良い日本を造り上げようと<a onclick="show_grammar_data('努力したのが')">努力したのが</a>聖徳太子です。</span>
+        <span class="content-sent kanji-sent is-hidden">このように、政治家としてだけでなく<a onclick="show_kanji_data('宗')">宗</a>教家として、また学者として、より<a onclick="show_kanji_data('良')">良</a>い日本を造り上げようと努力したのが<a onclick="show_kanji_data('聖')">聖</a>徳太子です。</span>
         <span class="content-sent plain-sent is-hidden">このように、政治家としてだけでなく宗教家として、また学者として、より良い日本を造り上げようと努力したのが聖徳太子です。</span>
-        <span class="content-sent vocab-sent">このように、<a onclick="show('./vocab/1450.html')">政治家</a>として<a onclick="show('./vocab/1642.html')">だけでなく</a><a onclick="show('./vocab/376.html')">宗教</a>家として、また<a onclick="show('./vocab/1573.html')">学者</a>として、<a onclick="show('./vocab/48.html')">より良い</a>日本を<a onclick="show('./vocab/2023.html')">造</a>り上げようと<a onclick="show('./vocab/1892.html')">努力</a>したのが<a onclick="show('./vocab/1548.html')">聖徳太子</a>です。</span>
+        <span class="content-sent vocab-sent">このように、<a onclick="show_vocab_data('政治家')">政治家</a>として<a onclick="show_vocab_data('だけでなく')">だけでなく</a><a onclick="show_vocab_data('宗教')">宗教</a>家として、また<a onclick="show_vocab_data('学者')">学者</a>として、<a onclick="show_vocab_data('より良い')">より良い</a>日本を<a onclick="show_vocab_data('造')">造</a>り上げようと<a onclick="show_vocab_data('努力')">努力</a>したのが<a onclick="show_vocab_data('聖徳太子')">聖徳太子</a>です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -577,22 +639,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_15" class="sentence">
+    <tr id="01-15" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_15" class="fas fa-play"></i>
-        <audio id="audio_01_15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_15.mp3" type="audio/mpeg">
+        <i id="play_01-15" class="fas fa-play"></i>
+        <audio id="audio_01-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-15.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">亡くなる以前は、人々に厩戸豊聡耳皇子と呼ばれました。</span>
-        <span class="content-sent kanji-sent is-hidden"><a onclick="show('./kanji/33.html')">亡</a>くなる以前は、人々に厩戸<a onclick="show('./kanji/187.html')">豊</a>聡耳<a onclick="show('./kanji/361.html')">皇</a>子と呼ばれました。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('亡')">亡</a>くなる以前は、人々に厩戸<a onclick="show_kanji_data('豊')">豊</a>聡耳<a onclick="show_kanji_data('皇')">皇</a>子と呼ばれました。</span>
         <span class="content-sent plain-sent is-hidden">亡くなる以前は、人々に厩戸豊聡耳皇子と呼ばれました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/49.html')">亡くなる</a><a onclick="show('./vocab/1574.html')">以前</a>は、人々に<a onclick="show('./vocab/1575.html')">厩戸豊聡耳皇子</a>と<a onclick="show('./vocab/1556.html')">呼ば</a>れました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('亡くなる')">亡くなる</a><a onclick="show_vocab_data('以前')">以前</a>は、人々に<a onclick="show_vocab_data('厩戸豊聡耳皇子')">厩戸豊聡耳皇子</a>と<a onclick="show_vocab_data('呼ば')">呼ば</a>れました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -604,12 +667,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_16" class="sentence">
+    <tr id="01-16" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_16" class="fas fa-play"></i>
-        <audio id="audio_01_16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_16.mp3" type="audio/mpeg">
+        <i id="play_01-16" class="fas fa-play"></i>
+        <audio id="audio_01-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-16.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -617,9 +680,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">これは、太子がうまやの前で急に生まれたこと、そして、何人もの話を同時に聞き分けたという言い伝えを表しています。</span>
         <span class="content-sent kanji-sent is-hidden">これは、太子がうまやの前で急に生まれたこと、そして、何人もの話を同時に聞き分けたという言い伝えを表しています。</span>
         <span class="content-sent plain-sent is-hidden">これは、太子がうまやの前で急に生まれたこと、そして、何人もの話を同時に聞き分けたという言い伝えを表しています。</span>
-        <span class="content-sent vocab-sent">これは、太子が<a onclick="show('./vocab/50.html')">うまや</a>の前で<a onclick="show('./vocab/1576.html')">急に</a>生まれたこと、そして、<a onclick="show('./vocab/2122.html')">何人もの話</a>を<a onclick="show('./vocab/1577.html')">同時に</a><a onclick="show('./vocab/52.html')">聞き分けた</a>という<a onclick="show('./vocab/53.html')">言い伝え</a>を<a onclick="show('./vocab/1554.html')">表し</a>ています。</span>
+        <span class="content-sent vocab-sent">これは、太子が<a onclick="show_vocab_data('うまや')">うまや</a>の前で<a onclick="show_vocab_data('急に')">急に</a>生まれたこと、そして、<a onclick="show_vocab_data('何人もの話')">何人もの話</a>を<a onclick="show_vocab_data('同時に')">同時に</a><a onclick="show_vocab_data('聞き分けた')">聞き分けた</a>という<a onclick="show_vocab_data('言い伝え')">言い伝え</a>を<a onclick="show_vocab_data('表し')">表し</a>ています。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -631,22 +695,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="01_17" class="sentence">
+    <tr id="01-17" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_01_17" class="fas fa-play"></i>
-        <audio id="audio_01_17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/01_17.mp3" type="audio/mpeg">
+        <i id="play_01-17" class="fas fa-play"></i>
+        <audio id="audio_01-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/01-17.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">キリスト教で神の子と信じられているイエスがうまやの中で生まれ、１２歳の年で当時の学者達以上に賢かったという話と非常に似ている点があっておもしろいと思います。</span>
-        <span class="content-sent kanji-sent is-hidden">キリスト教で神の子と<a onclick="show('./kanji/34.html')">信</a>じられているイエスがうまやの中で生まれ、１２歳の年で当時の学者達以上に賢かったという話と<a onclick="show('./kanji/10.html')">非</a><a onclick="show('./kanji/11.html')">常</a>に似ている点があっておもしろいと思います。</span>
+        <span class="content-sent kanji-sent is-hidden">キリスト教で神の子と<a onclick="show_kanji_data('信')">信</a>じられているイエスがうまやの中で生まれ、１２歳の年で当時の学者達以上に賢かったという話と<a onclick="show_kanji_data('非')">非</a><a onclick="show_kanji_data('常')">常</a>に似ている点があっておもしろいと思います。</span>
         <span class="content-sent plain-sent is-hidden">キリスト教で神の子と信じられているイエスがうまやの中で生まれ、１２歳の年で当時の学者達以上に賢かったという話と非常に似ている点があっておもしろいと思います。</span>
-        <span class="content-sent vocab-sent">キリスト教で神の子と<a onclick="show('./vocab/1449.html')">信じ</a>られているイエスが<a onclick="show('./vocab/50.html')">うまや</a>の中で生まれ、１２<a onclick="show('./vocab/1986.html')">歳</a>の年で<a onclick="show('./vocab/51.html')">当時</a>の<a onclick="show('./vocab/1573.html')">学者</a>達<a onclick="show('./vocab/1579.html')">以上</a>に<a onclick="show('./vocab/54.html')">賢</a>かったという話と<a onclick="show('./vocab/709.html')">非常に</a><a onclick="show('./vocab/1580.html')">似て</a>いる点があって<a onclick="show('./vocab/1582.html')">おもしろい</a>と思います。</span>
+        <span class="content-sent vocab-sent">キリスト教で神の子と<a onclick="show_vocab_data('信じ')">信じ</a>られているイエスが<a onclick="show_vocab_data('うまや')">うまや</a>の中で生まれ、１２<a onclick="show_vocab_data('歳')">歳</a>の年で<a onclick="show_vocab_data('当時')">当時</a>の<a onclick="show_vocab_data('学者')">学者</a>達<a onclick="show_vocab_data('以上')">以上</a>に<a onclick="show_vocab_data('賢')">賢</a>かったという話と<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('似て')">似て</a>いる点があって<a onclick="show_vocab_data('おもしろい')">おもしろい</a>と思います。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -664,9 +729,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

@@ -4,7 +4,7 @@
   <title>
     Japanese 302
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -184,6 +226,11 @@ nav.navbar.is-fixed-bottom > .field {
     </li>
   </ul>
 </nav>
+  <script>
+  var vocab_json = {"\u82b1\u706b": ["\u82b1\u706b", "\u306f\u306a\u3073", "fireworks"], "\u8272\u3068\u308a\u3069\u308a\u306e": ["\u8272\u3068\u308a\u3069\u308a\u306e", "\u3044\u308d\u3068\u308a\u3069\u308a\u306e", "various colors"], "\u8f2a": ["\u8f2a", "\u308f", "circle; ring"], "\u63cf\u304b": ["\u63cf\u304f", "\u3048\u304c\u304f", "to draw; picture; sketch; depict"], "\u6771\u4eac": ["\u6771\u4eac", "\u3068\u3046\u304d\u3088\u3046", "T\u014dky\u014d"], "\u56fd\u7acb\u7af6\u6280\u5834": ["\u56fd\u7acb\u7af6\u6280\u5834", "\u3053\u304f\u308a\u3064\u304d\u3087\u3046\u304e\u3058\u3087\u3046", "national stadium"], "\u30a2\u30c6\u30cd": ["\u30a2\u30c6\u30cd", "MISSING KANA", "Athens"], "\u306f\u308b\u3070\u308b": ["\u306f\u308b\u3070\u308b", "MISSING KANA", "to come all the way"], "\u904b": ["\u904b\u3076", "\u306f\u3053\u3076", "to carry; transport; convey"], "\u8056\u706b": ["\u8056\u706b", "\u305b\u3044\u304b", "sacred flame"], "\u3068\u3082\u3055": ["\u706f\u3059", "\u3068\u3082\u3059", "to burn; light; turn on"], "\u521d\u3081\u3066": ["\u521d\u3081\u3066", "\u306f\u3058\u3081\u3066", "for the first time; first"], "\u53e4\u4ee3\u30ae\u30ea\u30b7\u30e3": ["\u53e4\u4ee3\u30ae\u30ea\u30b7\u30e3", "\u3053\u3060\u3044\u304e\u308a\u3057\u3083", "the ancient Greek"], "\u30bc\u30a6\u30b9\u795e": ["\u30bc\u30a6\u30b9\u795e", "\u30bc\u30a6\u30b9\u3057\u3093", "the God Zeus"], "\u796d\u793c\u884c\u4e8b": ["\u796d\u793c\u884c\u4e8b", "\u3055\u3044\u308c\u3044\u304e\u3087\u3046\u3058", "festival ceremonies"], "\u8fd1\u4ee3": ["\u8fd1\u4ee3", "\u304d\u3093\u3060\u3044", "modern"], "\u30af\u30fc\u30d9\u30eb\u30bf\u30f3": ["\u30af\u30fc\u30d9\u30eb\u30bf\u30f3(1863-1937)", "\u30af\u2212\u30d9\u30eb\u30bf\u30f3", "a French educator; he organized International Olympic Committee in 1894 and became the president."], "\u4e3b\u5531": ["\u4e3b\u5531", "\u3057\u3085\u3057\u3087\u3046", "advocacy"], "\u5fa9\u8208": ["\u5fa9\u8208\u3059\u308b", "\u3075\u3063\u3053\u3046\u3059\u308b", "to revive; be revived; be restored"], "\u4e16\u754c\u4e2d": ["\u4e16\u754c\u4e2d", "\u305b\u304b\u3044\u3058\u3085\u3046", "throughout the world"], "\u7a2e\u76ee": ["\u7a2e\u76ee", "\u3057\u3085\u3082\u304f", "an event"], "\u7af6\u3044\u5408\u3046": ["\u7af6\u3044\u5408\u3046", "\u304d\u305d\u3044\u3042\u3046", "to compete together"], "\u7b2c": ["\u7b2c", "\u3060\u3044", "order"], "\u521d\u51fa\u5834": ["\u521d\u51fa\u5834", "\u306f\u3064\u3057\u3085\u3064\u3058\u3087\u3046", "first time to participate"], "\u5f53\u6642": ["\u5f53\u6642", "\u3068\u3046\u3058", "at the time"], "\u4e16\u754c": ["\u4e16\u754c", "\u305b\u304b\u3044", "the world"], "\u6a19\u6e96": ["\u6a19\u6e96", "\u3072\u3087\u3046\u3058\u3085\u3093", "standard"], "\u6bd4\u3079": ["\u6bd4\u3079\u308b", "\u304f\u3089\u3079\u308b", "to compare"], "\u5927\u5206": ["\u5927\u5206", "\u3060\u3044\u3076", "very; greatly"], "\u52a3\u3063\u3066": ["\u52a3\u308b", "\u304a\u3068\u308b", "to be inferior"], "\u9078\u624b": ["\u9078\u624b", "\u305b\u3093\u3057\u3085", "a player"], "\u7df4\u7fd2": ["\u7df4\u7fd2", "\u308c\u3093\u3057\u3085\u3046", "practice"], "\u6b20\u304b": ["\u6b20\u304b\u3059", "\u304b\u304b\u3059", "to miss; fail"], "\u3064\u3044\u306b": ["\u3064\u3044\u306b", "MISSING KANA", "at last"], "\u7279\u306b": ["\u7279\u306b", "\u3068\u304f\u306b", "specially; particularly"], "\u6c34\u6cf3": ["\u6c34\u6cf3", "\u3059\u3044\u3048\u3044", "swimming"], "\u307b\u3069\u306e": ["\u307b\u3069\u306e", "MISSING KANA", "to the extent of"], "\u8a08\u753b": ["\u8a08\u753b", "\u3051\u3044\u304b\u304f", "a plan"], "\u6226\u4e89": ["\u6226\u4e89", "\u305b\u3093\u305d\u3046", "war"], "\u505c\u6b62": ["\u505c\u6b62\u3059\u308b", "\u3066\u3044\u3057\u3059\u308b", "to suspend"], "\u76ae\u8089\u306b\u3082": ["\u76ae\u8089\u306b\u3082", "\u3072\u306b\u304f\u306b\u3082", "ironically"], "\u4e16\u754c\u5404\u56fd": ["\u4e16\u754c\u5404\u56fd", "\u305b\u304b\u3044\u304b\u3063\u3053\u304f", "all the countries of the world"], "\u306b\u304e\u308f\u3046": ["\u306b\u304e\u308f\u3046", "MISSING KANA", "to be crowded; be bustling"], "\u5168\u304f": ["\u5168\u304f", "\u307e\u3063\u305f\u304f", "exactly; completely"], "\u713c\u3051\u91ce\u539f": ["\u713c\u3051\u91ce\u539f", "\u3084\u3051\u306e\u306f\u3089", "a burned field; burned ruins"], "\u6226\u5f8c": ["\u6226\u5f8c", "\u305b\u3093\u3054", "after World War II"], "\u518d\u958b\u3055\u308c\u308b": ["\u518d\u958b\u3055\u308c\u308b", "\u3055\u3044\u304b\u3044\u3055\u308c\u308b", "to be held again"], "\u7ba1\u7406\u3059\u308b": ["\u7ba1\u7406\u3059\u308b", "\u304b\u3093\u308a\u3059\u308b", "to control; manage"], "\u56fd\u969b\u4e94\u8f2a\u59d4\u54e1\u4f1a": ["\u56fd\u969b\u4e94\u8f2a\u59d4\u54e1\u4f1a", "\u3053\u304f\u3055\u3044\u3054\u308a\u3093\u3044\u3044\u3093\u304b\u3044", "International Olympic Committee"], "\u958b\u50ac\u3059\u308b": ["\u958b\u50ac\u3059\u308b", "\u304b\u3044\u3055\u3044\u3059\u308b", "to hold"], "\u6c7a\u5b9a\u3057": ["\u6c7a\u5b9a\u3059\u308b", "\u3051\u3063\u3066\u3044\u3059\u308b", "to decide"], "\u79cb": ["\u79cb", "\u3042\u304d", "autumn; fall"], "\u65e5\u672c\u6674\u308c\u306e\u65e5": ["\u65e5\u672c\u6674\u308c\u306e\u65e5", "\u306b\u307b\u3093\u3070\u308c\u306e\u3072", "a beautiful day; ideal(very fine) weather"], "\u5f85\u3061\u306b\u5f85\u3063\u305f": ["\u5f85\u3061\u306b\u5f85\u3063\u305f", "\u307e\u3061\u306b\u307e\u3063\u305f", "waited and waited"], "\u70b9\u706b\u3055": ["\u70b9\u706b\u3059\u308b", "\u3066\u3093\u304b\u3059\u308b", "to light the flame"], "\u3042\u304d\u3089\u3081\u306a\u304f\u3066\u306f\u306a\u3089\u306a\u304b\u3063\u305f": ["\u3042\u304d\u3089\u3081\u306a\u304f\u3066\u306f\u306a\u3089\u306a\u3044", "MISSING KANA", "must give up"], "\u611f\u6fc0": ["\u611f\u6fc0", "\u304b\u3093\u3052\u304d", "deep emotion"], "\u9055\u3044\u3042\u308a\u307e\u305b\u3093": ["\u9055\u3044\u306a\u3044", "\u3061\u304c\u3044\u306a\u3044", "I am sure that \u203e; certain of; must be"], "\u91d1": ["\u91d1", "\u304f\u304c\u306d", "gold (archaic)"], "\u7372\u5f97": ["\u7372\u5f97", "\u304b\u304f\u3068\u304f", "acquisition"], "\u67d4\u9053": ["\u67d4\u9053", "\u3058\u3085\u3046\u3069\u3046", "judo"], "\u8efd\u91cf\u7d1a": ["\u8efd\u91cf\u7d1a", "\u3051\u3044\u308a\u3087\u3046\u304d\u3085\u3046", "the lightweight class"], "\u4f53\u64cd": ["\u4f53\u64cd", "\u305f\u3044\u305d\u3046", "gymnastics"], "\u512a\u79c0\u306a": ["\u512a\u79c0\u306a", "\u3086\u3046\u3057\u3085\u3046\u306a", "excellent"], "\u6210\u7e3e": ["\u6210\u7e3e", "\u305b\u3044\u305b\u304d", "a result; a record"], "\u53ce\u3081\u307e": ["\u53ce\u3081\u308b", "\u304a\u3055\u3081\u308b", "to win; gain"], "\u52dd": ["\u52dd\u3064", "\u304b\u3064", "to win"], "\u53c2\u52a0\u3059\u308b": ["\u53c2\u52a0\u3059\u308b", "\u3055\u3093\u304b\u3059\u308b", "to participate"], "\u8cde": ["\u8cde", "\u3057\u3087\u3046", "prize"], "\u53c2\u52a0\u3057": ["\u53c2\u52a0\u3059\u308b", "\u3055\u3093\u304b\u3059\u308b", "to participate"], "\u6d99": ["\u6d99", "\u306a\u307f\u3060", "tears"], "\u6d41\u3057\u3066": ["\u6d41\u3059", "\u306a\u304c\u3059", "to shed"], "\u5225\u308c": ["\u5225\u308c", "\u308f\u304b\u308c", "farewell; parting"], "\u60dc\u3057\u3093\u3060": ["\u60dc\u3057\u3080", "\u304a\u3057\u3080", "to regret"], "\u9589\u4f1a\u5f0f": ["\u9589\u4f1a\u5f0f", "\u3078\u3044\u304b\u3044\u3057\u304d", "closing ceremony"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "very; extremely"], "\u5370\u8c61\u7684": ["\u5370\u8c61\u7684", "\u3044\u3093\u3057\u3087\u3046\u3066\u304d", "impressive"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3056\u3044", "the present time; at present"], "\u4ee3\u3005\u6728": ["\u4ee3\u3005\u6728", "\u3088\u3088\u304e", "name of a place in Shibuya-ku, T\u014dky\u014d"], "\u4f53\u80b2\u9928": ["\u4f53\u80b2\u9928", "\u305f\u3044\u3044\u304f\u304b\u3093", "gymnasium"], "\u6b74\u53f2": ["\u6b74\u53f2", "\u308c\u304d\u3057", "history"], "\u7269\u8a9e": ["\u7269\u8a9e", "\u3082\u306e\u304c\u305f\u308a", "a tale; a story"], "\u8de1": ["\u8de1", "\u3042\u3068", "traces; vestiges; ruins"], "\u5404\u5730": ["\u5404\u5730", "\u304b\u304f\u3061", "every place; various places"], "\u6b8b\u3063\u3066": ["\u6b8b\u308b", "\u306e\u3053\u308b", "to remain"]};
+  var grammar_json = {"\u97f3\u304c\u3057\u305f\u304b\u3068\u601d\u3046\u3068\u3001": [" S1 \u304b\u3068\u601d\u3046\u3068 S2", " No sooner S1, than S2. <br/><br/> This form means \"no sooner S1, than S2\" or \"as soon as S1, S2.\" With the meaning, S1 is usually in the past tense \u305f. \u4f8b. \u5e30\u3063\u3066\u304d\u305f\u304b\u3068\u601d\u3046\u3068\u3001\u307e\u305f\u51fa\u3066\u884c\u3063\u3066\u3057\u307e\u3063\u305f\u3002 No sooner did he come home, than he went out. ", []], "\u5c3d\u304f\u3057\u96e3\u3044": [" V (Base II) \u96e3\u3044", " difficult to V <br/><br/> This is very similar to \"V (Base II) \u306b\u304f\u3044\" but gives more literary (or written) flavor and is used for more conceptual or abstract things, e.g. hard to express or hard to understand, etc. Note \u3042\u308a\u304c\u305f\u3044 of \u3042\u308a\u304c\u3068\u3046 comes from \"difficult to exist,\" in other words, \"rare things,\" or \"precious things,\" which developed to express a feeling of gratitude on the part of the speaker. ", [["\u7b46\u820c\u306b\u5c3d\u304f\u3057\u96e3\u3044", "difficult to express with words"], ["\u8868\u3057\u96e3\u3044", "difficult to express"], ["\u7406\u89e3\u3057\u96e3\u3044", "difficult to understand"]]]};
+  var kanji_json = {"\u8f2a": ["\u308f", "\u30ea\u30f3", "RING; WHEEL; TURN AROUND", []], "\u5531": ["\u3068\u306a\uff08\u3048\u308b\uff09", "\u30b7\u30e7\u30a6", "SING; CHANT", []], "\u5fa9": ["", "\u30d5\u30af", "RETURN; RESTORE", []], "\u6a19": ["", "\u30d2\u30e7\u30a6", "SIGN; MARK", []], "\u7df4": ["\u306d\uff08\u308b\uff09", "\u30ec\u30f3", "TRAINING; KNEAD", []], "\u6b20": ["\u304b\uff08\u3051\u308b\uff09\u30fb\u304b\uff08\u304f\uff09", "\u30b1\u30c4", "LACK; FAULT", []], "\u6cf3": ["\u304a\u3088\uff08\u3050\uff09", "\u30a8\u30a4", "SWIM", []], "\u505c": ["", "\u30c6\u30a4", "STOP", []], "\u76ae": ["\u304b\u308f", "\u30d2", "SKIN; LEATHER", []], "\u8089": ["", "\u30cb\u30af", "MEAT", []], "\u7ba1": ["\u304f\u3060", "\u30ab\u30f3", "PIPE; SUPERVISE", []], "\u59d4": ["", "\u30a4", "ENTRUST TO; LEAVE TO", []], "\u820c": ["\u3057\u305f", "\u30bc\u30c4", "TONGUE; WORDS", []], "\u8efd": ["\u304b\u308b\uff08\u3044\uff09\u30fb\u304b\u308d\uff08\u3084\u304b\uff09", "\u30b1\u30a4", "LIGHT (WEIGHT)", []], "\u91cf": ["\u306f\u304b\uff08\u308b\uff09", "\u30ea\u30e7\u30a6", "MEASURE; QUANTITY", []], "\u64cd": ["\u3042\u3084\u3064\uff08\u308b\uff09\u30fb\u307f\u3055\u304a", "\u30bd\u30a6", "MANIPULATE; OPERATE; CHASTITY; FIDELITY", []], "\u7e3e": ["", "\u30bb\u30ad", "WORK; SPIN", []], "\u8cde": ["", "\u30b7\u30e7\u30a6", "REWARD; PRIZE; PRAISE", []], "\u8c61": ["", "\u30b7\u30e7\u30a6\u30fb\u30be\u30a6", "FIGURE; FORM; ELEPHANT", []], "\u9928": ["", "\u30ab\u30f3", "MANSION; LARGE BUILDING; HALL", []]};
+  </script>
   <div class="block title">東京オリンピック</div>
   <hr>
   <div class="block is-centered">
@@ -197,24 +244,26 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="13b_01" class="sentence">
+    <tr id="13b-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_01" class="fas fa-play"></i>
-        <audio id="audio_13b_01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_01.mp3" type="audio/mpeg">
+        <i id="play_13b-01" class="fas fa-play"></i>
+        <audio id="audio_13b-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">ドーン、ドーンと花火が上がる<a onclick="show('./grammar/80.html')">音がしたかと思うと、</a>空に色とりどりの輪が５つ、チェーンのように描かれました。</span>
-        <span class="content-sent kanji-sent is-hidden">ドーン、ドーンと花火が上がる音がしたかと思うと、空に色とりどりの<a onclick="show('./kanji/339.html')">輪</a>が５つ、チェーンのように描かれました。</span>
+        <span class="content-sent grammar-sent is-hidden">ドーン、ドーンと花火が上がる<a onclick="show_grammar_data('音がしたかと思うと、')">音がしたかと思うと、</a>空に色とりどりの輪が５つ、チェーンのように描かれました。</span>
+        <span class="content-sent kanji-sent is-hidden">ドーン、ドーンと花火が上がる音がしたかと思うと、空に色とりどりの<a onclick="show_kanji_data('輪')">輪</a>が５つ、チェーンのように描かれました。</span>
         <span class="content-sent plain-sent is-hidden">ドーン、ドーンと花火が上がる音がしたかと思うと、空に色とりどりの輪が５つ、チェーンのように描かれました。</span>
-        <span class="content-sent vocab-sent">ドーン、ドーンと<a onclick="show('./vocab/1295.html')">花火</a>が上がる音がしたかと思うと、空に<a onclick="show('./vocab/1296.html')">色とりどりの</a><a onclick="show('./vocab/1297.html')">輪</a>が５つ、チェーンのように<a onclick="show('./vocab/1298.html')">描か</a>れました。</span>
+        <span class="content-sent vocab-sent">ドーン、ドーンと<a onclick="show_vocab_data('花火')">花火</a>が上がる音がしたかと思うと、空に<a onclick="show_vocab_data('色とりどりの')">色とりどりの</a><a onclick="show_vocab_data('輪')">輪</a>が５つ、チェーンのように<a onclick="show_vocab_data('描か')">描か</a>れました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -226,12 +275,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_02" class="sentence">
+    <tr id="13b-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_02" class="fas fa-play"></i>
-        <audio id="audio_13b_02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_02.mp3" type="audio/mpeg">
+        <i id="play_13b-02" class="fas fa-play"></i>
+        <audio id="audio_13b-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -239,9 +288,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
         <span class="content-sent kanji-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
         <span class="content-sent plain-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
-        <span class="content-sent vocab-sent">そして<a onclick="show('./vocab/1358.html')">東京</a>の<a onclick="show('./vocab/1299.html')">国立競技場</a>に、<a onclick="show('./vocab/1300.html')">アテネ</a>から<a onclick="show('./vocab/1301.html')">はるばる</a><a onclick="show('./vocab/2058.html')">運</a>ばれて来た<a onclick="show('./vocab/1302.html')">聖火</a>が<a onclick="show('./vocab/1303.html')">ともさ</a>れ、アジアで<a onclick="show('./vocab/1561.html')">初めて</a>のオリンピックが開かれました。</span>
+        <span class="content-sent vocab-sent">そして<a onclick="show_vocab_data('東京')">東京</a>の<a onclick="show_vocab_data('国立競技場')">国立競技場</a>に、<a onclick="show_vocab_data('アテネ')">アテネ</a>から<a onclick="show_vocab_data('はるばる')">はるばる</a><a onclick="show_vocab_data('運')">運</a>ばれて来た<a onclick="show_vocab_data('聖火')">聖火</a>が<a onclick="show_vocab_data('ともさ')">ともさ</a>れ、アジアで<a onclick="show_vocab_data('初めて')">初めて</a>のオリンピックが開かれました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -253,12 +303,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_03" class="sentence">
+    <tr id="13b-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_03" class="fas fa-play"></i>
-        <audio id="audio_13b_03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_03.mp3" type="audio/mpeg">
+        <i id="play_13b-03" class="fas fa-play"></i>
+        <audio id="audio_13b-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -266,9 +316,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
         <span class="content-sent kanji-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
         <span class="content-sent plain-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
-        <span class="content-sent vocab-sent">オリンピックは、<a onclick="show('./vocab/1975.html')">古代ギリシャ</a>で<a onclick="show('./vocab/1304.html')">ゼウス神</a>の<a onclick="show('./vocab/1305.html')">祭礼行事</a>として行なわれたのがその始まりだと言われています。</span>
+        <span class="content-sent vocab-sent">オリンピックは、<a onclick="show_vocab_data('古代ギリシャ')">古代ギリシャ</a>で<a onclick="show_vocab_data('ゼウス神')">ゼウス神</a>の<a onclick="show_vocab_data('祭礼行事')">祭礼行事</a>として行なわれたのがその始まりだと言われています。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -280,22 +331,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_04" class="sentence">
+    <tr id="13b-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_04" class="fas fa-play"></i>
-        <audio id="audio_13b_04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_04.mp3" type="audio/mpeg">
+        <i id="play_13b-04" class="fas fa-play"></i>
+        <audio id="audio_13b-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主唱により復興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
-        <span class="content-sent kanji-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主<a onclick="show('./kanji/311.html')">唱</a>により<a onclick="show('./kanji/326.html')">復</a>興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
+        <span class="content-sent kanji-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主<a onclick="show_kanji_data('唱')">唱</a>により<a onclick="show_kanji_data('復')">復</a>興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
         <span class="content-sent plain-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主唱により復興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/2115.html')">近代</a>オリンピックは、１８９６年にフランス人の<a onclick="show('./vocab/1306.html')">クーベルタン</a>の<a onclick="show('./vocab/1307.html')">主唱</a>により<a onclick="show('./vocab/2059.html')">復興</a>され、<a onclick="show('./vocab/2176.html')">世界中</a>の国々がスポーツのいろいろな<a onclick="show('./vocab/1984.html')">種目</a>で<a onclick="show('./vocab/1309.html')">競い合う</a>ようになりました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('近代')">近代</a>オリンピックは、１８９６年にフランス人の<a onclick="show_vocab_data('クーベルタン')">クーベルタン</a>の<a onclick="show_vocab_data('主唱')">主唱</a>により<a onclick="show_vocab_data('復興')">復興</a>され、<a onclick="show_vocab_data('世界中')">世界中</a>の国々がスポーツのいろいろな<a onclick="show_vocab_data('種目')">種目</a>で<a onclick="show_vocab_data('競い合う')">競い合う</a>ようになりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -307,12 +359,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_05" class="sentence">
+    <tr id="13b-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_05" class="fas fa-play"></i>
-        <audio id="audio_13b_05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_05.mp3" type="audio/mpeg">
+        <i id="play_13b-05" class="fas fa-play"></i>
+        <audio id="audio_13b-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -320,9 +372,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
         <span class="content-sent kanji-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
         <span class="content-sent plain-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
-        <span class="content-sent vocab-sent">日本も１９１２年、ストックホルムで開かれた<a onclick="show('./vocab/1725.html')">第</a>５回オリンピックに<a onclick="show('./vocab/1310.html')">初出場</a>しました。</span>
+        <span class="content-sent vocab-sent">日本も１９１２年、ストックホルムで開かれた<a onclick="show_vocab_data('第')">第</a>５回オリンピックに<a onclick="show_vocab_data('初出場')">初出場</a>しました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -334,22 +387,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_06" class="sentence">
+    <tr id="13b-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_06" class="fas fa-play"></i>
-        <audio id="audio_13b_06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_06.mp3" type="audio/mpeg">
+        <i id="play_13b-06" class="fas fa-play"></i>
+        <audio id="audio_13b-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">その当時は、世界の標準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日練習を欠かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水泳のほとんどの種目で優勝するほどの力になりました。</span>
-        <span class="content-sent kanji-sent is-hidden">その当時は、世界の<a onclick="show('./kanji/341.html')">標</a>準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日<a onclick="show('./kanji/342.html')">練</a>習を<a onclick="show('./kanji/343.html')">欠</a>かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水<a onclick="show('./kanji/344.html')">泳</a>のほとんどの種目で優勝するほどの力になりました。</span>
+        <span class="content-sent kanji-sent is-hidden">その当時は、世界の<a onclick="show_kanji_data('標')">標</a>準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日<a onclick="show_kanji_data('練')">練</a>習を<a onclick="show_kanji_data('欠')">欠</a>かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水<a onclick="show_kanji_data('泳')">泳</a>のほとんどの種目で優勝するほどの力になりました。</span>
         <span class="content-sent plain-sent is-hidden">その当時は、世界の標準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日練習を欠かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水泳のほとんどの種目で優勝するほどの力になりました。</span>
-        <span class="content-sent vocab-sent">その<a onclick="show('./vocab/51.html')">当時</a>は、<a onclick="show('./vocab/1550.html')">世界</a>の<a onclick="show('./vocab/1311.html')">標準</a>に<a onclick="show('./vocab/1675.html')">比べ</a>て<a onclick="show('./vocab/1643.html')">大分</a><a onclick="show('./vocab/1312.html')">劣って</a>いたと思われた日本の<a onclick="show('./vocab/1313.html')">選手</a>達も毎日、毎日<a onclick="show('./vocab/1314.html')">練習</a>を<a onclick="show('./vocab/1315.html')">欠か</a>さず、<a onclick="show('./vocab/399.html')">ついに</a>、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、<a onclick="show('./vocab/1605.html')">特に</a><a onclick="show('./vocab/1976.html')">水泳</a>のほとんどの<a onclick="show('./vocab/1984.html')">種目</a>で優勝する<a onclick="show('./vocab/2137.html')">ほどの</a>力になりました。</span>
+        <span class="content-sent vocab-sent">その<a onclick="show_vocab_data('当時')">当時</a>は、<a onclick="show_vocab_data('世界')">世界</a>の<a onclick="show_vocab_data('標準')">標準</a>に<a onclick="show_vocab_data('比べ')">比べ</a>て<a onclick="show_vocab_data('大分')">大分</a><a onclick="show_vocab_data('劣って')">劣って</a>いたと思われた日本の<a onclick="show_vocab_data('選手')">選手</a>達も毎日、毎日<a onclick="show_vocab_data('練習')">練習</a>を<a onclick="show_vocab_data('欠か')">欠か</a>さず、<a onclick="show_vocab_data('ついに')">ついに</a>、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、<a onclick="show_vocab_data('特に')">特に</a><a onclick="show_vocab_data('水泳')">水泳</a>のほとんどの<a onclick="show_vocab_data('種目')">種目</a>で優<a onclick="show_vocab_data('勝')">勝</a>する<a onclick="show_vocab_data('ほどの')">ほどの</a>力になりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -361,22 +415,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_07" class="sentence">
+    <tr id="13b-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_07" class="fas fa-play"></i>
-        <audio id="audio_13b_07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_07.mp3" type="audio/mpeg">
+        <i id="play_13b-07" class="fas fa-play"></i>
+        <audio id="audio_13b-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが停止になり、皮肉にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
-        <span class="content-sent kanji-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが<a onclick="show('./kanji/345.html')">停</a>止になり、<a onclick="show('./kanji/346.html')">皮</a><a onclick="show('./kanji/347.html')">肉</a>にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが<a onclick="show_kanji_data('停')">停</a>止になり、<a onclick="show_kanji_data('皮')">皮</a><a onclick="show_kanji_data('肉')">肉</a>にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが停止になり、皮肉にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
-        <span class="content-sent vocab-sent">そして<a onclick="show('./vocab/1358.html')">東京</a>オリンピックが<a onclick="show('./vocab/1864.html')">計画</a>されましたが、<a onclick="show('./vocab/1499.html')">戦争</a>中オリンピックが<a onclick="show('./vocab/1317.html')">停止</a>になり、<a onclick="show('./vocab/1318.html')">皮肉にも</a><a onclick="show('./vocab/1319.html')">世界各国</a>からのスポーツ<a onclick="show('./vocab/1313.html')">選手</a>で<a onclick="show('./vocab/1320.html')">にぎわう</a>はずだった東京の町が、戦争で<a onclick="show('./vocab/1793.html')">全く</a>の<a onclick="show('./vocab/1215.html')">焼け野原</a>となってしまいました。</span>
+        <span class="content-sent vocab-sent">そして<a onclick="show_vocab_data('東京')">東京</a>オリンピックが<a onclick="show_vocab_data('計画')">計画</a>されましたが、<a onclick="show_vocab_data('戦争')">戦争</a>中オリンピックが<a onclick="show_vocab_data('停止')">停止</a>になり、<a onclick="show_vocab_data('皮肉にも')">皮肉にも</a><a onclick="show_vocab_data('世界各国')">世界各国</a>からのスポーツ<a onclick="show_vocab_data('選手')">選手</a>で<a onclick="show_vocab_data('にぎわう')">にぎわう</a>はずだった<a onclick="show_vocab_data('東京')">東京</a>の町が、<a onclick="show_vocab_data('戦争')">戦争</a>で<a onclick="show_vocab_data('全く')">全く</a>の<a onclick="show_vocab_data('焼け野原')">焼け野原</a>となってしまいました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -388,22 +443,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_08" class="sentence">
+    <tr id="13b-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_08" class="fas fa-play"></i>
-        <audio id="audio_13b_08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_08.mp3" type="audio/mpeg">
+        <i id="play_13b-08" class="fas fa-play"></i>
+        <audio id="audio_13b-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で管理する国際五輪委員会は、日本でオリンピックを開催することに決定しました。</span>
-        <span class="content-sent kanji-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で<a onclick="show('./kanji/348.html')">管</a>理する国際五<a onclick="show('./kanji/339.html')">輪</a><a onclick="show('./kanji/302.html')">委</a>員会は、日本でオリンピックを開催することに決定しました。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で<a onclick="show_kanji_data('管')">管</a>理する国際五<a onclick="show_kanji_data('輪')">輪</a><a onclick="show_kanji_data('委')">委</a>員会は、日本でオリンピックを開催することに決定しました。</span>
         <span class="content-sent plain-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で管理する国際五輪委員会は、日本でオリンピックを開催することに決定しました。</span>
-        <span class="content-sent vocab-sent">しかし、<a onclick="show('./vocab/1475.html')">戦後</a>オリンピックが<a onclick="show('./vocab/1321.html')">再開される</a>ようになり、オリンピックを中央で<a onclick="show('./vocab/1322.html')">管理する</a><a onclick="show('./vocab/1977.html')">国際五輪委員会</a>は、日本でオリンピックを<a onclick="show('./vocab/1323.html')">開催する</a>ことに<a onclick="show('./vocab/2061.html')">決定し</a>ました。</span>
+        <span class="content-sent vocab-sent">しかし、<a onclick="show_vocab_data('戦後')">戦後</a>オリンピックが<a onclick="show_vocab_data('再開される')">再開される</a>ようになり、オリンピックを中央で<a onclick="show_vocab_data('管理する')">管理する</a><a onclick="show_vocab_data('国際五輪委員会')">国際五輪委員会</a>は、日本でオリンピックを<a onclick="show_vocab_data('開催する')">開催する</a>ことに<a onclick="show_vocab_data('決定し')">決定し</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -415,12 +471,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_09" class="sentence">
+    <tr id="13b-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_09" class="fas fa-play"></i>
-        <audio id="audio_13b_09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_09.mp3" type="audio/mpeg">
+        <i id="play_13b-09" class="fas fa-play"></i>
+        <audio id="audio_13b-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -428,9 +484,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
         <span class="content-sent kanji-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
         <span class="content-sent plain-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
-        <span class="content-sent vocab-sent">１９６４年、<a onclick="show('./vocab/2141.html')">秋</a>の<a onclick="show('./vocab/1324.html')">日本晴れの日</a>です。<a onclick="show('./vocab/1325.html')">待ちに待った</a><a onclick="show('./vocab/1302.html')">聖火</a>が<a onclick="show('./vocab/1358.html')">東京</a>の<a onclick="show('./vocab/1299.html')">国立競技場</a>に<a onclick="show('./vocab/1326.html')">点火さ</a>れたのです。</span>
+        <span class="content-sent vocab-sent">１９６４年、<a onclick="show_vocab_data('秋')">秋</a>の<a onclick="show_vocab_data('日本晴れの日')">日本晴れの日</a>です。<a onclick="show_vocab_data('待ちに待った')">待ちに待った</a><a onclick="show_vocab_data('聖火')">聖火</a>が<a onclick="show_vocab_data('東京')">東京</a>の<a onclick="show_vocab_data('国立競技場')">国立競技場</a>に<a onclick="show_vocab_data('点火さ')">点火さ</a>れたのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -442,22 +499,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_10" class="sentence">
+    <tr id="13b-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_10" class="fas fa-play"></i>
-        <audio id="audio_13b_10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_10.mp3" type="audio/mpeg">
+        <i id="play_13b-10" class="fas fa-play"></i>
+        <audio id="audio_13b-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆舌に<a onclick="show('./grammar/90.html')">尽くし難い</a>ものだったに違いありません。</span>
-        <span class="content-sent kanji-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆<a onclick="show('./kanji/350.html')">舌</a>に尽くし難いものだったに違いありません。</span>
+        <span class="content-sent grammar-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆舌に<a onclick="show_grammar_data('尽くし難い')">尽くし難い</a>ものだったに違いありません。</span>
+        <span class="content-sent kanji-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆<a onclick="show_kanji_data('舌')">舌</a>に尽くし難いものだったに違いありません。</span>
         <span class="content-sent plain-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆舌に尽くし難いものだったに違いありません。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1499.html')">戦争</a>のために、<a onclick="show('./vocab/1864.html')">計画</a>されていた<a onclick="show('./vocab/1358.html')">東京</a>オリンピックを<a onclick="show('./vocab/2116.html')">あきらめなくてはならなかった</a>人々のこの時の<a onclick="show('./vocab/1328.html')">感激</a>は、筆舌に尽くし難いものだったに<a onclick="show('./vocab/1669.html')">違いありません</a>。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('戦争')">戦争</a>のために、<a onclick="show_vocab_data('計画')">計画</a>されていた<a onclick="show_vocab_data('東京')">東京</a>オリンピックを<a onclick="show_vocab_data('あきらめなくてはならなかった')">あきらめなくてはならなかった</a>人々のこの時の<a onclick="show_vocab_data('感激')">感激</a>は、筆舌に尽くし難いものだったに<a onclick="show_vocab_data('違いありません')">違いありません</a>。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -469,22 +527,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_11" class="sentence">
+    <tr id="13b-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_11" class="fas fa-play"></i>
-        <audio id="audio_13b_11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_11.mp3" type="audio/mpeg">
+        <i id="play_13b-11" class="fas fa-play"></i>
+        <audio id="audio_13b-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">金メダル獲得も、柔道とレスリングの軽量級、体操、女子バレーボールなどと、いろいろな種目で優秀な成績を収めました。</span>
-        <span class="content-sent kanji-sent is-hidden">金メダル獲得も、柔道とレスリングの<a onclick="show('./kanji/351.html')">軽</a><a onclick="show('./kanji/352.html')">量</a>級、体<a onclick="show('./kanji/353.html')">操</a>、女子バレーボールなどと、いろいろな種目で優秀な成<a onclick="show('./kanji/386.html')">績</a>を収めました。</span>
+        <span class="content-sent kanji-sent is-hidden">金メダル獲得も、柔道とレスリングの<a onclick="show_kanji_data('軽')">軽</a><a onclick="show_kanji_data('量')">量</a>級、体<a onclick="show_kanji_data('操')">操</a>、女子バレーボールなどと、いろいろな種目で優秀な成<a onclick="show_kanji_data('績')">績</a>を収めました。</span>
         <span class="content-sent plain-sent is-hidden">金メダル獲得も、柔道とレスリングの軽量級、体操、女子バレーボールなどと、いろいろな種目で優秀な成績を収めました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/69.html')">金</a>メダル<a onclick="show('./vocab/1330.html')">獲得</a>も、<a onclick="show('./vocab/1331.html')">柔道</a>とレスリングの<a onclick="show('./vocab/1332.html')">軽量級</a>、<a onclick="show('./vocab/1333.html')">体操</a>、女子バレーボールなどと、いろいろな<a onclick="show('./vocab/1984.html')">種目</a>で<a onclick="show('./vocab/841.html')">優秀な</a><a onclick="show('./vocab/1983.html')">成績</a>を<a onclick="show('./vocab/2062.html')">収めま</a>した。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('金')">金</a>メダル<a onclick="show_vocab_data('獲得')">獲得</a>も、<a onclick="show_vocab_data('柔道')">柔道</a>とレスリングの<a onclick="show_vocab_data('軽量級')">軽量級</a>、<a onclick="show_vocab_data('体操')">体操</a>、女子バレーボールなどと、いろいろな<a onclick="show_vocab_data('種目')">種目</a>で<a onclick="show_vocab_data('優秀な')">優秀な</a><a onclick="show_vocab_data('成績')">成績</a>を<a onclick="show_vocab_data('収めま')">収めま</a>した。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -496,22 +555,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_12" class="sentence">
+    <tr id="13b-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_12" class="fas fa-play"></i>
-        <audio id="audio_13b_12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_12.mp3" type="audio/mpeg">
+        <i id="play_13b-12" class="fas fa-play"></i>
+        <audio id="audio_13b-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、賞など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印象的でした。</span>
-        <span class="content-sent kanji-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、<a onclick="show('./kanji/355.html')">賞</a>など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印<a onclick="show('./kanji/321.html')">象</a>的でした。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、<a onclick="show_kanji_data('賞')">賞</a>など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印<a onclick="show_kanji_data('象')">象</a>的でした。</span>
         <span class="content-sent plain-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、賞など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印象的でした。</span>
-        <span class="content-sent vocab-sent">しかし、「オリンピックは<a onclick="show('./vocab/2157.html')">勝</a>つことではなく<a onclick="show('./vocab/1980.html')">参加する</a>ことである」と言われるように、<a onclick="show('./vocab/1336.html')">賞</a>など一つももらわなくても、オリンピックに<a onclick="show('./vocab/1106.html')">参加し</a>た喜びを味わった<a onclick="show('./vocab/1313.html')">選手</a>達が<a onclick="show('./vocab/981.html')">涙</a>を<a onclick="show('./vocab/1981.html')">流して</a><a onclick="show('./vocab/1982.html')">別れ</a>を<a onclick="show('./vocab/1337.html')">惜しんだ</a><a onclick="show('./vocab/1358.html')">東京</a>オリンピックの<a onclick="show('./vocab/1338.html')">閉会式</a>は、<a onclick="show('./vocab/709.html')">非常に</a><a onclick="show('./vocab/1339.html')">印象的</a>でした。</span>
+        <span class="content-sent vocab-sent">しかし、「オリンピックは<a onclick="show_vocab_data('勝')">勝</a>つことではなく<a onclick="show_vocab_data('参加する')">参加する</a>ことである」と言われるように、<a onclick="show_vocab_data('賞')">賞</a>など一つももらわなくても、オリンピックに<a onclick="show_vocab_data('参加し')">参加し</a>た喜びを味わった<a onclick="show_vocab_data('選手')">選手</a>達が<a onclick="show_vocab_data('涙')">涙</a>を<a onclick="show_vocab_data('流して')">流して</a><a onclick="show_vocab_data('別れ')">別れ</a>を<a onclick="show_vocab_data('惜しんだ')">惜しんだ</a><a onclick="show_vocab_data('東京')">東京</a>オリンピックの<a onclick="show_vocab_data('閉会式')">閉会式</a>は、<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('印象的')">印象的</a>でした。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -523,22 +583,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="13b_13" class="sentence">
+    <tr id="13b-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13b_13" class="fas fa-play"></i>
-        <audio id="audio_13b_13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13b_13.mp3" type="audio/mpeg">
+        <i id="play_13b-13" class="fas fa-play"></i>
+        <audio id="audio_13b-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13b-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育館など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
-        <span class="content-sent kanji-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育<a onclick="show('./kanji/356.html')">館</a>など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
+        <span class="content-sent kanji-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育<a onclick="show_kanji_data('館')">館</a>など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
         <span class="content-sent plain-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育館など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1565.html')">現在</a>、この時に使われた<a onclick="show('./vocab/1299.html')">国立競技場</a>や<a onclick="show('./vocab/2064.html')">代々木</a>の国立<a onclick="show('./vocab/1340.html')">体育館</a>など、<a onclick="show('./vocab/1520.html')">歴史</a>的なオリンピックを<a onclick="show('./vocab/1665.html')">物語</a>る<a onclick="show('./vocab/932.html')">跡</a>が<a onclick="show('./vocab/1358.html')">東京</a><a onclick="show('./vocab/2063.html')">各地</a>に<a onclick="show('./vocab/1566.html')">残って</a>います。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('現在')">現在</a>、この時に使われた<a onclick="show_vocab_data('国立競技場')">国立競技場</a>や<a onclick="show_vocab_data('代々木')">代々木</a>の国立<a onclick="show_vocab_data('体育館')">体育館</a>など、<a onclick="show_vocab_data('歴史')">歴史</a>的なオリンピックを<a onclick="show_vocab_data('物語')">物語</a>る<a onclick="show_vocab_data('跡')">跡</a>が<a onclick="show_vocab_data('東京')">東京</a><a onclick="show_vocab_data('各地')">各地</a>に<a onclick="show_vocab_data('残って')">残って</a>います。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -556,9 +617,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

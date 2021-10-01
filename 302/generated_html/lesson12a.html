@@ -4,7 +4,7 @@
   <title>
     Japanese 302
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -184,6 +226,11 @@ nav.navbar.is-fixed-bottom > .field {
     </li>
   </ul>
 </nav>
+  <script>
+  var vocab_json = {"\u72ec\u7acb": ["\u72ec\u7acb", "\u3069\u304f\u308a\u3064", "independence"], "\u8ca2\u732e": ["\u8ca2\u732e\u3059\u308b", "\u3053\u3046\u3051\u3093\u3059\u308b", "to contribute"], "\u307b\u3068\u3093\u3069\u3044\u306a\u3044": ["\u307b\u3068\u3093\u3069\u301c\u306a\u3044", "MISSING KANA", "hardly ever; not generally; rarely"], "\u540c\u3058": ["\u540c\u3058", "\u304a\u306a\u3058", "same; equal"], "\u677f\u57a3\u9000\u52a9": ["\u677f\u57a3\u9000\u52a9(1837-1919)", "\u3044\u305f\u304c\u304d\u305f\u3044\u3059\u3051", "a politician"], "\u4f0a\u85e4\u535a\u6587": ["\u4f0a\u85e4\u535a\u6587(1841-1909)", "\u3044\u3068\u3046\u3072\u308d\u3076\u307f", "a politician"], "\u8fd1\u4ee3\u56fd\u5bb6": ["\u8fd1\u4ee3\u56fd\u5bb6", "\u304d\u3093\u3060\u3044\u3053\u3063\u304b", "modern nation"], "\u57fa\u790e": ["\u57fa\u790e", "\u304d\u305d", "the foundation"], "\u81ea\u7531\u6c11\u6a29\u904b\u52d5": ["\u81ea\u7531\u6c11\u6a29\u904b\u52d5", "\u3058\u3086\u3046\u307f\u3093\u3051\u3093\u3046\u3093\u3069\u3046", "a movement for democratic rights"], "\u6709\u540d": ["\u6709\u540d", "\u3086\u3046\u3081\u3044", "famous; well-known"], "\u521d\u4ee3\u306e": ["\u521d\u4ee3\u306e", "\u3057\u3087\u3060\u3044\u306e", "the first\u301c"], "\u5185\u95a3": ["\u5185\u95a3", "\u306a\u3044\u304b\u304f", "cabinet"], "\u7dcf\u7406\u5927\u81e3": ["\u7dcf\u7406\u5927\u81e3", "\u305d\u3046\u308a\u3060\u3044\u3058\u3093", "prime minister"], "\u5927\u65e5\u672c\u5e1d\u56fd\u61b2\u6cd5": ["\u5927\u65e5\u672c\u5e1d\u56fd\u61b2\u6cd5", "\u3060\u3044\u306b\u3063\u307d\u3093\u3066\u3044\u3053\u304f\u3051\u3093\u307d\u3046", "the Japanese Imperial Constitution"], "\u8d77\u8349\u8005": ["\u8d77\u8349\u8005", "\u304d\u305d\u3046\u3057\u3083", "draftsman"], "\u4f0a\u85e4": ["\u4f0a\u85e4", "\u3044\u3068\u3046", "It\u014d Hirobumi"], "\u5e55\u672b": ["\u5e55\u672b", "\u3070\u304f\u307e\u3064", "the end of the shogunate period"], "\u9577\u5dde": ["\u9577\u5dde", "\u3061\u3087\u3046\u3057\u3085\u3046", "name of a fief (modern Yamaguchi prefecture)"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3056\u3044", "the present time; at present"], "\u5c71\u53e3\u770c": ["\u5c71\u53e3\u770c", "\u3084\u307e\u3050\u3061\u3051\u3093", "Yamaguchi Prefecture"], "\u8429": ["\u8429", "\u306f\u304e", "a town name in Yamaguchi Prefecture"], "\u5f53\u6642": ["\u5f53\u6642", "\u3068\u3046\u3058", "at the time"], "\u5b66\u8005": ["\u5b66\u8005", "\u304c\u304f\u3057\u3083", "scholar"], "\u6559\u80b2": ["\u6559\u80b2", "\u304d\u3087\u3046\u3044\u304f", "education"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "very; extremely"], "\u5409\u7530\u677e\u9670": ["\u5409\u7530\u677e\u9670(1830-1859)", "\u3088\u3057\u3060\u3057\u3087\u3046\u3044\u3093", "an imperial loyalist; executed by Ii Naosuke in 1859."], "\u81ea\u5b85": ["\u81ea\u5b85", "\u3058\u305f\u304f", "one's house"], "\u677e\u4e0b\u6751\u587e": ["\u677e\u4e0b\u6751\u587e", "\u3057\u3087\u3046\u304b\u305d\u3093\u3058\u3085\u304f", "a private school (juku) formerly owned by an uncle of Yoshida Sh\u014din; Yoshida Sh\u014din succeeded it in 1856."], "\u8a2d\u3051\u3066": ["\u8a2d\u3051\u308b", "\u3082\u3046\u3051\u308b", "to set up; provide; establish"], "\u5f1f\u5b50\u9054": ["\u5f1f\u5b50\u9054", "\u3067\u3057\u305f\u3061", "disciples; pupils; apprentices"], "\u587e": ["\u587e", "\u3058\u3085\u304f", "a private school"], "\u6842\u5c0f\u4e94\u90ce": ["\u6842\u5c0f\u4e94\u90ce(1833-1877)", "\u304b\u3064\u3089\u3053\u3054\u308d\u3046", "Former name of Kido Takayoshi"], "\u9ad8\u6749\u664b\u4f5c": ["\u9ad8\u6749\u664b\u4f5c(1839-1867)", "\u305f\u304b\u3059\u304e\u3057\u3093\u3055\u304f", "an imperial loyalist"], "\u660e\u6cbb": ["\u660e\u6cbb", "\u3081\u3044\u3058", "the Meiji era (1868-1912)"], "\u6d3b\u8e8d\u3057": ["\u6d3b\u8e8d\u3059\u308b", "\u304b\u3064\u3084\u304f\u3059\u308b", "to play an active part; be active"], "\u677e\u9670": ["\u677e\u9670", "\u3057\u3087\u3046\u3044\u3093", "Yoshida Sh\u014din"], "\u9580\u5f1f": ["\u9580\u5f1f", "\u3082\u3093\u3066\u3044", "pupils; apprentices; disciples"], "\u5148\u8f29": ["\u5148\u8f29", "\u305b\u3093\u3071\u3044", "senior; elder"], "\u89aa\u3057": ["\u89aa\u3057\u3044", "\u3057\u305f\u3057\u3044", "close"], "\u521d\u3081": ["\u521d\u3081(\u306e)", "\u306f\u3058\u3081(\u306e)", "the beginning (first; early)"], "\u5c0a\u738b\u6518\u5937": ["\u5c0a\u738b\u6518\u5937", "\u305d\u3093\u306e\u3046\u3058\u3087\u3046\u3044", "the principle of advocating reverence for the Emperor and the expulsion of foreigners"], "\u53c2\u52a0\u3057": ["\u53c2\u52a0\u3059\u308b", "\u3055\u3093\u304b\u3059\u308b", "to participate"], "\u5bc6\u822a\u3057": ["\u5bc6\u822a\u3059\u308b", "\u307f\u3063\u3053\u3046\u3059\u308b", "to stow away"], "\u958b\u56fd": ["\u958b\u56fd", "\u304b\u3044\u3053\u304f", "the opening of the country"], "\u4e3b\u5f35\u3057\u3066": ["\u4e3b\u5f35\u3059\u308b", "\u3057\u3085\u3061\u3087\u3046\u3059\u308b", "to insist; assert; claim"], "\u5012\u5e55\u904b\u52d5": ["\u5012\u5e55\u904b\u52d5", "\u3068\u3046\u3070\u304f\u3046\u3093\u3069\u3046", "the movement to overthrow the shogunate"], "\u660e\u6cbb\u7dad\u65b0": ["\u660e\u6cbb\u7dad\u65b0", "\u3081\u3044\u3058\u3044\u3057\u3093", "the Meiji Restoration"], "\u6728\u6238\u5b5d\u5141": ["\u6728\u6238\u5b5d\u5141(1833-1877)", "\u304d\u3069\u305f\u304b\u3088\u3057", "a politician; formerly Katsura Kogor\u014d"], "\u65e7\u540d": ["\u65e7\u540d", "\u304d\u3085\u3046\u3081\u3044", "former name"], "\u5927\u4e45\u4fdd\u5229\u901a": ["\u5927\u4e45\u4fdd\u5229\u901a(1830-1878)", "\u304a\u304a\u304f\u307c\u3068\u3057\u307f\u3061", "a politician"], "\u4fe1\u983c": ["\u4fe1\u983c\u3059\u308b", "\u3057\u3093\u3089\u3044\u3059\u308b", "to trust; rely on"], "\u65b0\u653f\u5e9c": ["\u65b0\u653f\u5e9c", "\u3057\u3093\u305b\u3044\u3075", "the new government: the Meiji government"], "\u91cd\u8981": ["\u91cd\u8981", "\u3058\u3085\u3046\u3088\u3046", "important"], "\u5730\u4f4d": ["\u5730\u4f4d", "\u3061\u3044", "rank; position; status"], "\u53d7\u3051": ["\u53d7\u3051\u308b", "\u3046\u3051\u308b", "to get; receive; be given"], "\u7279\u306b": ["\u7279\u306b", "\u3068\u304f\u306b", "specially; particularly"], "\u7dad\u65b0\u306e\u4e09\u5091": ["\u7dad\u65b0\u306e\u4e09\u5091", "\u3044\u3057\u3093\u306e\u3055\u3093\u3051\u3064", "the three important figures of the Meiji Restoration"], "\u897f\u90f7": ["\u897f\u90f7", "\u3055\u3044\u3054\u3046", "Saig\u014d Takamori"], "\u897f\u5357\u6226\u4e89": ["\u897f\u5357\u6226\u4e89", "\u305b\u3044\u306a\u3093\u305b\u3093\u305d\u3046", "the Satsuma Rebellion"], "\u6728\u6238": ["\u6728\u6238", "\u304d\u3069", "Kodo Takayoshi"], "\u75c5\u6b7b\u3057": ["\u75c5\u6b7b\u3059\u308b", "\u3073\u3087\u3046\u3057\u3059\u308b", "to die of a disease"], "\u5927\u4e45\u4fdd": ["\u5927\u4e45\u4fdd", "\u304a\u304a\u304f\u307c", "\u014ckubo Toshimichi"], "\u6697\u6bba\u3055\u308c\u3066": ["\u6697\u6bba\u3055\u308c\u308b", "\u3042\u3093\u3055\u3064\u3055\u308c\u308b", "to be assassinated"], "\u4e2d\u5fc3\u4eba\u7269": ["\u4e2d\u5fc3\u4eba\u7269", "\u3061\u3085\u3046\u3057\u3093\u3058\u3093\u3076\u3064", "central figure"], "\u305f\u3076\u3093": ["\u305f\u3076\u3093", "MISSING KANA", "maybe; probably"], "\u6210\u3057\u305f\u3053\u3068": ["\u6210\u3057\u305f\u3053\u3068", "\u306a\u3057\u305f\u3053\u3068", "accomplished things"], "\u4e00\u756a": ["\u4e00\u756a", "\u3044\u3061\u3070\u3093", "the most"], "\u7814\u7a76": ["\u7814\u7a76\u3059\u308b", "\u3051\u3093\u304d\u3085\u3046\u3059\u308b", "to study; do research"], "\u518d\u3073": ["\u518d\u3073", "\u3075\u305f\u305f\u3073", "once again"], "\u6e21\u308a": ["\u6e21\u308b", "\u308f\u305f\u308b", "to cross"], "\u5e30\u56fd\u3057\u3066": ["\u5e30\u56fd\u3059\u308b", "\u304d\u3053\u304f\u3059\u308b", "to return to one's home country"], "\u8349\u6848": ["\u8349\u6848", "\u305d\u3046\u3042\u3093", "a (rough) draft"], "\u4f5c\u6210\u3057\u305f": ["\u4f5c\u6210\u3059\u308b", "\u3055\u304f\u305b\u3044\u3059\u308b", "to draw up; make out"], "\u61b2\u6cd5": ["\u61b2\u6cd5", "\u3051\u3093\u307d\u3046", "the constitution"], "\u624b\u672c": ["\u624b\u672c", "\u3066\u307b\u3093", "model"], "\u4f3c\u3066": ["\u4f3c\u308b", "\u306b\u308b", "to be similar; resemble"], "\u5929\u7687": ["\u5929\u7687", "\u3066\u3093\u306e\u3046", "emperor"], "\u6cbb\u3081": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to govern;  control"], "\u6a29\u5a01\u8005": ["\u6a29\u5a01\u8005", "\u3051\u3093\u3044\u3057\u3083", "authority"], "\u795e\u8056": ["\u795e\u8056", "\u3057\u3093\u305b\u3044", "holy; sacred; divine"], "\u8ab0": ["\u8ab0", "\u3060\u308c", "who"], "\u53cd\u5bfe\u3059\u308b": ["\u53cd\u5bfe\u3059\u308b", "\u306f\u3093\u305f\u3044\u3059\u308b", "to oppose; be against"], "\u5b58\u5728": ["\u5b58\u5728", "\u305d\u3093\u3056\u3044", "existence"], "\u5b9a\u3081": ["\u5b9a\u3081\u308b", "\u3055\u3060\u3081\u308b", "to establish; lay down"], "\u5927\u6b63": ["\u5927\u6b63", "\u305f\u3044\u3057\u3087\u3046", "the Taish\u014d era (1912-1926)"], "\u662d\u548c": ["\u662d\u548c", "\u3057\u3087\u3046\u308f", "the Sh\u014dwa era (1926-1989)"], "\u56fd\u5bb6\u4e3b\u7fa9": ["\u56fd\u5bb6\u4e3b\u7fa9", "\u3053\u3063\u304b\u3057\u3085\u304e", "nationalism"], "\u8ecd\u56fd\u4e3b\u7fa9": ["\u8ecd\u56fd\u4e3b\u7fa9", "\u3050\u3093\u3053\u304f\u3057\u3085\u304e", "militarism"], "\u6804\u3048": ["\u6804\u3048\u308b", "\u3055\u304b\u3048\u308b", "to prosper; flourish"], "\u571f\u53f0": ["\u571f\u53f0", "\u3069\u3060\u3044", "the basis; the foundation"], "\u767a\u5e03": ["\u767a\u5e03", "\u306f\u3063\u3077", "promulgation"], "\u56fd\u6c11": ["\u56fd\u6c11", "\u3053\u304f\u307f\u3093", "a nation; a citizen"], "\u7d79\u5e03": ["\u7d79\u5e03", "\u3051\u3093\u3077", "silk cloth"], "\u5f79\u5834": ["\u5f79\u5834", "\u3084\u304f\u3070", "public offices"], "\u97d3\u56fd\u653f\u7b56": ["\u97d3\u56fd\u653f\u7b56", "\u304b\u3093\u3053\u304f\u305b\u3044\u3055\u304f", "the Korean policy"], "\u53cd\u611f": ["\u53cd\u611f", "\u306f\u3093\u304b\u3093", "antipathy; dislike"], "\u5b89\u91cd\u6839": ["\u5b89\u91cd\u6839(1879-1910)", "\u3042\u3093\u3058\u3085\u3046\u3053\u3093", "An Chung-gun; a leader of Korean independence movement"], "\u9752\u5e74": ["\u9752\u5e74", "\u305b\u3044\u306d\u3093", "a young man"], "\u30cf\u30eb\u30d4\u30f3": ["\u30cf\u30eb\u30d4\u30f3", "\u306f\u308b\u3074\u3093", "Harbin (city name)"], "\u99c5": ["\u99c5", "\u3048\u304d", "a station"], "\u6bba\u3055\u308c": ["\u6bba\u3055\u308c\u308b", "\u3053\u308d\u3055\u308c\u308b", "to be killed"], "\u53bb\u3063\u3066": ["\u53bb\u308b", "\u3055\u308b", "to leave"], "\u7d42\u6226\u5f8c": ["\u7d42\u6226\u5f8c", "\u3057\u3085\u3046\u305b\u3093\u3054", "after the end of the World War II"], "\u65e5\u672c\u56fd\u61b2\u6cd5": ["\u65e5\u672c\u56fd\u61b2\u6cd5", "\u306b\u307b\u3093\u3053\u304f\u3051\u3093\u307d\u3046", "the Constitution of Japan"], "\u6b74\u53f2": ["\u6b74\u53f2", "\u308c\u304d\u3057", "history"], "\u660e\u6cbb\u53f2\u4e0a": ["\u660e\u6cbb\u53f2\u4e0a", "\u3081\u3044\u3058\u3057\u3058\u3087\u3046", "in the history of the Meiji era"], "\u4eba\u7269": ["\u4eba\u7269", "\u3058\u3093\u3076\u3064", "a person; a character"]};
+  var grammar_json = {"\u3068\u8a00\u3048\u3070\u3001": [" N\u3068\u8a00\u3048\u3070", " Speaking of N <br/><br/> This sentence structure is often used to introduce the topic of the conversation, or sometimes to change the course of the conversation to focus on N. In other words, the speaker introduces N so that he/she can talk about N. ", [["\u30a2\u30e1\u30ea\u30ab\u3067\u3001\u30b8\u30e7\u30fc\u30b8\u30fb\u30ef\u30b7\u30f3\u30c8\u30f3\u3068\u304b\u3001\u30c8\u30fc\u30de\u30b9\u30fb\u30b8\u30a7\u30d5\u30a1\u30fc\u30bd\u30f3\u3068\u8a00\u3048\u3070\u3001\u72ec\u7acb\u306e\u305f\u3081\u306b\u8ca2\u732e\u3057\u305f\u4eba\u3068\u3057\u3066\u3001\u77e5\u3089\u306a\u3044\u4eba\u306f\u307b\u3068\u3093\u3069\u3044\u306a\u3044\u3067\u3057\u3087\u3046\u3002", "In America, few people would not know people such as George Washington or Thomas Jefferson to be men who contributed to the independence of the country."], ["\u4f0a\u85e4\u535a\u6587\u3068\u8a00\u3048\u3070\u3001\u5927\u65e5\u672c\u5e1d\u56fd\u61b2\u6cd5\u306e\u8349\u6848\u8005\u3068\u3057\u3066\u77e5\u3089\u306a\u3044\u65e5\u672c\u4eba\u306f\u3044\u306a\u3044\u306f\u305a\u3060\u3002", "Few Japanese would not know the name of Hirobumi It\u014d as a man who drafted the Great Imperial Japanese Constitution."], ["\u65e5\u672c\u3068\u8a00\u3048\u3070\u3001\u30a2\u30e1\u30ea\u30ab\u4eba\u306f\u4f55\u3092\u9023\u60f3\u3059\u308b\u3067\u3057\u3087\u3046\u3002", "When you say Japan, what do Americans think of first?"]]], "\u9593\u9055\u3063\u3066\u3044\u305f\u3053\u3068\u306b\u6c17\u304c\u3064\u304d": [" \u301c\u306b\u6c17\u304c\u3064\u304f", " notice (realize) \u301c <br/><br/> The phrase \u6c17\u304c\u3064\u304f takes the particle \u306b which usually follows a sentence clause marked by \u3053\u3068 or \u306e. \u4f8b. \u82e5\u8005\u306f\u81ea\u5206\u304c\u4f55\u5ea6\u3082\u540c\u3058\u5931\u6557\u3092\u304f\u308a\u304b\u3048\u3057\u3066\u304d\u305f\u306e\u306b\u6c17\u304c\u3064\u304d\u307e\u3057\u305f\u3002 The young man realized that he has been repeating the same mistake over and over. ", []], "\u4e09\u5091\u3068\u8a00\u308f\u308c\u305f": [" N \u3068\u8a00\u308f\u308c\u308b(\u3066\u3044\u308b\u30fb\u305f)", " called to be N <br/><br/> The literal translation is \"called to be N,\" but this phrase is used to introduce N as something very well-known by the people: \"it is said\" or \"called N.\" ", [["\u7279\u306b\u3001\u7dad\u65b0\u306e\u4e09\u5091\u3068\u8a00\u308f\u308c\u305f\u897f\u90f7\u304c\u897f\u5357\u6226\u4e89\u3067\u6b7b\u306b\u3001\u6728\u6238\u304c\u75c5\u6b7b\u3057\u3001\u5927\u4e45\u4fdd\u304c\u6697\u6bba\u3055\u308c\u305f\u3002", "In particular, the so-called three heroes of the Meiji restoration died: Saig\u014d in the Seinan Conflict, Kido because of an illness, and \u014ckubo was assassinated."], ["FatherofInvention,\"wasborninOhio.\">\u767a\u660e\u306e\u7236\u3068\u8a00\u308f\u308c\u308b\u30a8\u30b8\u30bd\u30f3\u306f\u3001\u30a2\u30e1\u30ea\u30ab\u306e\u30aa\u30cf\u30a4\u30aa\u5dde\u3067\u751f\u307e\u308c\u305f\u3002", "Edison, the "], ["\u7d2b\u5f0f\u90e8\u306f\u3001\u4e16\u754c\u7684\u5973\u6d41\u4f5c\u5bb6\u3068\u8a00\u308f\u308c\u3066\u3044\u308b\u3002", "Lady Murasaki is known as a world-famous female writer."]]]};
+  var kanji_json = {"\u677f": ["\u3044\u305f", "\u30cf\u30f3\u30fb\u30d0\u30f3", "BOARD; PLANK", []], "\u7dcf": ["", "\u30bd\u30a6", "ALL; TOGETHER; COLLECT; GENERAL", []], "\u5b85": ["", "\u30bf\u30af", "HOUSE; RESIDENCE; OUR HOME", []], "\u5bc6": ["", "\u30df\u30c4", "SECRECY; DENSE; MINUTE", []], "\u822a": ["", "\u30b3\u30a6", "CROSS WATERS; FLY; GO ABROAD", []], "\u65e7": ["", "\u30ad\u30e5\u30a6", "OLD", []], "\u6697": ["\u304f\u3089\uff08\u3044\uff09", "\u30a2\u30f3", "DARK; INDIRECT", []], "\u6848": ["", "\u30a2\u30f3", "IDEA; SUGGESTION; ROUGH DRAFT", []], "\u662d": ["", "\u30b7\u30e7\u30a6", "CLEAR; BRIGHT", []], "\u7d79": ["\u304d\u306c", "\u30b1\u30f3", "SILK", []], "\u5c04": ["\u3044\uff08\u308b\uff09", "\u30b7\u30e3", "SHOOT", []]};
+  </script>
   <div class="block title">伊藤博文</div>
   <hr>
   <div class="block is-centered">
@@ -197,24 +244,26 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="12a_01" class="sentence">
+    <tr id="12a-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_01" class="fas fa-play"></i>
-        <audio id="audio_12a_01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_01.mp3" type="audio/mpeg">
+        <i id="play_12a-01" class="fas fa-play"></i>
+        <audio id="audio_12a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソン<a onclick="show('./grammar/85.html')">と言えば、</a>独立のために貢献した人として知らない人はほとんどいないでしょう。</span>
+        <span class="content-sent grammar-sent is-hidden">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソン<a onclick="show_grammar_data('と言えば、')">と言えば、</a>独立のために貢献した人として知らない人はほとんどいないでしょう。</span>
         <span class="content-sent kanji-sent is-hidden">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソンと言えば、独立のために貢献した人として知らない人はほとんどいないでしょう。</span>
         <span class="content-sent plain-sent is-hidden">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソンと言えば、独立のために貢献した人として知らない人はほとんどいないでしょう。</span>
-        <span class="content-sent vocab-sent">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソンと言えば、<a onclick="show('./vocab/1088.html')">独立</a>のために<a onclick="show('./vocab/1089.html')">貢献</a>した人として知らない人は<a onclick="show('./vocab/2110.html')">ほとんどいない</a>でしょう。</span>
+        <span class="content-sent vocab-sent">アメリカで、ジョージ・ワシントンとか、トーマス・ジェファーソンと言えば、<a onclick="show_vocab_data('独立')">独立</a>のために<a onclick="show_vocab_data('貢献')">貢献</a>した人として知らない人は<a onclick="show_vocab_data('ほとんどいない')">ほとんどいない</a>でしょう。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -226,22 +275,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_02" class="sentence">
+    <tr id="12a-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_02" class="fas fa-play"></i>
-        <audio id="audio_12a_02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_02.mp3" type="audio/mpeg">
+        <i id="play_12a-02" class="fas fa-play"></i>
+        <audio id="audio_12a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">同じように、日本でも板垣退助とか伊藤博文<a onclick="show('./grammar/85.html')">と言えば、</a>日本の近代国家の基礎を作った人として知らない人はいないはずです。</span>
-        <span class="content-sent kanji-sent is-hidden">同じように、日本でも<a onclick="show('./kanji/285.html')">板</a>垣退助とか伊藤博文と言えば、日本の近代国家の基礎を作った人として知らない人はいないはずです。</span>
+        <span class="content-sent grammar-sent is-hidden">同じように、日本でも板垣退助とか伊藤博文<a onclick="show_grammar_data('と言えば、')">と言えば、</a>日本の近代国家の基礎を作った人として知らない人はいないはずです。</span>
+        <span class="content-sent kanji-sent is-hidden">同じように、日本でも<a onclick="show_kanji_data('板')">板</a>垣退助とか伊藤博文と言えば、日本の近代国家の基礎を作った人として知らない人はいないはずです。</span>
         <span class="content-sent plain-sent is-hidden">同じように、日本でも板垣退助とか伊藤博文と言えば、日本の近代国家の基礎を作った人として知らない人はいないはずです。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1713.html')">同じ</a>ように、日本でも<a onclick="show('./vocab/1966.html')">板垣退助</a>とか<a onclick="show('./vocab/1965.html')">伊藤博文</a>と言えば、日本の<a onclick="show('./vocab/1045.html')">近代国家</a>の<a onclick="show('./vocab/812.html')">基礎</a>を作った人として知らない人はいないはずです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('同じ')">同じ</a>ように、日本でも<a onclick="show_vocab_data('板垣退助')">板垣退助</a>とか<a onclick="show_vocab_data('伊藤博文')">伊藤博文</a>と言えば、日本の<a onclick="show_vocab_data('近代国家')">近代国家</a>の<a onclick="show_vocab_data('基礎')">基礎</a>を作った人として知らない人はいないはずです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -253,22 +303,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_03" class="sentence">
+    <tr id="12a-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_03" class="fas fa-play"></i>
-        <audio id="audio_12a_03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_03.mp3" type="audio/mpeg">
+        <i id="play_12a-03" class="fas fa-play"></i>
+        <audio id="audio_12a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">板垣退助は自由民権運動で有名ですが、伊藤博文は日本初代の内閣総理大臣として、また大日本帝国憲法の起草者として有名な人です。</span>
-        <span class="content-sent kanji-sent is-hidden"><a onclick="show('./kanji/285.html')">板</a>垣退助は自由民権運動で有名ですが、伊藤博文は日本初代の内閣<a onclick="show('./kanji/286.html')">総</a>理大臣として、また大日本帝国憲法の起草者として有名な人です。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('板')">板</a>垣退助は自由民権運動で有名ですが、伊藤博文は日本初代の内閣<a onclick="show_kanji_data('総')">総</a>理大臣として、また大日本帝国憲法の起草者として有名な人です。</span>
         <span class="content-sent plain-sent is-hidden">板垣退助は自由民権運動で有名ですが、伊藤博文は日本初代の内閣総理大臣として、また大日本帝国憲法の起草者として有名な人です。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1966.html')">板垣退助</a>は<a onclick="show('./vocab/1090.html')">自由民権運動</a>で<a onclick="show('./vocab/1588.html')">有名</a>ですが、<a onclick="show('./vocab/1965.html')">伊藤博文</a>は日本<a onclick="show('./vocab/1091.html')">初代の</a><a onclick="show('./vocab/1092.html')">内閣</a><a onclick="show('./vocab/1093.html')">総理大臣</a>として、また<a onclick="show('./vocab/1094.html')">大日本帝国憲法</a>の<a onclick="show('./vocab/1095.html')">起草者</a>として有名な人です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('板垣退助')">板垣退助</a>は<a onclick="show_vocab_data('自由民権運動')">自由民権運動</a>で<a onclick="show_vocab_data('有名')">有名</a>ですが、<a onclick="show_vocab_data('伊藤博文')">伊藤博文</a>は日本<a onclick="show_vocab_data('初代の')">初代の</a><a onclick="show_vocab_data('内閣')">内閣</a><a onclick="show_vocab_data('総理大臣')">総理大臣</a>として、また<a onclick="show_vocab_data('大日本帝国憲法')">大日本帝国憲法</a>の<a onclick="show_vocab_data('起草者')">起草者</a>として<a onclick="show_vocab_data('有名')">有名</a>な人です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -280,12 +331,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_04" class="sentence">
+    <tr id="12a-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_04" class="fas fa-play"></i>
-        <audio id="audio_12a_04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_04.mp3" type="audio/mpeg">
+        <i id="play_12a-04" class="fas fa-play"></i>
+        <audio id="audio_12a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -293,9 +344,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">伊藤は幕末に長州（現在の山口県）の萩という町に生まれました。</span>
         <span class="content-sent kanji-sent is-hidden">伊藤は幕末に長州（現在の山口県）の萩という町に生まれました。</span>
         <span class="content-sent plain-sent is-hidden">伊藤は幕末に長州（現在の山口県）の萩という町に生まれました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/2071.html')">伊藤</a>は<a onclick="show('./vocab/847.html')">幕末</a>に<a onclick="show('./vocab/2065.html')">長州</a>（<a onclick="show('./vocab/1565.html')">現在</a>の<a onclick="show('./vocab/1026.html')">山口県</a>）の<a onclick="show('./vocab/1096.html')">萩</a>という町に生まれました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('伊藤')">伊藤</a>は<a onclick="show_vocab_data('幕末')">幕末</a>に<a onclick="show_vocab_data('長州')">長州</a>（<a onclick="show_vocab_data('現在')">現在</a>の<a onclick="show_vocab_data('山口県')">山口県</a>）の<a onclick="show_vocab_data('萩')">萩</a>という町に生まれました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -307,12 +359,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_05" class="sentence">
+    <tr id="12a-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_05" class="fas fa-play"></i>
-        <audio id="audio_12a_05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_05.mp3" type="audio/mpeg">
+        <i id="play_12a-05" class="fas fa-play"></i>
+        <audio id="audio_12a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -320,9 +372,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">この萩には、その当時、学者、教育者として非常に有名だった吉田松陰という人がいました。</span>
         <span class="content-sent kanji-sent is-hidden">この萩には、その当時、学者、教育者として非常に有名だった吉田松陰という人がいました。</span>
         <span class="content-sent plain-sent is-hidden">この萩には、その当時、学者、教育者として非常に有名だった吉田松陰という人がいました。</span>
-        <span class="content-sent vocab-sent">この<a onclick="show('./vocab/1096.html')">萩</a>には、その<a onclick="show('./vocab/51.html')">当時</a>、<a onclick="show('./vocab/1573.html')">学者</a>、<a onclick="show('./vocab/1102.html')">教育</a>者として<a onclick="show('./vocab/709.html')">非常に</a><a onclick="show('./vocab/1588.html')">有名</a>だった<a onclick="show('./vocab/1097.html')">吉田松陰</a>という人がいました。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('萩')">萩</a>には、その<a onclick="show_vocab_data('当時')">当時</a>、<a onclick="show_vocab_data('学者')">学者</a>、<a onclick="show_vocab_data('教育')">教育</a>者として<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('有名')">有名</a>だった<a onclick="show_vocab_data('吉田松陰')">吉田松陰</a>という人がいました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -334,22 +387,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_06" class="sentence">
+    <tr id="12a-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_06" class="fas fa-play"></i>
-        <audio id="audio_12a_06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_06.mp3" type="audio/mpeg">
+        <i id="play_12a-06" class="fas fa-play"></i>
+        <audio id="audio_12a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">自宅で松下村塾という塾を設けて弟子達の教育をしていました。</span>
-        <span class="content-sent kanji-sent is-hidden">自<a onclick="show('./kanji/287.html')">宅</a>で松下村塾という塾を設けて弟子達の教育をしていました。</span>
+        <span class="content-sent kanji-sent is-hidden">自<a onclick="show_kanji_data('宅')">宅</a>で松下村塾という塾を設けて弟子達の教育をしていました。</span>
         <span class="content-sent plain-sent is-hidden">自宅で松下村塾という塾を設けて弟子達の教育をしていました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1098.html')">自宅</a>で<a onclick="show('./vocab/1099.html')">松下村塾</a>という塾を<a onclick="show('./vocab/1100.html')">設けて</a><a onclick="show('./vocab/1101.html')">弟子達</a>の<a onclick="show('./vocab/1102.html')">教育</a>をしていました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('自宅')">自宅</a>で<a onclick="show_vocab_data('松下村塾')">松下村塾</a>という<a onclick="show_vocab_data('塾')">塾</a>を<a onclick="show_vocab_data('設けて')">設けて</a><a onclick="show_vocab_data('弟子達')">弟子達</a>の<a onclick="show_vocab_data('教育')">教育</a>をしていました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -361,12 +415,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_07" class="sentence">
+    <tr id="12a-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_07" class="fas fa-play"></i>
-        <audio id="audio_12a_07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_07.mp3" type="audio/mpeg">
+        <i id="play_12a-07" class="fas fa-play"></i>
+        <audio id="audio_12a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -374,9 +428,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">この塾からは、桂小五郎、高杉晋作など、明治初期に活躍した人々が、たくさん出ました。</span>
         <span class="content-sent kanji-sent is-hidden">この塾からは、桂小五郎、高杉晋作など、明治初期に活躍した人々が、たくさん出ました。</span>
         <span class="content-sent plain-sent is-hidden">この塾からは、桂小五郎、高杉晋作など、明治初期に活躍した人々が、たくさん出ました。</span>
-        <span class="content-sent vocab-sent">この<a onclick="show('./vocab/2067.html')">塾</a>からは、<a onclick="show('./vocab/1027.html')">桂小五郎</a>、<a onclick="show('./vocab/1103.html')">高杉晋作</a>など、<a onclick="show('./vocab/1396.html')">明治</a>初期に<a onclick="show('./vocab/951.html')">活躍し</a>た人々が、たくさん出ました。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('塾')">塾</a>からは、<a onclick="show_vocab_data('桂小五郎')">桂小五郎</a>、<a onclick="show_vocab_data('高杉晋作')">高杉晋作</a>など、<a onclick="show_vocab_data('明治')">明治</a>初期に<a onclick="show_vocab_data('活躍し')">活躍し</a>た人々が、たくさん出ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -388,12 +443,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_08" class="sentence">
+    <tr id="12a-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_08" class="fas fa-play"></i>
-        <audio id="audio_12a_08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_08.mp3" type="audio/mpeg">
+        <i id="play_12a-08" class="fas fa-play"></i>
+        <audio id="audio_12a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -401,9 +456,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">伊藤もその一人で、松陰の門弟になり、先輩の桂小五郎などともとても親しくなりました。</span>
         <span class="content-sent kanji-sent is-hidden">伊藤もその一人で、松陰の門弟になり、先輩の桂小五郎などともとても親しくなりました。</span>
         <span class="content-sent plain-sent is-hidden">伊藤もその一人で、松陰の門弟になり、先輩の桂小五郎などともとても親しくなりました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/2071.html')">伊藤</a>もその一人で、<a onclick="show('./vocab/2079.html')">松陰</a>の<a onclick="show('./vocab/1104.html')">門弟</a>になり、<a onclick="show('./vocab/1105.html')">先輩</a>の<a onclick="show('./vocab/1027.html')">桂小五郎</a>などともとても<a onclick="show('./vocab/1904.html')">親し</a>くなりました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('伊藤')">伊藤</a>もその一人で、<a onclick="show_vocab_data('松陰')">松陰</a>の<a onclick="show_vocab_data('門弟')">門弟</a>になり、<a onclick="show_vocab_data('先輩')">先輩</a>の<a onclick="show_vocab_data('桂小五郎')">桂小五郎</a>などともとても<a onclick="show_vocab_data('親し')">親し</a>くなりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -415,22 +471,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_09" class="sentence">
+    <tr id="12a-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_09" class="fas fa-play"></i>
-        <audio id="audio_12a_09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_09.mp3" type="audio/mpeg">
+        <i id="play_12a-09" class="fas fa-play"></i>
+        <audio id="audio_12a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">初めは尊王攘夷運動に参加しましたが、１８６３年イギリスへ密航し、帰って来ると自分の意見が<a onclick="show('./grammar/66.html')">間違っていたことに気がつき</a>、尊王開国論を主張して倒幕運動に活躍しました。</span>
-        <span class="content-sent kanji-sent is-hidden">初めは尊王攘夷運動に参加しましたが、１８６３年イギリスへ<a onclick="show('./kanji/288.html')">密</a><a onclick="show('./kanji/289.html')">航</a>し、帰って来ると自分の意見が間違っていたことに気がつき、尊王開国論を主張して倒幕運動に活躍しました。</span>
+        <span class="content-sent grammar-sent is-hidden">初めは尊王攘夷運動に参加しましたが、１８６３年イギリスへ密航し、帰って来ると自分の意見が<a onclick="show_grammar_data('間違っていたことに気がつき')">間違っていたことに気がつき</a>、尊王開国論を主張して倒幕運動に活躍しました。</span>
+        <span class="content-sent kanji-sent is-hidden">初めは尊王攘夷運動に参加しましたが、１８６３年イギリスへ<a onclick="show_kanji_data('密')">密</a><a onclick="show_kanji_data('航')">航</a>し、帰って来ると自分の意見が間違っていたことに気がつき、尊王開国論を主張して倒幕運動に活躍しました。</span>
         <span class="content-sent plain-sent is-hidden">初めは尊王攘夷運動に参加しましたが、１８６３年イギリスへ密航し、帰って来ると自分の意見が間違っていたことに気がつき、尊王開国論を主張して倒幕運動に活躍しました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1711.html')">初め</a>は<a onclick="show('./vocab/894.html')">尊王攘夷</a>運動に<a onclick="show('./vocab/1106.html')">参加し</a>ましたが、１８６３年イギリスへ<a onclick="show('./vocab/1107.html')">密航し</a>、帰って来ると自分の意見が間違っていたことに気がつき、尊王<a onclick="show('./vocab/1395.html')">開国</a>論を<a onclick="show('./vocab/1108.html')">主張して</a><a onclick="show('./vocab/1109.html')">倒幕運動</a>に<a onclick="show('./vocab/951.html')">活躍し</a>ました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('初め')">初め</a>は<a onclick="show_vocab_data('尊王攘夷')">尊王攘夷</a>運動に<a onclick="show_vocab_data('参加し')">参加し</a>ましたが、１８６３年イギリスへ<a onclick="show_vocab_data('密航し')">密航し</a>、帰って来ると自分の意見が間違っていたことに気がつき、尊王<a onclick="show_vocab_data('開国')">開国</a>論を<a onclick="show_vocab_data('主張して')">主張して</a><a onclick="show_vocab_data('倒幕運動')">倒幕運動</a>に<a onclick="show_vocab_data('活躍し')">活躍し</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -442,22 +499,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_10" class="sentence">
+    <tr id="12a-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_10" class="fas fa-play"></i>
-        <audio id="audio_12a_10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_10.mp3" type="audio/mpeg">
+        <i id="play_12a-10" class="fas fa-play"></i>
+        <audio id="audio_12a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">明治維新後、木戸孝允（旧名、桂小五郎）と大久保利通からの信頼があって新政府の重要な地位を次々に受け持ちました。</span>
-        <span class="content-sent kanji-sent is-hidden">明治維新後、木戸孝允（<a onclick="show('./kanji/290.html')">旧</a>名、桂小五郎）と大久保利通からの信頼があって新政府の重要な地位を次々に受け持ちました。</span>
+        <span class="content-sent kanji-sent is-hidden">明治維新後、木戸孝允（<a onclick="show_kanji_data('旧')">旧</a>名、桂小五郎）と大久保利通からの信頼があって新政府の重要な地位を次々に受け持ちました。</span>
         <span class="content-sent plain-sent is-hidden">明治維新後、木戸孝允（旧名、桂小五郎）と大久保利通からの信頼があって新政府の重要な地位を次々に受け持ちました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/777.html')">明治維新</a>後、<a onclick="show('./vocab/1110.html')">木戸孝允</a>（<a onclick="show('./vocab/2111.html')">旧名</a>、<a onclick="show('./vocab/1027.html')">桂小五郎</a>）と<a onclick="show('./vocab/1111.html')">大久保利通</a>からの<a onclick="show('./vocab/539.html')">信頼</a>があって<a onclick="show('./vocab/1968.html')">新政府</a>の<a onclick="show('./vocab/1912.html')">重要</a>な<a onclick="show('./vocab/62.html')">地位</a>を次々に<a onclick="show('./vocab/1694.html')">受け</a>持ちました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('明治維新')">明治維新</a>後、<a onclick="show_vocab_data('木戸孝允')">木戸孝允</a>（<a onclick="show_vocab_data('旧名')">旧名</a>、<a onclick="show_vocab_data('桂小五郎')">桂小五郎</a>）と<a onclick="show_vocab_data('大久保利通')">大久保利通</a>からの<a onclick="show_vocab_data('信頼')">信頼</a>があって<a onclick="show_vocab_data('新政府')">新政府</a>の<a onclick="show_vocab_data('重要')">重要</a>な<a onclick="show_vocab_data('地位')">地位</a>を次々に<a onclick="show_vocab_data('受け')">受け</a>持ちました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -469,22 +527,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_11" class="sentence">
+    <tr id="12a-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_11" class="fas fa-play"></i>
-        <audio id="audio_12a_11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_11.mp3" type="audio/mpeg">
+        <i id="play_12a-11" class="fas fa-play"></i>
+        <audio id="audio_12a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">特に、維新の<a onclick="show('./grammar/86.html')">三傑と言われた</a>西郷が西南戦争で死に、木戸が病死し、大久保が暗殺されて、それぞれいなくなっていったあと、伊藤は新政府の中心人物となって活躍しました。</span>
-        <span class="content-sent kanji-sent is-hidden">特に、維新の三傑と言われた西郷が西南戦争で死に、木戸が病死し、大久保が<a onclick="show('./kanji/295.html')">暗</a>殺されて、それぞれいなくなっていったあと、伊藤は新政府の中心人物となって活躍しました。</span>
+        <span class="content-sent grammar-sent is-hidden">特に、維新の<a onclick="show_grammar_data('三傑と言われた')">三傑と言われた</a>西郷が西南戦争で死に、木戸が病死し、大久保が暗殺されて、それぞれいなくなっていったあと、伊藤は新政府の中心人物となって活躍しました。</span>
+        <span class="content-sent kanji-sent is-hidden">特に、維新の三傑と言われた西郷が西南戦争で死に、木戸が病死し、大久保が<a onclick="show_kanji_data('暗')">暗</a>殺されて、それぞれいなくなっていったあと、伊藤は新政府の中心人物となって活躍しました。</span>
         <span class="content-sent plain-sent is-hidden">特に、維新の三傑と言われた西郷が西南戦争で死に、木戸が病死し、大久保が暗殺されて、それぞれいなくなっていったあと、伊藤は新政府の中心人物となって活躍しました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1605.html')">特に</a>、<a onclick="show('./vocab/1113.html')">維新の三傑</a>と言われた<a onclick="show('./vocab/2068.html')">西郷</a>が<a onclick="show('./vocab/1114.html')">西南戦争</a>で死に、<a onclick="show('./vocab/2069.html')">木戸</a>が<a onclick="show('./vocab/1115.html')">病死し</a>、<a onclick="show('./vocab/2070.html')">大久保</a>が<a onclick="show('./vocab/1116.html')">暗殺されて</a>、それぞれいなくなっていったあと、<a onclick="show('./vocab/2071.html')">伊藤</a>は<a onclick="show('./vocab/1968.html')">新政府</a>の<a onclick="show('./vocab/1117.html')">中心人物</a>となって<a onclick="show('./vocab/951.html')">活躍し</a>ました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('特に')">特に</a>、<a onclick="show_vocab_data('維新の三傑')">維新の三傑</a>と言われた<a onclick="show_vocab_data('西郷')">西郷</a>が<a onclick="show_vocab_data('西南戦争')">西南戦争</a>で死に、<a onclick="show_vocab_data('木戸')">木戸</a>が<a onclick="show_vocab_data('病死し')">病死し</a>、<a onclick="show_vocab_data('大久保')">大久保</a>が<a onclick="show_vocab_data('暗殺されて')">暗殺されて</a>、それぞれいなくなっていったあと、<a onclick="show_vocab_data('伊藤')">伊藤</a>は<a onclick="show_vocab_data('新政府')">新政府</a>の<a onclick="show_vocab_data('中心人物')">中心人物</a>となって<a onclick="show_vocab_data('活躍し')">活躍し</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -496,22 +555,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_12" class="sentence">
+    <tr id="12a-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_12" class="fas fa-play"></i>
-        <audio id="audio_12a_12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_12.mp3" type="audio/mpeg">
+        <i id="play_12a-12" class="fas fa-play"></i>
+        <audio id="audio_12a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">たぶん伊藤の成したことで一番重要なことは、１８８２年ドイツ（プロシア）憲法を研究に再びヨーロッパに渡り、帰国して大日本帝国憲法の草案を作成したことでしょう。</span>
-        <span class="content-sent kanji-sent is-hidden">たぶん伊藤の成したことで一番重要なことは、１８８２年ドイツ（プロシア）憲法を研究に再びヨーロッパに渡り、帰国して大日本帝国憲法の草<a onclick="show('./kanji/292.html')">案</a>を作成したことでしょう。</span>
+        <span class="content-sent kanji-sent is-hidden">たぶん伊藤の成したことで一番重要なことは、１８８２年ドイツ（プロシア）憲法を研究に再びヨーロッパに渡り、帰国して大日本帝国憲法の草<a onclick="show_kanji_data('案')">案</a>を作成したことでしょう。</span>
         <span class="content-sent plain-sent is-hidden">たぶん伊藤の成したことで一番重要なことは、１８８２年ドイツ（プロシア）憲法を研究に再びヨーロッパに渡り、帰国して大日本帝国憲法の草案を作成したことでしょう。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1118.html')">たぶん</a><a onclick="show('./vocab/2071.html')">伊藤</a>の<a onclick="show('./vocab/2172.html')">成したこと</a>で<a onclick="show('./vocab/1551.html')">一番</a><a onclick="show('./vocab/1912.html')">重要</a>なことは、１８８２年ドイツ（プロシア）憲法を<a onclick="show('./vocab/1763.html')">研究</a>に<a onclick="show('./vocab/1007.html')">再び</a>ヨーロッパに<a onclick="show('./vocab/1120.html')">渡り</a>、<a onclick="show('./vocab/1121.html')">帰国して</a><a onclick="show('./vocab/1094.html')">大日本帝国憲法</a>の<a onclick="show('./vocab/1122.html')">草案</a>を<a onclick="show('./vocab/1123.html')">作成した</a>ことでしょう。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('たぶん')">たぶん</a><a onclick="show_vocab_data('伊藤')">伊藤</a>の<a onclick="show_vocab_data('成したこと')">成したこと</a>で<a onclick="show_vocab_data('一番')">一番</a><a onclick="show_vocab_data('重要')">重要</a>なことは、１８８２年ドイツ（プロシア）<a onclick="show_vocab_data('憲法')">憲法</a>を<a onclick="show_vocab_data('研究')">研究</a>に<a onclick="show_vocab_data('再び')">再び</a>ヨーロッパに<a onclick="show_vocab_data('渡り')">渡り</a>、<a onclick="show_vocab_data('帰国して')">帰国して</a><a onclick="show_vocab_data('大日本帝国憲法')">大日本帝国憲法</a>の<a onclick="show_vocab_data('草案')">草案</a>を<a onclick="show_vocab_data('作成した')">作成した</a>ことでしょう。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -523,12 +583,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_13" class="sentence">
+    <tr id="12a-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_13" class="fas fa-play"></i>
-        <audio id="audio_12a_13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_13.mp3" type="audio/mpeg">
+        <i id="play_12a-13" class="fas fa-play"></i>
+        <audio id="audio_12a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -536,9 +596,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">この憲法は、当時のプロシア憲法を手本にして作られたのでそれととてもよく似ており、天皇を国を治める最高権威者として、神聖で誰も反対することができない存在と定めました。</span>
         <span class="content-sent kanji-sent is-hidden">この憲法は、当時のプロシア憲法を手本にして作られたのでそれととてもよく似ており、天皇を国を治める最高権威者として、神聖で誰も反対することができない存在と定めました。</span>
         <span class="content-sent plain-sent is-hidden">この憲法は、当時のプロシア憲法を手本にして作られたのでそれととてもよく似ており、天皇を国を治める最高権威者として、神聖で誰も反対することができない存在と定めました。</span>
-        <span class="content-sent vocab-sent">この<a onclick="show('./vocab/1969.html')">憲法</a>は、<a onclick="show('./vocab/51.html')">当時</a>のプロシア憲法を<a onclick="show('./vocab/1124.html')">手本</a>にして作られたのでそれととてもよく<a onclick="show('./vocab/1580.html')">似て</a>おり、<a onclick="show('./vocab/113.html')">天皇</a>を国を<a onclick="show('./vocab/601.html')">治め</a>る最高<a onclick="show('./vocab/1125.html')">権威者</a>として、<a onclick="show('./vocab/1126.html')">神聖</a>で<a onclick="show('./vocab/2047.html')">誰</a>も<a onclick="show('./vocab/1770.html')">反対する</a>ことができない<a onclick="show('./vocab/1879.html')">存在</a>と<a onclick="show('./vocab/39.html')">定め</a>ました。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('憲法')">憲法</a>は、<a onclick="show_vocab_data('当時')">当時</a>のプロシア<a onclick="show_vocab_data('憲法')">憲法</a>を<a onclick="show_vocab_data('手本')">手本</a>にして作られたのでそれととてもよく<a onclick="show_vocab_data('似て')">似て</a>おり、<a onclick="show_vocab_data('天皇')">天皇</a>を国を<a onclick="show_vocab_data('治め')">治め</a>る最高<a onclick="show_vocab_data('権威者')">権威者</a>として、<a onclick="show_vocab_data('神聖')">神聖</a>で<a onclick="show_vocab_data('誰')">誰</a>も<a onclick="show_vocab_data('反対する')">反対する</a>ことができない<a onclick="show_vocab_data('存在')">存在</a>と<a onclick="show_vocab_data('定め')">定め</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -550,22 +611,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_14" class="sentence">
+    <tr id="12a-14" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_14" class="fas fa-play"></i>
-        <audio id="audio_12a_14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_14.mp3" type="audio/mpeg">
+        <i id="play_12a-14" class="fas fa-play"></i>
+        <audio id="audio_12a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-14.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">この憲法は、明治、大正、昭和と、日本の国家主義、軍国主義が栄えていく土台になったのです。</span>
-        <span class="content-sent kanji-sent is-hidden">この憲法は、明治、大正、<a onclick="show('./kanji/293.html')">昭</a>和と、日本の国家主義、軍国主義が栄えていく土台になったのです。</span>
+        <span class="content-sent kanji-sent is-hidden">この憲法は、明治、大正、<a onclick="show_kanji_data('昭')">昭</a>和と、日本の国家主義、軍国主義が栄えていく土台になったのです。</span>
         <span class="content-sent plain-sent is-hidden">この憲法は、明治、大正、昭和と、日本の国家主義、軍国主義が栄えていく土台になったのです。</span>
-        <span class="content-sent vocab-sent">この<a onclick="show('./vocab/1969.html')">憲法</a>は、<a onclick="show('./vocab/1396.html')">明治</a>、<a onclick="show('./vocab/1127.html')">大正</a>、<a onclick="show('./vocab/1128.html')">昭和</a>と、日本の<a onclick="show('./vocab/1129.html')">国家主義</a>、<a onclick="show('./vocab/1130.html')">軍国主義</a>が<a onclick="show('./vocab/2112.html')">栄え</a>ていく<a onclick="show('./vocab/1131.html')">土台</a>になったのです。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('憲法')">憲法</a>は、<a onclick="show_vocab_data('明治')">明治</a>、<a onclick="show_vocab_data('大正')">大正</a>、<a onclick="show_vocab_data('昭和')">昭和</a>と、日本の<a onclick="show_vocab_data('国家主義')">国家主義</a>、<a onclick="show_vocab_data('軍国主義')">軍国主義</a>が<a onclick="show_vocab_data('栄え')">栄え</a>ていく<a onclick="show_vocab_data('土台')">土台</a>になったのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -577,22 +639,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_15" class="sentence">
+    <tr id="12a-15" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_15" class="fas fa-play"></i>
-        <audio id="audio_12a_15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_15.mp3" type="audio/mpeg">
+        <i id="play_12a-15" class="fas fa-play"></i>
+        <audio id="audio_12a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-15.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">この憲法は１８８９年に発布されましたが、その当時の国民には「憲法発布」と言っても通じないものがあり、「絹布発布」と間違えて役場に絹を取りに行ったという話まであります。</span>
-        <span class="content-sent kanji-sent is-hidden">この憲法は１８８９年に発布されましたが、その当時の国民には「憲法発布」と言っても通じないものがあり、「<a onclick="show('./kanji/294.html')">絹</a>布発布」と間違えて役場に絹を取りに行ったという話まであります。</span>
+        <span class="content-sent kanji-sent is-hidden">この憲法は１８８９年に発布されましたが、その当時の国民には「憲法発布」と言っても通じないものがあり、「<a onclick="show_kanji_data('絹')">絹</a>布発布」と間違えて役場に<a onclick="show_kanji_data('絹')">絹</a>を取りに行ったという話まであります。</span>
         <span class="content-sent plain-sent is-hidden">この憲法は１８８９年に発布されましたが、その当時の国民には「憲法発布」と言っても通じないものがあり、「絹布発布」と間違えて役場に絹を取りに行ったという話まであります。</span>
-        <span class="content-sent vocab-sent">この<a onclick="show('./vocab/1969.html')">憲法</a>は１８８９年に<a onclick="show('./vocab/1132.html')">発布</a>されましたが、その<a onclick="show('./vocab/51.html')">当時</a>の<a onclick="show('./vocab/19.html')">国民</a>には「憲法発布」と言っても通じないものがあり、「<a onclick="show('./vocab/1133.html')">絹布</a>発布」と間違えて<a onclick="show('./vocab/1134.html')">役場</a>に絹を取りに行ったという話まであります。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('憲法')">憲法</a>は１８８９年に<a onclick="show_vocab_data('発布')">発布</a>されましたが、その<a onclick="show_vocab_data('当時')">当時</a>の<a onclick="show_vocab_data('国民')">国民</a>には「<a onclick="show_vocab_data('憲法')">憲法</a><a onclick="show_vocab_data('発布')">発布</a>」と言っても通じないものがあり、「<a onclick="show_vocab_data('絹布')">絹布</a><a onclick="show_vocab_data('発布')">発布</a>」と間違えて<a onclick="show_vocab_data('役場')">役場</a>に絹を取りに行ったという話まであります。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -604,22 +667,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_16" class="sentence">
+    <tr id="12a-16" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_16" class="fas fa-play"></i>
-        <audio id="audio_12a_16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_16.mp3" type="audio/mpeg">
+        <i id="play_12a-16" class="fas fa-play"></i>
+        <audio id="audio_12a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-16.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">伊藤は１９０９年、日本の韓国政策に反感を持つ安重根という韓国の青年にハルピン駅で射殺され、この世を去っていきました。</span>
-        <span class="content-sent kanji-sent is-hidden">伊藤は１９０９年、日本の韓国政策に反感を持つ安重根という韓国の青年にハルピン駅で<a onclick="show('./kanji/398.html')">射</a>殺され、この世を去っていきました。</span>
+        <span class="content-sent kanji-sent is-hidden">伊藤は１９０９年、日本の韓国政策に反感を持つ安重根という韓国の青年にハルピン駅で<a onclick="show_kanji_data('射')">射</a>殺され、この世を去っていきました。</span>
         <span class="content-sent plain-sent is-hidden">伊藤は１９０９年、日本の韓国政策に反感を持つ安重根という韓国の青年にハルピン駅で射殺され、この世を去っていきました。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/2071.html')">伊藤</a>は１９０９年、日本の<a onclick="show('./vocab/1135.html')">韓国政策</a>に<a onclick="show('./vocab/1136.html')">反感</a>を持つ<a onclick="show('./vocab/1137.html')">安重根</a>という韓国の<a onclick="show('./vocab/1138.html')">青年</a>に<a onclick="show('./vocab/1139.html')">ハルピン</a><a onclick="show('./vocab/1957.html')">駅</a>で射<a onclick="show('./vocab/319.html')">殺され</a>、この世を<a onclick="show('./vocab/890.html')">去って</a>いきました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('伊藤')">伊藤</a>は１９０９年、日本の<a onclick="show_vocab_data('韓国政策')">韓国政策</a>に<a onclick="show_vocab_data('反感')">反感</a>を持つ<a onclick="show_vocab_data('安重根')">安重根</a>という韓国の<a onclick="show_vocab_data('青年')">青年</a>に<a onclick="show_vocab_data('ハルピン')">ハルピン</a><a onclick="show_vocab_data('駅')">駅</a>で射<a onclick="show_vocab_data('殺され')">殺され</a>、この世を<a onclick="show_vocab_data('去って')">去って</a>いきました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -631,12 +695,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="12a_17" class="sentence">
+    <tr id="12a-17" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12a_17" class="fas fa-play"></i>
-        <audio id="audio_12a_17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12a_17.mp3" type="audio/mpeg">
+        <i id="play_12a-17" class="fas fa-play"></i>
+        <audio id="audio_12a-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12a-17.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -644,9 +708,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">終戦後、新しく日本国憲法ができ、伊藤が作った大日本帝国憲法も歴史のものとなってしまいましたが、伊藤の貢献は非常に大きく、明治史上最も重要な人物の一人であったと言えるでしょう。</span>
         <span class="content-sent kanji-sent is-hidden">終戦後、新しく日本国憲法ができ、伊藤が作った大日本帝国憲法も歴史のものとなってしまいましたが、伊藤の貢献は非常に大きく、明治史上最も重要な人物の一人であったと言えるでしょう。</span>
         <span class="content-sent plain-sent is-hidden">終戦後、新しく日本国憲法ができ、伊藤が作った大日本帝国憲法も歴史のものとなってしまいましたが、伊藤の貢献は非常に大きく、明治史上最も重要な人物の一人であったと言えるでしょう。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1140.html')">終戦後</a>、新しく<a onclick="show('./vocab/1971.html')">日本国憲法</a>ができ、<a onclick="show('./vocab/2071.html')">伊藤</a>が作った<a onclick="show('./vocab/1094.html')">大日本帝国憲法</a>も<a onclick="show('./vocab/1520.html')">歴史</a>のものとなってしまいましたが、伊藤の<a onclick="show('./vocab/1089.html')">貢献</a>は<a onclick="show('./vocab/709.html')">非常に</a>大きく、<a onclick="show('./vocab/1972.html')">明治史上</a>最も<a onclick="show('./vocab/1912.html')">重要</a>な<a onclick="show('./vocab/1678.html')">人物</a>の一人であったと言えるでしょう。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('終戦後')">終戦後</a>、新しく<a onclick="show_vocab_data('日本国憲法')">日本国憲法</a>ができ、<a onclick="show_vocab_data('伊藤')">伊藤</a>が作った<a onclick="show_vocab_data('大日本帝国憲法')">大日本帝国憲法</a>も<a onclick="show_vocab_data('歴史')">歴史</a>のものとなってしまいましたが、<a onclick="show_vocab_data('伊藤')">伊藤</a>の<a onclick="show_vocab_data('貢献')">貢献</a>は<a onclick="show_vocab_data('非常に')">非常に</a>大きく、<a onclick="show_vocab_data('明治史上')">明治史上</a>最も<a onclick="show_vocab_data('重要')">重要</a>な<a onclick="show_vocab_data('人物')">人物</a>の一人であったと言えるでしょう。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -664,9 +729,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

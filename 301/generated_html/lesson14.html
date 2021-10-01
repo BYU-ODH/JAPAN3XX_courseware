@@ -4,7 +4,7 @@
   <title>
     Japanese 301
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -202,14 +244,15 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="14-001" class="sentence">
+    <tr id="14-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-001" class="fas fa-play"></i>
-        <audio id="audio_14-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-001.mp3" type="audio/mpeg">
+        <i id="play_14-01" class="fas fa-play"></i>
+        <audio id="audio_14-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -220,6 +263,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">むかしむかし、あるところにおじいさんとおばあさんが住んでいました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -231,12 +275,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-002" class="sentence">
+    <tr id="14-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-002" class="fas fa-play"></i>
-        <audio id="audio_14-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-002.mp3" type="audio/mpeg">
+        <i id="play_14-02" class="fas fa-play"></i>
+        <audio id="audio_14-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -247,6 +291,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">夕日がだんだん西に<a onclick="show_vocab_data('沈み')">沈み</a>、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -258,12 +303,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-003" class="sentence">
+    <tr id="14-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-003" class="fas fa-play"></i>
-        <audio id="audio_14-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-003.mp3" type="audio/mpeg">
+        <i id="play_14-03" class="fas fa-play"></i>
+        <audio id="audio_14-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -274,6 +319,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">赤い<a onclick="show_vocab_data('夕焼け')">夕焼け</a>も、だんだん<a onclick="show_vocab_data('あせて')">あせて</a>、一番星が見えるころです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -285,12 +331,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-004" class="sentence">
+    <tr id="14-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-004" class="fas fa-play"></i>
-        <audio id="audio_14-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-004.mp3" type="audio/mpeg">
+        <i id="play_14-04" class="fas fa-play"></i>
+        <audio id="audio_14-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -301,6 +347,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんが一日の<a onclick="show_vocab_data('畑仕事')">畑仕事</a>を終えて、そろそろ家に帰ろうと、<a onclick="show_vocab_data('あぜ道')">あぜ道</a>に腰をおろすと、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -312,12 +359,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-005" class="sentence">
+    <tr id="14-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-005" class="fas fa-play"></i>
-        <audio id="audio_14-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-005.mp3" type="audio/mpeg">
+        <i id="play_14-05" class="fas fa-play"></i>
+        <audio id="audio_14-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -328,6 +375,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent"><a onclick="show_vocab_data('バタバタと')">バタバタと</a>鳥の<a onclick="show_vocab_data('羽音')">羽音</a>が聞こえました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -339,12 +387,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-006" class="sentence">
+    <tr id="14-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-006" class="fas fa-play"></i>
-        <audio id="audio_14-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-006.mp3" type="audio/mpeg">
+        <i id="play_14-06" class="fas fa-play"></i>
+        <audio id="audio_14-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -355,6 +403,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">音のする方を見てみると、<a onclick="show_vocab_data('一羽')">一羽</a>の<a onclick="show_vocab_data('つる')">つる</a>が、<a onclick="show_vocab_data('わな')">わな</a>に<a onclick="show_vocab_data('かかって')">かかって</a><a onclick="show_vocab_data('もがいて')">もがいて</a>いました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -366,12 +415,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-007" class="sentence">
+    <tr id="14-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-007" class="fas fa-play"></i>
-        <audio id="audio_14-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-007.mp3" type="audio/mpeg">
+        <i id="play_14-07" class="fas fa-play"></i>
+        <audio id="audio_14-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -382,6 +431,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">心の<a onclick="show_vocab_data('優しい')">優しい</a>おじいさんは、その<a onclick="show_vocab_data('つる')">つる</a>を見ると、本当に<a onclick="show_vocab_data('かわいそうになり')">かわいそうになり</a>、急いで<a onclick="show_vocab_data('わな')">わな</a>を<a onclick="show_vocab_data('外して')">外して</a><a onclick="show_vocab_data('逃がして')">逃がして</a>やりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -393,12 +443,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-008" class="sentence">
+    <tr id="14-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-008" class="fas fa-play"></i>
-        <audio id="audio_14-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-008.mp3" type="audio/mpeg">
+        <i id="play_14-08" class="fas fa-play"></i>
+        <audio id="audio_14-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -409,6 +459,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">それから<a onclick="show_vocab_data('しばらく')">しばらく</a>した、寒い冬のある日、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -420,12 +471,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-009" class="sentence">
+    <tr id="14-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-009" class="fas fa-play"></i>
-        <audio id="audio_14-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-009.mp3" type="audio/mpeg">
+        <i id="play_14-09" class="fas fa-play"></i>
+        <audio id="audio_14-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -436,6 +487,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんとおばあさんが<a onclick="show_vocab_data('こたつ')">こたつ</a>で外の雪をながめながら、お茶を飲んでいると、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -447,12 +499,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-010" class="sentence">
+    <tr id="14-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-010" class="fas fa-play"></i>
-        <audio id="audio_14-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-010.mp3" type="audio/mpeg">
+        <i id="play_14-10" class="fas fa-play"></i>
+        <audio id="audio_14-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -463,6 +515,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent"><a onclick="show_vocab_data('トントンと')">トントンと</a>、<a onclick="show_vocab_data('だれか')">だれか</a>が戸をた<a onclick="show_vocab_data('たく')">たく</a>のです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -474,12 +527,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-011" class="sentence">
+    <tr id="14-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-011" class="fas fa-play"></i>
-        <audio id="audio_14-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-011.mp3" type="audio/mpeg">
+        <i id="play_14-11" class="fas fa-play"></i>
+        <audio id="audio_14-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -490,6 +543,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんが戸を開けてみると、きれいな女の人が雪の中に立っていました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -501,12 +555,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-012" class="sentence">
+    <tr id="14-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-012" class="fas fa-play"></i>
-        <audio id="audio_14-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-012.mp3" type="audio/mpeg">
+        <i id="play_14-12" class="fas fa-play"></i>
+        <audio id="audio_14-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -517,6 +571,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('大雪')">大雪</a>で、この<a onclick="show_vocab_data('辺')">辺</a>に<a onclick="show_vocab_data('宿')">宿</a>もなく、旅ができなくて<a onclick="show_vocab_data('困って')">困って</a>います。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -528,12 +583,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-013" class="sentence">
+    <tr id="14-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-013" class="fas fa-play"></i>
-        <audio id="audio_14-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-013.mp3" type="audio/mpeg">
+        <i id="play_14-13" class="fas fa-play"></i>
+        <audio id="audio_14-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -544,6 +599,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">どうか一晩とめてもらえませんでしょうか。」と、その女の人は、たのみました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -555,12 +611,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-014" class="sentence">
+    <tr id="14-14" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-014" class="fas fa-play"></i>
-        <audio id="audio_14-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-014.mp3" type="audio/mpeg">
+        <i id="play_14-14" class="fas fa-play"></i>
+        <audio id="audio_14-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-14.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -571,6 +627,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんとおばあさんは、喜んで<a onclick="show_vocab_data('承知し')">承知し</a>、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -582,12 +639,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-015" class="sentence">
+    <tr id="14-15" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-015" class="fas fa-play"></i>
-        <audio id="audio_14-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-015.mp3" type="audio/mpeg">
+        <i id="play_14-15" class="fas fa-play"></i>
+        <audio id="audio_14-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-15.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -598,6 +655,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent"><a onclick="show_vocab_data('お風呂')">お風呂</a>をたき、<a onclick="show_vocab_data('きがえ')">きがえ</a>を用意してあげたりして、<a onclick="show_vocab_data('めんどうを見て')">めんどうを見て</a>あげました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -609,12 +667,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-016" class="sentence">
+    <tr id="14-16" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-016" class="fas fa-play"></i>
-        <audio id="audio_14-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-016.mp3" type="audio/mpeg">
+        <i id="play_14-16" class="fas fa-play"></i>
+        <audio id="audio_14-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-16.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -625,6 +683,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">次の日、おじいさんとおばあさんが起きてびっくり。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -636,12 +695,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-017" class="sentence">
+    <tr id="14-17" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-017" class="fas fa-play"></i>
-        <audio id="audio_14-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-017.mp3" type="audio/mpeg">
+        <i id="play_14-17" class="fas fa-play"></i>
+        <audio id="audio_14-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-17.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -652,6 +711,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">この女の人がさっさと、<a onclick="show_vocab_data('こたつ')">こたつ</a>に火を入れて、<a onclick="show_vocab_data('朝御飯')">朝御飯</a>を準備しているのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -663,12 +723,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-018" class="sentence">
+    <tr id="14-18" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-018" class="fas fa-play"></i>
-        <audio id="audio_14-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-018.mp3" type="audio/mpeg">
+        <i id="play_14-18" class="fas fa-play"></i>
+        <audio id="audio_14-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-18.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -679,6 +739,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">「お客さんに働かせては・・・」と、おじいさんが<a onclick="show_vocab_data('引き止めよう')">引き止めよう</a>とすると、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -690,12 +751,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-019" class="sentence">
+    <tr id="14-19" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-019" class="fas fa-play"></i>
-        <audio id="audio_14-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-019.mp3" type="audio/mpeg">
+        <i id="play_14-19" class="fas fa-play"></i>
+        <audio id="audio_14-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-19.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -706,6 +767,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">女の人は、「<a onclick="show_vocab_data('昨晩')">昨晩</a>、<a onclick="show_vocab_data('宿')">宿</a>をお借りした<a onclick="show_vocab_data('お礼に')">お礼に</a>。」と言って、働くのをやめません。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -717,12 +779,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-020" class="sentence">
+    <tr id="14-20" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-020" class="fas fa-play"></i>
-        <audio id="audio_14-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-020.mp3" type="audio/mpeg">
+        <i id="play_14-20" class="fas fa-play"></i>
+        <audio id="audio_14-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-20.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -733,6 +795,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">その日、一日中、雪が<a onclick="show_vocab_data('しんしんと')">しんしんと</a>ふり続きました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -744,12 +807,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-021" class="sentence">
+    <tr id="14-21" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-021" class="fas fa-play"></i>
-        <audio id="audio_14-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-021.mp3" type="audio/mpeg">
+        <i id="play_14-21" class="fas fa-play"></i>
+        <audio id="audio_14-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-21.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -760,6 +823,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">そこで、女の人はしかたなく、もう一晩とめてもらうことにしました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -771,12 +835,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-022" class="sentence">
+    <tr id="14-22" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-022" class="fas fa-play"></i>
-        <audio id="audio_14-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-022.mp3" type="audio/mpeg">
+        <i id="play_14-22" class="fas fa-play"></i>
+        <audio id="audio_14-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-22.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -787,6 +851,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">しかし、次の日も次の日も、その次の日も、雪は、<a onclick="show_vocab_data('いっこうに')">いっこうに</a><a onclick="show_vocab_data('やみそう')">やみそう</a>にありません。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -798,12 +863,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-023" class="sentence">
+    <tr id="14-23" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-023" class="fas fa-play"></i>
-        <audio id="audio_14-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-023.mp3" type="audio/mpeg">
+        <i id="play_14-23" class="fas fa-play"></i>
+        <audio id="audio_14-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-23.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -814,6 +879,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんとおばあさんに引き止められて、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -825,12 +891,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-024" class="sentence">
+    <tr id="14-24" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-024" class="fas fa-play"></i>
-        <audio id="audio_14-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-024.mp3" type="audio/mpeg">
+        <i id="play_14-24" class="fas fa-play"></i>
+        <audio id="audio_14-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-24.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -841,6 +907,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">この女の人は、<a onclick="show_vocab_data('しばらく')">しばらく</a><a onclick="show_vocab_data('いっしょに')">いっしょに</a>住み、<a onclick="show_vocab_data('お手伝い')">お手伝い</a>をすることにしました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -852,12 +919,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-025" class="sentence">
+    <tr id="14-25" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-025" class="fas fa-play"></i>
-        <audio id="audio_14-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-025.mp3" type="audio/mpeg">
+        <i id="play_14-25" class="fas fa-play"></i>
+        <audio id="audio_14-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-25.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -868,6 +935,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">外の雪も<a onclick="show_vocab_data('すっかり')">すっかり</a><a onclick="show_vocab_data('とけて')">とけて</a>、<a onclick="show_vocab_data('草木')">草木</a>が新しい<a onclick="show_vocab_data('芽')">芽</a>を出し始めた、ある日のことです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -879,12 +947,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-026" class="sentence">
+    <tr id="14-26" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-026" class="fas fa-play"></i>
-        <audio id="audio_14-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-026.mp3" type="audio/mpeg">
+        <i id="play_14-26" class="fas fa-play"></i>
+        <audio id="audio_14-26" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-26.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -895,6 +963,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">この女の人がおじいさんとおばあさんに、「機を織らせてください。」とたのみました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -906,12 +975,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-027" class="sentence">
+    <tr id="14-27" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-027" class="fas fa-play"></i>
-        <audio id="audio_14-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-027.mp3" type="audio/mpeg">
+        <i id="play_14-27" class="fas fa-play"></i>
+        <audio id="audio_14-27" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-27.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -922,6 +991,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんとおばあさんが、「お前がしたいことは何でもおやり。」と承知すると、女の人は、「もう一つお願いがあります。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -933,12 +1003,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-028" class="sentence">
+    <tr id="14-28" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-028" class="fas fa-play"></i>
-        <audio id="audio_14-028" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-028.mp3" type="audio/mpeg">
+        <i id="play_14-28" class="fas fa-play"></i>
+        <audio id="audio_14-28" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-28.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -949,6 +1019,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">私が機を織っているところを、どんなことがあっても見ないと、約束してください。」とたのみました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -960,12 +1031,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-029" class="sentence">
+    <tr id="14-29" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-029" class="fas fa-play"></i>
-        <audio id="audio_14-029" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-029.mp3" type="audio/mpeg">
+        <i id="play_14-29" class="fas fa-play"></i>
+        <audio id="audio_14-29" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-29.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -976,6 +1047,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">そうして、ひとり、<a onclick="show_vocab_data('部屋')">部屋</a>の中に<a onclick="show_vocab_data('こもって')">こもって</a>、機を織り始めました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -987,12 +1059,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-030" class="sentence">
+    <tr id="14-30" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-030" class="fas fa-play"></i>
-        <audio id="audio_14-030" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-030.mp3" type="audio/mpeg">
+        <i id="play_14-30" class="fas fa-play"></i>
+        <audio id="audio_14-30" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-30.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1003,6 +1075,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">一日、二日、三日…一週間とたちました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1014,12 +1087,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-031" class="sentence">
+    <tr id="14-31" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-031" class="fas fa-play"></i>
-        <audio id="audio_14-031" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-031.mp3" type="audio/mpeg">
+        <i id="play_14-31" class="fas fa-play"></i>
+        <audio id="audio_14-31" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-31.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1030,6 +1103,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">けれでも、その女の人は、<a onclick="show_vocab_data('部屋')">部屋</a>にこもったまま、機織りをやめません。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1041,12 +1115,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-032" class="sentence">
+    <tr id="14-32" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-032" class="fas fa-play"></i>
-        <audio id="audio_14-032" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-032.mp3" type="audio/mpeg">
+        <i id="play_14-32" class="fas fa-play"></i>
+        <audio id="audio_14-32" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-32.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1057,6 +1131,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">おじいさんとおばあさんは、だんだん心配になりました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1068,12 +1143,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-033" class="sentence">
+    <tr id="14-33" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-033" class="fas fa-play"></i>
-        <audio id="audio_14-033" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-033.mp3" type="audio/mpeg">
+        <i id="play_14-33" class="fas fa-play"></i>
+        <audio id="audio_14-33" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-33.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1084,6 +1159,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">しかし、約束を<a onclick="show_vocab_data('破る')">破る</a>わけにはいきません。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1095,12 +1171,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-034" class="sentence">
+    <tr id="14-34" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-034" class="fas fa-play"></i>
-        <audio id="audio_14-034" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-034.mp3" type="audio/mpeg">
+        <i id="play_14-34" class="fas fa-play"></i>
+        <audio id="audio_14-34" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-34.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1111,6 +1187,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">「何を作っているのか分からんが、どんな<a onclick="show_vocab_data('衣')">衣</a>でも<a onclick="show_vocab_data('まさか')">まさか</a>一週間は<a onclick="show_vocab_data('かかる')">かかる</a><a onclick="show_vocab_data('まい')">まい</a>。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1122,12 +1199,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-035" class="sentence">
+    <tr id="14-35" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-035" class="fas fa-play"></i>
-        <audio id="audio_14-035" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-035.mp3" type="audio/mpeg">
+        <i id="play_14-35" class="fas fa-play"></i>
+        <audio id="audio_14-35" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-35.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1138,6 +1215,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent"><a onclick="show_vocab_data('病気')">病気</a>にでもなっていたら・・・」と言って、中の<a onclick="show_vocab_data('様子')">様子</a>を<a onclick="show_vocab_data('うかがう')">うかがう</a>ことにしました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1149,12 +1227,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-036" class="sentence">
+    <tr id="14-36" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-036" class="fas fa-play"></i>
-        <audio id="audio_14-036" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-036.mp3" type="audio/mpeg">
+        <i id="play_14-36" class="fas fa-play"></i>
+        <audio id="audio_14-36" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-36.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1165,6 +1243,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">しょうじをそっとあけて、中をのぞいて、おじいさんとおばあさんは、びっくり仰天。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1176,12 +1255,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-037" class="sentence">
+    <tr id="14-37" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-037" class="fas fa-play"></i>
-        <audio id="audio_14-037" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-037.mp3" type="audio/mpeg">
+        <i id="play_14-37" class="fas fa-play"></i>
+        <audio id="audio_14-37" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-37.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1192,6 +1271,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent"><a onclick="show_vocab_data('部屋')">部屋</a>の中では、<a onclick="show_vocab_data('一羽')">一羽</a>の<a onclick="show_vocab_data('つる')">つる</a>が、自分の羽を一本ずつとりながら、機を織っているではありませんか。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1203,12 +1283,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-038" class="sentence">
+    <tr id="14-38" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-038" class="fas fa-play"></i>
-        <audio id="audio_14-038" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-038.mp3" type="audio/mpeg">
+        <i id="play_14-38" class="fas fa-play"></i>
+        <audio id="audio_14-38" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-38.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1219,6 +1299,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">「おじいさん、おばあさん、私は、おじいさんに命を助けられた<a onclick="show_vocab_data('つる')">つる</a>です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1230,12 +1311,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-039" class="sentence">
+    <tr id="14-39" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-039" class="fas fa-play"></i>
-        <audio id="audio_14-039" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-039.mp3" type="audio/mpeg">
+        <i id="play_14-39" class="fas fa-play"></i>
+        <audio id="audio_14-39" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-39.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1246,6 +1327,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('御恩')">御恩</a>をお返しに、この<a onclick="show_vocab_data('反物')">反物</a>を織りに来たのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1257,12 +1339,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-040" class="sentence">
+    <tr id="14-40" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-040" class="fas fa-play"></i>
-        <audio id="audio_14-040" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-040.mp3" type="audio/mpeg">
+        <i id="play_14-40" class="fas fa-play"></i>
+        <audio id="audio_14-40" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-40.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1273,6 +1355,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">これは、<a onclick="show_vocab_data('つる')">つる</a>の千羽織りと言って、とても<a onclick="show_vocab_data('めずらしい')">めずらしい</a>ものです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1284,12 +1367,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-041" class="sentence">
+    <tr id="14-41" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-041" class="fas fa-play"></i>
-        <audio id="audio_14-041" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-041.mp3" type="audio/mpeg">
+        <i id="play_14-41" class="fas fa-play"></i>
+        <audio id="audio_14-41" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-41.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1300,6 +1383,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">これからお二人で<a onclick="show_vocab_data('楽に')">楽に</a><a onclick="show_vocab_data('暮らして')">暮らして</a>いけるお金になるはずです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1311,12 +1395,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-042" class="sentence">
+    <tr id="14-42" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-042" class="fas fa-play"></i>
-        <audio id="audio_14-042" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-042.mp3" type="audio/mpeg">
+        <i id="play_14-42" class="fas fa-play"></i>
+        <audio id="audio_14-42" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-42.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1327,6 +1411,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">私の本当の姿を見られたので、お別れしなくてはなりません。いつまでも<a onclick="show_vocab_data('お元気で')">お元気で</a>。」</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1338,12 +1423,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-043" class="sentence">
+    <tr id="14-43" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-043" class="fas fa-play"></i>
-        <audio id="audio_14-043" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-043.mp3" type="audio/mpeg">
+        <i id="play_14-43" class="fas fa-play"></i>
+        <audio id="audio_14-43" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-43.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1354,6 +1439,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">と言って、<a onclick="show_vocab_data('反物')">反物</a>を<a onclick="show_vocab_data('手渡す')">手渡す</a>と、空に向かって飛んでいってし<a onclick="show_vocab_data('まい')">まい</a>ました。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1365,12 +1451,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-044" class="sentence">
+    <tr id="14-44" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-044" class="fas fa-play"></i>
-        <audio id="audio_14-044" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-044.mp3" type="audio/mpeg">
+        <i id="play_14-44" class="fas fa-play"></i>
+        <audio id="audio_14-44" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-44.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1381,6 +1467,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">これは、「<a onclick="show_vocab_data('つる')">つる</a>の<a onclick="show_vocab_data('恩返し')">恩返し</a>」という話です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1392,12 +1479,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-045" class="sentence">
+    <tr id="14-45" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-045" class="fas fa-play"></i>
-        <audio id="audio_14-045" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-045.mp3" type="audio/mpeg">
+        <i id="play_14-45" class="fas fa-play"></i>
+        <audio id="audio_14-45" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-45.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1408,6 +1495,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">日本人なら小さいころ一度は、必ず聞いたことのある話です。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1419,12 +1507,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-046" class="sentence">
+    <tr id="14-46" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-046" class="fas fa-play"></i>
-        <audio id="audio_14-046" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-046.mp3" type="audio/mpeg">
+        <i id="play_14-46" class="fas fa-play"></i>
+        <audio id="audio_14-46" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-46.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1435,6 +1523,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">そして、<a onclick="show_vocab_data('恩知らず')">恩知らず</a>は、鳥や<a onclick="show_vocab_data('けもの')">けもの</a>にも<a onclick="show_vocab_data('劣る')">劣る</a>と言って、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1446,12 +1535,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-047" class="sentence">
+    <tr id="14-47" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-047" class="fas fa-play"></i>
-        <audio id="audio_14-047" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-047.mp3" type="audio/mpeg">
+        <i id="play_14-47" class="fas fa-play"></i>
+        <audio id="audio_14-47" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-47.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1462,6 +1551,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">恩を受けた人々に恩を返す大切さを教えられます。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1473,12 +1563,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-048" class="sentence">
+    <tr id="14-48" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-048" class="fas fa-play"></i>
-        <audio id="audio_14-048" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-048.mp3" type="audio/mpeg">
+        <i id="play_14-48" class="fas fa-play"></i>
+        <audio id="audio_14-48" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-48.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1489,6 +1579,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('父母')">父母</a>の恩は、海よりも深く、山よりも高い。」</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1500,12 +1591,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-049" class="sentence">
+    <tr id="14-49" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-049" class="fas fa-play"></i>
-        <audio id="audio_14-049" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-049.mp3" type="audio/mpeg">
+        <i id="play_14-49" class="fas fa-play"></i>
+        <audio id="audio_14-49" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-49.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1516,6 +1607,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">などという言葉は、むかしの<a onclick="show_vocab_data('寺子屋')">寺子屋</a>の時代の言葉として、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1527,12 +1619,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-050" class="sentence">
+    <tr id="14-50" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-050" class="fas fa-play"></i>
-        <audio id="audio_14-050" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-050.mp3" type="audio/mpeg">
+        <i id="play_14-50" class="fas fa-play"></i>
+        <audio id="audio_14-50" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-50.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1543,6 +1635,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">日本人は忘れてしまったと言う人がいるかもしれませんが、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1554,12 +1647,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-051" class="sentence">
+    <tr id="14-51" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-051" class="fas fa-play"></i>
-        <audio id="audio_14-051" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-051.mp3" type="audio/mpeg">
+        <i id="play_14-51" class="fas fa-play"></i>
+        <audio id="audio_14-51" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-51.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1570,6 +1663,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">このむかし話に見られるような恩を忘れてはいけないという考えは、</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1581,12 +1675,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14-052" class="sentence">
+    <tr id="14-52" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14-052" class="fas fa-play"></i>
-        <audio id="audio_14-052" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14-052.mp3" type="audio/mpeg">
+        <i id="play_14-52" class="fas fa-play"></i>
+        <audio id="audio_14-52" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14-52.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -1597,6 +1691,7 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent vocab-sent">今でも日本人の心の中に深く残っているのです。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -1614,9 +1709,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

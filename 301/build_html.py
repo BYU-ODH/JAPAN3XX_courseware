@@ -5,6 +5,7 @@ Usage: python3 build_html.py <xml_file> <target_dir>
 """
 
 
+from glob import glob
 import html
 import json
 import os
@@ -17,7 +18,7 @@ from bs4 import BeautifulSoup
 try:
     src_xml = sys.argv[1]
 except IndexError:
-    src_xml = 'J301_LessonData.xml'
+    src_xml = glob('*.xml')[0]
 
 try:
     target_dir = sys.argv[2].rstrip('/')
@@ -30,34 +31,49 @@ for each_dir in ['fontawesome-free-5.15.3-web']:
     shutil.copytree(f'../common/{each_dir}', f'{target_dir}/{each_dir}', dirs_exist_ok=True)
 
 
+current_course = os.getcwd().split('/')[-1]
+
 with open('../common/lesson_front_matter.html') as f:
-    lesson_front_matter = f.read().replace('3XX', '301')
+    lesson_front_matter = f.read().replace('3XX', current_course)
 
 with open('../common/main_front_matter.html') as f:
-    main_front_matter = f.read().replace('3XX', '301')
+    main_front_matter = f.read().replace('3XX', current_course)
 
 
-def generate_lesson(lesson_soup):
+def generate_lesson(lesson_soup, make_grammar=True, make_translation=True):
     lesson = 'lesson' + lesson_soup['lessonNumber'].zfill(2)
     sound_file = lesson_soup.STORY['soundPath']
     title = lesson_soup.STORY['japaneseTitle']
-    eng_title = lesson_soup.STORY['englishTitle']
+    try:
+        eng_title = lesson_soup.STORY['englishTitle']
+    except KeyError:
+        eng_title = ''
     vocab_dict = {}
     for vocabulary in lesson_soup.find_all('VOCABULARY'):
         for link in vocabulary.find_all('LINK'):
-            link_kanji = link.get_text().strip()
+            link_kanji = re.sub(r'\(.*?\)', '', link.get_text().strip())
             vocab_dict[link_kanji] = (vocabulary['kanji'], vocabulary['kana'], vocabulary['english'])
     vocab_json = json.dumps(vocab_dict)
-    grammar_dict = {}
-    for grammar in lesson_soup.find_all('GRAMMAR'):
-        gram_title = grammar['japanese']
-        gram_explan = grammar['english']
-        examples = [[re.sub(r'\s+', '', example.get_text()), example['translation']]
-                    for example in grammar.find_all('EXAMPLE')]
-        for link in grammar.find_all('LINK'):
-            link_kanji = re.sub(r'\s+', '', link.get_text())
-            grammar_dict[link_kanji] = [gram_title, gram_explan, examples]
-    grammar_json = json.dumps(grammar_dict)
+    vocab_re = f'({"|".join(sorted(vocab_dict, key=len, reverse=True))})'
+    assert vocab_re.count('(') == vocab_re.count(')') == 1
+    if re.search(vocab_re, ''):
+        vocab_re = '(THIS SHOULD NOT MATCH ANYTHING)'
+    grammar_json = '{}'
+    if make_grammar:
+        grammar_dict = {}
+        for grammar in lesson_soup.find_all('GRAMMAR'):
+            gram_title = grammar['japanese']
+            gram_explan = grammar['english']
+            examples = [[re.sub(r'\s+', '', example.get_text()), example['translation']]
+                        for example in grammar.find_all('EXAMPLE')]
+            for link in grammar.find_all('LINK'):
+                link_kanji = re.sub(r'\s+|\(.*?\)', '', link.get_text())
+                grammar_dict[link_kanji] = [gram_title, gram_explan, examples]
+        grammar_json = json.dumps(grammar_dict)
+        grammar_re = f'({"|".join(sorted(grammar_dict, key=len, reverse=True))})'
+        assert grammar_re.count('(') == grammar_re.count(')') == 1
+        if re.search(grammar_re, ''):
+            grammar_re = '(THIS SHOULD NOT MATCH ANYTHING)'
     kanji_dict = {}
     for kanji in lesson_soup.find_all('KANJI'):
         ji = kanji['ji']
@@ -93,23 +109,39 @@ def generate_lesson(lesson_soup):
                '      </a>\n'
                '    </p>\n'
                '  </div>\n'
-               '  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.\n'
-               '                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>\n'
-               '  <table id="sentences" class="table-NOT"><tbody>\n',
+               '  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.',
+              file=f)
+        if make_translation:
+            print(f'                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>\n',
+                  file=f)
+        print(f'  <table id="sentences" class="table-NOT"><tbody>\n',
               file=f)
         for line in lesson_soup.STORY.find_all('LINE'):
-            sent_id_a, sent_id_b = re.search(r'^sound/(.*)-(.*)\.mp3$', line['soundPath']).groups()
-            sent_id = f'{sent_id_a}-0{sent_id_b}'
+            try:
+                sent_id_a, sent_id_b = re.search(r'^sound/(.*)[-_](.*)\.mp3$', line['soundPath']).groups()
+            except AttributeError as e:
+                print("SOUND", line)
+                raise AttributeError(f'SOUND {line}') from e
+            sent_id = f'{sent_id_a}-{sent_id_b}'
             sound_file = f'sound/{sent_id}.mp3'
             sent = re.sub(r'\s+', '', line.LINK.get_text())
             trans = line['translation']
             trans = trans.replace('"', '&quot;').replace("'", '&#39;')
-            vocab_sent = sent
-            for kanji, (kanji2, kana, english) in vocab_dict.items():
-                vocab_sent = vocab_sent.replace(kanji, f'''<a onclick="show_vocab_data('{kanji}')">{kanji}</a>''')
-            grammar_sent = sent
-            for kanji, (gram_title, gram_explan, examples) in grammar_dict.items():
-                grammar_sent = grammar_sent.replace(kanji, f'''<a onclick="show_grammar_data('{kanji}')">{kanji}</a>''')
+            vocab_sent = ''
+            cursor = 0
+            for match in re.finditer(vocab_re, sent):
+                vocab_sent += sent[cursor:match.start()]
+                vocab_sent += f'''<a onclick="show_vocab_data('{match.group()}')">{match.group()}</a>'''
+                cursor = match.end()
+            vocab_sent += sent[cursor:None]
+            grammar_sent = ''
+            cursor = 0
+            if make_grammar:
+                for match in re.finditer(grammar_re, sent):
+                    grammar_sent += sent[cursor:match.start()]
+                    grammar_sent += f'''<a onclick="show_grammar_data('{match.group()}')">{match.group()}</a>'''
+                    cursor = match.end()
+                grammar_sent += sent[cursor:None]
             kanji_sent = sent
             for kanji, (kun, on, kanji_eng, examples) in kanji_dict.items():
                 kanji_sent = kanji_sent.replace(kanji, f'''<a onclick="show_kanji_data('{kanji}')">{kanji}</a>''')
@@ -128,28 +160,31 @@ def generate_lesson(lesson_soup):
                   f'        <span class="content-sent plain-sent is-hidden">{sent}</span>\n'
                   f'        <span class="content-sent vocab-sent">{vocab_sent.strip() or sent}</span>\n'
                    '      </td>\n'
-                   '    </tr>\n'
-                   '    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
-                   '      <td class="has-text-centered" style="vertical-align: middle">\n'
-                  f'        <span class="icon">\n'
-                  f'          <i class="fas fa-language"></i>\n'
-                   '        </span>\n'
-                   '      </td>\n'
-                   '      <td>\n'
-                  f'        <span class="trans is-invisible">{trans}</span>\n'
-                   '      </td>\n'
                    '    </tr>\n',
                   file=f)
+            if make_translation:
+                print(f'    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
+                       '      <td class="has-text-centered" style="vertical-align: middle">\n'
+                      f'        <span class="icon">\n'
+                      f'          <i class="fas fa-language"></i>\n'
+                       '        </span>\n'
+                       '      </td>\n'
+                       '      <td>\n'
+                      f'        <span class="trans is-invisible">{trans}</span>\n'
+                       '      </td>\n'
+                       '    </tr>\n',
+                      file=f)
         print('  </tbody></table>\n'
               '  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">\n'
               '      <div class="field has-addons">\n'
               '        <p class="control">\n'
               '          <button class="button is-primary mode-button vocab" onclick="change_mode(\'vocab\')">Vocab</button>\n'
-              '        </p>\n'
-              '        <p class="control">\n'
-              '          <button class="button mode-button grammar" onclick="change_mode(\'grammar\')">Grammar</button>\n'
-              '        </p>\n'
-              '        <p class="control">\n'
+              '        </p>\n', file=f)
+        if make_grammar:
+            print('        <p class="control">\n'
+                  '          <button class="button mode-button grammar" onclick="change_mode(\'grammar\')">Grammar</button>\n'
+                  '        </p>\n', file=f)
+        print('        <p class="control">\n'
               '          <button class="button mode-button kanji" onclick="change_mode(\'kanji\')">Kanji</button>\n'
               '        </p>\n'
               '    </div>\n'
@@ -161,26 +196,32 @@ def generate_lesson(lesson_soup):
 
 
 def generate_main(soup):
-    current_unit = 0
+    current_unit = None
     with open(f'{target_dir}/index.html', 'w') as f:
         print(main_front_matter, file=f)
         for lesson in soup.find_all('LESSON'):
-            unit = 1  # TODO add units to xml?
+            try:
+                unit = lesson['unit']
+            except KeyError:
+                unit = 'Lessons'
             short_lesson = lesson['lessonNumber'].zfill(2)
             full_lesson = 'lesson' + short_lesson
             title = lesson.STORY['japaneseTitle']
-            eng_title = lesson.STORY['englishTitle']
-            if unit > current_unit:
-                if current_unit != 0:
+            try:
+                eng_title = lesson.STORY['englishTitle']
+            except KeyError:
+                eng_title = ''
+            if unit != current_unit:
+                if current_unit is not None:
                     print('  </ul>', file=f)
                 current_unit = unit
                 print( '  <p class="menu-label">\n'
-                      f'    Unit {unit}\n'
+                      f'    {unit}\n'
                        '  </p>\n'
                        '  <ul class="menu-list">\n',
                       file=f)
 
-            print(f'    <li><a href="{full_lesson}.html">Lesson {int(short_lesson)}: {title}</a></li>',
+            print(f'    <li><a href="{full_lesson}.html">Lesson {short_lesson.lstrip("0")}: {title}</a></li>',
                   file=f)
         print('  </ul>\n'
               '</aside>\n'
@@ -192,5 +233,11 @@ def generate_main(soup):
 with open(src_xml) as f:
     soup = BeautifulSoup(f, 'lxml-xml')
     generate_main(soup)
+    make_grammar = True
+    if soup.JAPANESECLASS.has_attr('noGrammar') and soup.JAPANESECLASS['noGrammar'] == 'True':
+        make_grammar = False
+    make_translation = True
+    if soup.JAPANESECLASS.has_attr('noTranslation') and soup.JAPANESECLASS['noTranslation'] == 'True':
+        make_translation = False
     for lesson in soup.find_all('LESSON'):
-        generate_lesson(lesson)
+        generate_lesson(lesson, make_grammar=make_grammar, make_translation=make_translation)

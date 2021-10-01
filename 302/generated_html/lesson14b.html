@@ -4,7 +4,7 @@
   <title>
     Japanese 302
   </title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"> 
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
   <link rel="stylesheet" href="bulma.min.css">
   <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
@@ -96,7 +96,7 @@ function show_vocab_data(link) {
     kanji = vocab_data[0]
     kana = vocab_data[1]
     definition = vocab_data[2]
-							card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
     show_html(card_html)
 }
 
@@ -107,10 +107,20 @@ function show_kanji_data(link) {
     kanji_on = kanji_data[1]
     definition = kanji_data[2]
     examples = kanji_data[3]
-	card_html = '<div class="has-text-centered"><h1 class="title">' + link + '</h1></div><hr><p><b>音: </b>' + kanji_kun + '</p><p><b>訓: </b>' + kanji_on + '</p><p><b>Definition: </b><br>' + definition + '</p>'
-    show_html(card_html)
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
 }
-
 
 function show_gif(gif_path) {
     var img = document.createElement("IMG")
@@ -131,9 +141,36 @@ function close_modal() {
     modal_content_img = document.getElementById("modal-content-img")
     modal_content_img.innerHTML = ''
 }
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
 </script>
 
 <style>
+i.fa-play {
+	padding-right: 9;
+}
+
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
@@ -142,6 +179,11 @@ function close_modal() {
 
 nav.navbar.is-fixed-bottom > .field {
     justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
 }
 </style>
 </head>
@@ -184,6 +226,11 @@ nav.navbar.is-fixed-bottom > .field {
     </li>
   </ul>
 </nav>
+  <script>
+  var vocab_json = {};
+  var grammar_json = {};
+  var kanji_json = {};
+  </script>
   <div class="block title">世界の中の日本</div>
   <hr>
   <div class="block is-centered">
@@ -197,14 +244,15 @@ nav.navbar.is-fixed-bottom > .field {
   </div>
   <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
                           Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="14b_01" class="sentence">
+    <tr id="14b-01" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_01" class="fas fa-play"></i>
-        <audio id="audio_14b_01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_01.mp3" type="audio/mpeg">
+        <i id="play_14b-01" class="fas fa-play"></i>
+        <audio id="audio_14b-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-01.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -212,9 +260,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">日本は、国が統一し始める頃から既に海外に目を向けていた。</span>
         <span class="content-sent kanji-sent is-hidden">日本は、国が統一し始める頃から既に海外に目を向けていた。</span>
         <span class="content-sent plain-sent is-hidden">日本は、国が統一し始める頃から既に海外に目を向けていた。</span>
-        <span class="content-sent vocab-sent">日本は、国が<a onclick="show('./vocab/427.html')">統一</a>し<a onclick="show('./vocab/1660.html')">始め</a>る<a onclick="show('./vocab/1586.html')">頃</a>から<a onclick="show('./vocab/2118.html')">既に</a><a onclick="show('./vocab/1903.html')">海外</a>に目を<a onclick="show('./vocab/1453.html')">向けて</a>いた。</span>
+        <span class="content-sent vocab-sent">日本は、国が統一し始める頃から既に海外に目を向けていた。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -226,12 +275,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_02" class="sentence">
+    <tr id="14b-02" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_02" class="fas fa-play"></i>
-        <audio id="audio_14b_02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_02.mp3" type="audio/mpeg">
+        <i id="play_14b-02" class="fas fa-play"></i>
+        <audio id="audio_14b-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-02.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -239,9 +288,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">遣隋使、遣唐使の頃の中国からの影響は、奈良や京都の町だけではなく、日本語や日本文学にも見られるように、一般の生活様式にまで及んだ。</span>
         <span class="content-sent kanji-sent is-hidden">遣隋使、遣唐使の頃の中国からの影響は、奈良や京都の町だけではなく、日本語や日本文学にも見られるように、一般の生活様式にまで及んだ。</span>
         <span class="content-sent plain-sent is-hidden">遣隋使、遣唐使の頃の中国からの影響は、奈良や京都の町だけではなく、日本語や日本文学にも見られるように、一般の生活様式にまで及んだ。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1454.html')">遣隋使</a>、<a onclick="show('./vocab/1455.html')">遣唐使</a>の<a onclick="show('./vocab/1586.html')">頃</a>の<a onclick="show('./vocab/1992.html')">中国</a>からの<a onclick="show('./vocab/816.html')">影響</a>は、<a onclick="show('./vocab/42.html')">奈良</a>や<a onclick="show('./vocab/1456.html')">京都</a>の町だけではなく、日本語や日本<a onclick="show('./vocab/1457.html')">文学</a>にも見られるように、一般の<a onclick="show('./vocab/107.html')">生活様式</a>にまで<a onclick="show('./vocab/1459.html')">及んだ</a>。</span>
+        <span class="content-sent vocab-sent">遣隋使、遣唐使の頃の中国からの影響は、奈良や京都の町だけではなく、日本語や日本文学にも見られるように、一般の生活様式にまで及んだ。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -253,12 +303,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_03" class="sentence">
+    <tr id="14b-03" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_03" class="fas fa-play"></i>
-        <audio id="audio_14b_03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_03.mp3" type="audio/mpeg">
+        <i id="play_14b-03" class="fas fa-play"></i>
+        <audio id="audio_14b-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-03.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -266,9 +316,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">中世に入っても、キリシタン宣教師、南蛮商人を通じて、当時のヨーロッパ、特にスペイン人やポルトガル人がもたらした宗教、戦術は日本の歴史を変えたと言っても過言ではない。</span>
         <span class="content-sent kanji-sent is-hidden">中世に入っても、キリシタン宣教師、南蛮商人を通じて、当時のヨーロッパ、特にスペイン人やポルトガル人がもたらした宗教、戦術は日本の歴史を変えたと言っても過言ではない。</span>
         <span class="content-sent plain-sent is-hidden">中世に入っても、キリシタン宣教師、南蛮商人を通じて、当時のヨーロッパ、特にスペイン人やポルトガル人がもたらした宗教、戦術は日本の歴史を変えたと言っても過言ではない。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/589.html')">中世</a>に入っても、キリシタン<a onclick="show('./vocab/1460.html')">宣教師</a>、<a onclick="show('./vocab/1461.html')">南蛮商人</a>を<a onclick="show('./vocab/1804.html')">通じて</a>、<a onclick="show('./vocab/51.html')">当時</a>のヨーロッパ、<a onclick="show('./vocab/1605.html')">特に</a>スペイン人やポルトガル人が<a onclick="show('./vocab/1466.html')">もたらした</a><a onclick="show('./vocab/376.html')">宗教</a>、<a onclick="show('./vocab/1464.html')">戦術</a>は日本の<a onclick="show('./vocab/1520.html')">歴史</a>を変えたと言っても<a onclick="show('./vocab/1467.html')">過言</a>ではない。</span>
+        <span class="content-sent vocab-sent">中世に入っても、キリシタン宣教師、南蛮商人を通じて、当時のヨーロッパ、特にスペイン人やポルトガル人がもたらした宗教、戦術は日本の歴史を変えたと言っても過言ではない。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -280,22 +331,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_04" class="sentence">
+    <tr id="14b-04" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_04" class="fas fa-play"></i>
-        <audio id="audio_14b_04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_04.mp3" type="audio/mpeg">
+        <i id="play_14b-04" class="fas fa-play"></i>
+        <audio id="audio_14b-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-04.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">海外との交流を禁じた<a onclick="show('./grammar/92.html')">鎖国時代ですら、</a>出島を通して入ってきていた蘭学は、幕末に日本を動かした人々の考え方の土台となったと言われている。</span>
+        <span class="content-sent grammar-sent is-hidden">海外との交流を禁じた鎖国時代ですら、出島を通して入ってきていた蘭学は、幕末に日本を動かした人々の考え方の土台となったと言われている。</span>
         <span class="content-sent kanji-sent is-hidden">海外との交流を禁じた鎖国時代ですら、出島を通して入ってきていた蘭学は、幕末に日本を動かした人々の考え方の土台となったと言われている。</span>
         <span class="content-sent plain-sent is-hidden">海外との交流を禁じた鎖国時代ですら、出島を通して入ってきていた蘭学は、幕末に日本を動かした人々の考え方の土台となったと言われている。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1903.html')">海外</a>との<a onclick="show('./vocab/1469.html')">交流</a>を<a onclick="show('./vocab/1470.html')">禁じ</a>た<a onclick="show('./vocab/805.html')">鎖国</a><a onclick="show('./vocab/1746.html')">時代</a>ですら、<a onclick="show('./vocab/1471.html')">出島</a>を<a onclick="show('./vocab/840.html')">通して</a>入ってきていた<a onclick="show('./vocab/839.html')">蘭学</a>は、<a onclick="show('./vocab/847.html')">幕末</a>に日本を<a onclick="show('./vocab/1472.html')">動かした</a>人々の考え方の<a onclick="show('./vocab/1131.html')">土台</a>となったと言われている。</span>
+        <span class="content-sent vocab-sent">海外との交流を禁じた鎖国時代ですら、出島を通して入ってきていた蘭学は、幕末に日本を動かした人々の考え方の土台となったと言われている。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -307,12 +359,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_05" class="sentence">
+    <tr id="14b-05" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_05" class="fas fa-play"></i>
-        <audio id="audio_14b_05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_05.mp3" type="audio/mpeg">
+        <i id="play_14b-05" class="fas fa-play"></i>
+        <audio id="audio_14b-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-05.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -320,9 +372,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">また、明治維新後にヨーロッパから入ってきた思想や科学技術は、文明開化と言われるように、日本全体を変えてしまった。</span>
         <span class="content-sent kanji-sent is-hidden">また、明治維新後にヨーロッパから入ってきた思想や科学技術は、文明開化と言われるように、日本全体を変えてしまった。</span>
         <span class="content-sent plain-sent is-hidden">また、明治維新後にヨーロッパから入ってきた思想や科学技術は、文明開化と言われるように、日本全体を変えてしまった。</span>
-        <span class="content-sent vocab-sent">また、<a onclick="show('./vocab/777.html')">明治維新</a>後にヨーロッパから入ってきた<a onclick="show('./vocab/1473.html')">思想</a>や<a onclick="show('./vocab/1474.html')">科学技術</a>は、<a onclick="show('./vocab/1047.html')">文明開化</a>と言われるように、日本全体を変えてしまった。</span>
+        <span class="content-sent vocab-sent">また、明治維新後にヨーロッパから入ってきた思想や科学技術は、文明開化と言われるように、日本全体を変えてしまった。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -334,12 +387,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_06" class="sentence">
+    <tr id="14b-06" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_06" class="fas fa-play"></i>
-        <audio id="audio_14b_06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_06.mp3" type="audio/mpeg">
+        <i id="play_14b-06" class="fas fa-play"></i>
+        <audio id="audio_14b-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-06.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -347,9 +400,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">しかし、戦後のアメリカがもたらした影響ほど、現在の日本を変えたものは他にはないのではないか。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、戦後のアメリカがもたらした影響ほど、現在の日本を変えたものは他にはないのではないか。</span>
         <span class="content-sent plain-sent is-hidden">しかし、戦後のアメリカがもたらした影響ほど、現在の日本を変えたものは他にはないのではないか。</span>
-        <span class="content-sent vocab-sent">しかし、<a onclick="show('./vocab/1475.html')">戦後</a>のアメリカが<a onclick="show('./vocab/1466.html')">もたらした</a><a onclick="show('./vocab/816.html')">影響</a>ほど、<a onclick="show('./vocab/1565.html')">現在</a>の日本を変えたものは<a onclick="show('./vocab/1696.html')">他</a>にはないのではないか。</span>
+        <span class="content-sent vocab-sent">しかし、戦後のアメリカがもたらした影響ほど、現在の日本を変えたものは他にはないのではないか。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -361,12 +415,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_07" class="sentence">
+    <tr id="14b-07" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_07" class="fas fa-play"></i>
-        <audio id="audio_14b_07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_07.mp3" type="audio/mpeg">
+        <i id="play_14b-07" class="fas fa-play"></i>
+        <audio id="audio_14b-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-07.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -374,9 +428,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">アメリカからの外来語なしに日本語が話せなくなってきたほどである。</span>
         <span class="content-sent kanji-sent is-hidden">アメリカからの外来語なしに日本語が話せなくなってきたほどである。</span>
         <span class="content-sent plain-sent is-hidden">アメリカからの外来語なしに日本語が話せなくなってきたほどである。</span>
-        <span class="content-sent vocab-sent">アメリカからの<a onclick="show('./vocab/1476.html')">外来語</a>なしに日本語が話せなくなってきたほどである。</span>
+        <span class="content-sent vocab-sent">アメリカからの外来語なしに日本語が話せなくなってきたほどである。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -388,12 +443,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_08" class="sentence">
+    <tr id="14b-08" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_08" class="fas fa-play"></i>
-        <audio id="audio_14b_08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_08.mp3" type="audio/mpeg">
+        <i id="play_14b-08" class="fas fa-play"></i>
+        <audio id="audio_14b-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-08.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -401,9 +456,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">確かに、人間の知識やそれが生み出す技術によって範囲や度合こそ違うだろうが、ソトからの影響の基にウチを作り上げていくというのは人間の普遍性、少なくとも、日本人の習性のように思われる。</span>
         <span class="content-sent kanji-sent is-hidden">確かに、人間の知識やそれが生み出す技術によって範囲や度合こそ違うだろうが、ソトからの影響の基にウチを作り上げていくというのは人間の普遍性、少なくとも、日本人の習性のように思われる。</span>
         <span class="content-sent plain-sent is-hidden">確かに、人間の知識やそれが生み出す技術によって範囲や度合こそ違うだろうが、ソトからの影響の基にウチを作り上げていくというのは人間の普遍性、少なくとも、日本人の習性のように思われる。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/756.html')">確かに</a>、<a onclick="show('./vocab/111.html')">人間</a>の<a onclick="show('./vocab/1882.html')">知識</a>やそれが<a onclick="show('./vocab/2179.html')">生み出す</a><a onclick="show('./vocab/614.html')">技術</a>によって<a onclick="show('./vocab/1477.html')">範囲</a>や<a onclick="show('./vocab/1478.html')">度合</a>こそ<a onclick="show('./vocab/1720.html')">違う</a>だろうが、<a onclick="show('./vocab/1482.html')">ソト</a>からの<a onclick="show('./vocab/816.html')">影響</a>の<a onclick="show('./vocab/1243.html')">基</a>に<a onclick="show('./vocab/1483.html')">ウチ</a>を作り上げていくというのは人間の<a onclick="show('./vocab/1479.html')">普遍性</a>、少なくとも、日本人の<a onclick="show('./vocab/1480.html')">習性</a>のように思われる。</span>
+        <span class="content-sent vocab-sent">確かに、人間の知識やそれが生み出す技術によって範囲や度合こそ違うだろうが、ソトからの影響の基にウチを作り上げていくというのは人間の普遍性、少なくとも、日本人の習性のように思われる。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -415,22 +471,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_09" class="sentence">
+    <tr id="14b-09" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_09" class="fas fa-play"></i>
-        <audio id="audio_14b_09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_09.mp3" type="audio/mpeg">
+        <i id="play_14b-09" class="fas fa-play"></i>
+        <audio id="audio_14b-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-09.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">しかし、科学技術の発展で地球がこれほど小さくなってくると、何、あるいは誰をソトと呼びウチとするか判断がつかなくなってくる。</span>
-        <span class="content-sent kanji-sent is-hidden">しかし、科学技術の発<a onclick="show('./kanji/401.html')">展</a>で地球がこれほど小さくなってくると、何、あるいは誰をソトと呼びウチとするか<a onclick="show('./kanji/324.html')">判</a>断がつかなくなってくる。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、科学技術の発展で地球がこれほど小さくなってくると、何、あるいは誰をソトと呼びウチとするか判断がつかなくなってくる。</span>
         <span class="content-sent plain-sent is-hidden">しかし、科学技術の発展で地球がこれほど小さくなってくると、何、あるいは誰をソトと呼びウチとするか判断がつかなくなってくる。</span>
-        <span class="content-sent vocab-sent">しかし、<a onclick="show('./vocab/1474.html')">科学技術</a>の<a onclick="show('./vocab/1481.html')">発展</a>で<a onclick="show('./vocab/2046.html')">地球</a>がこれほど小さくなってくると、何、あるいは<a onclick="show('./vocab/2047.html')">誰</a>を<a onclick="show('./vocab/1482.html')">ソト</a>と呼び<a onclick="show('./vocab/1483.html')">ウチ</a>とするか<a onclick="show('./vocab/1484.html')">判断</a>がつかなくなってくる。</span>
+        <span class="content-sent vocab-sent">しかし、科学技術の発展で地球がこれほど小さくなってくると、何、あるいは誰をソトと呼びウチとするか判断がつかなくなってくる。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -442,12 +499,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_10" class="sentence">
+    <tr id="14b-10" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_10" class="fas fa-play"></i>
-        <audio id="audio_14b_10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_10.mp3" type="audio/mpeg">
+        <i id="play_14b-10" class="fas fa-play"></i>
+        <audio id="audio_14b-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-10.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -455,9 +512,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">そもそも国や国境そのものに対して疑問を抱く人々も出てきている。</span>
         <span class="content-sent kanji-sent is-hidden">そもそも国や国境そのものに対して疑問を抱く人々も出てきている。</span>
         <span class="content-sent plain-sent is-hidden">そもそも国や国境そのものに対して疑問を抱く人々も出てきている。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/2180.html')">そもそも</a>国や<a onclick="show('./vocab/1485.html')">国境</a>そのものに対して<a onclick="show('./vocab/374.html')">疑問</a>を<a onclick="show('./vocab/1486.html')">抱く</a>人々も出てきている。</span>
+        <span class="content-sent vocab-sent">そもそも国や国境そのものに対して疑問を抱く人々も出てきている。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -469,12 +527,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_11" class="sentence">
+    <tr id="14b-11" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_11" class="fas fa-play"></i>
-        <audio id="audio_14b_11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_11.mp3" type="audio/mpeg">
+        <i id="play_14b-11" class="fas fa-play"></i>
+        <audio id="audio_14b-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-11.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -482,9 +540,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">過ぎ去った２０世紀には、この人間が線を引く国境のために多くの命が犠牲になった。</span>
         <span class="content-sent kanji-sent is-hidden">過ぎ去った２０世紀には、この人間が線を引く国境のために多くの命が犠牲になった。</span>
         <span class="content-sent plain-sent is-hidden">過ぎ去った２０世紀には、この人間が線を引く国境のために多くの命が犠牲になった。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1487.html')">過ぎ去った</a>２０<a onclick="show('./vocab/2098.html')">世紀</a>には、この<a onclick="show('./vocab/111.html')">人間</a>が線を引く<a onclick="show('./vocab/1485.html')">国境</a>のために<a onclick="show('./vocab/1700.html')">多く</a>の<a onclick="show('./vocab/358.html')">命</a>が<a onclick="show('./vocab/1177.html')">犠牲</a>になった。</span>
+        <span class="content-sent vocab-sent">過ぎ去った２０世紀には、この人間が線を引く国境のために多くの命が犠牲になった。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -496,12 +555,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_12" class="sentence">
+    <tr id="14b-12" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_12" class="fas fa-play"></i>
-        <audio id="audio_14b_12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_12.mp3" type="audio/mpeg">
+        <i id="play_14b-12" class="fas fa-play"></i>
+        <audio id="audio_14b-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-12.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -509,9 +568,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">第一次、第二次世界大戦という世界が巻き込まれた大戦争、朝鮮、ベトナム、湾岸戦争等の戦争続きで、世界の戦国時代とも言うべき百年だった。</span>
         <span class="content-sent kanji-sent is-hidden">第一次、第二次世界大戦という世界が巻き込まれた大戦争、朝鮮、ベトナム、湾岸戦争等の戦争続きで、世界の戦国時代とも言うべき百年だった。</span>
         <span class="content-sent plain-sent is-hidden">第一次、第二次世界大戦という世界が巻き込まれた大戦争、朝鮮、ベトナム、湾岸戦争等の戦争続きで、世界の戦国時代とも言うべき百年だった。</span>
-        <span class="content-sent vocab-sent">第一次、<a onclick="show('./vocab/1798.html')">第二次世界大戦</a>という世界が<a onclick="show('./vocab/1489.html')">巻き込まれ</a>た大戦争、<a onclick="show('./vocab/1867.html')">朝鮮</a>、<a onclick="show('./vocab/1490.html')">ベトナム</a>、<a onclick="show('./vocab/1491.html')">湾岸戦争</a>等の戦争続きで、世界の<a onclick="show('./vocab/602.html')">戦国時代</a>とも言うべき百年だった。</span>
+        <span class="content-sent vocab-sent">第一次、第二次世界大戦という世界が巻き込まれた大戦争、朝鮮、ベトナム、湾岸戦争等の戦争続きで、世界の戦国時代とも言うべき百年だった。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -519,16 +579,16 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">World War I and World War II:  the great wars that enveloped the entire world, the Korean War, the Vietnam War, and the Gulf War - this has been a hundred-year period that would well be named the world&#39;s period of warring states.</span>
+        <span class="trans is-invisible">World War I and World War II: the great wars that enveloped the entire world, the Korean War, the Vietnam War, and the Gulf War - this has been a hundred-year period that would well be named the world&#39;s period of warring states.</span>
       </td>
     </tr>
 
-    <tr id="14b_13" class="sentence">
+    <tr id="14b-13" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_13" class="fas fa-play"></i>
-        <audio id="audio_14b_13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_13.mp3" type="audio/mpeg">
+        <i id="play_14b-13" class="fas fa-play"></i>
+        <audio id="audio_14b-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-13.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -536,9 +596,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">２１世紀に入り、コンピュータのＹ２Ｋ問題が無事に終了したかと思うと、前代未聞の米国同時多発テロが勃発し、アフガン戦争の開始。</span>
         <span class="content-sent kanji-sent is-hidden">２１世紀に入り、コンピュータのＹ２Ｋ問題が無事に終了したかと思うと、前代未聞の米国同時多発テロが勃発し、アフガン戦争の開始。</span>
         <span class="content-sent plain-sent is-hidden">２１世紀に入り、コンピュータのＹ２Ｋ問題が無事に終了したかと思うと、前代未聞の米国同時多発テロが勃発し、アフガン戦争の開始。</span>
-        <span class="content-sent vocab-sent">２１<a onclick="show('./vocab/2098.html')">世紀</a>に入り、コンピュータのＹ２Ｋ<a onclick="show('./vocab/1501.html')">問題</a>が<a onclick="show('./vocab/1492.html')">無事に</a><a onclick="show('./vocab/1493.html')">終了</a>したかと思うと、<a onclick="show('./vocab/1494.html')">前代未聞の</a><a onclick="show('./vocab/2049.html')">米国</a><a onclick="show('./vocab/2048.html')">同時</a><a onclick="show('./vocab/1496.html')">多発</a><a onclick="show('./vocab/1495.html')">テロ</a>が<a onclick="show('./vocab/1497.html')">勃発</a>し、<a onclick="show('./vocab/1498.html')">アフガン</a><a onclick="show('./vocab/1499.html')">戦争</a>の<a onclick="show('./vocab/1500.html')">開始</a>。</span>
+        <span class="content-sent vocab-sent">２１世紀に入り、コンピュータのＹ２Ｋ問題が無事に終了したかと思うと、前代未聞の米国同時多発テロが勃発し、アフガン戦争の開始。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -550,12 +611,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_14" class="sentence">
+    <tr id="14b-14" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_14" class="fas fa-play"></i>
-        <audio id="audio_14b_14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_14.mp3" type="audio/mpeg">
+        <i id="play_14b-14" class="fas fa-play"></i>
+        <audio id="audio_14b-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-14.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -563,9 +624,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">これからも内乱、紛争、戦争は絶えないような気がする。</span>
         <span class="content-sent kanji-sent is-hidden">これからも内乱、紛争、戦争は絶えないような気がする。</span>
         <span class="content-sent plain-sent is-hidden">これからも内乱、紛争、戦争は絶えないような気がする。</span>
-        <span class="content-sent vocab-sent">これからも<a onclick="show('./vocab/1502.html')">内乱</a>、<a onclick="show('./vocab/1503.html')">紛争</a>、<a onclick="show('./vocab/1499.html')">戦争</a>は<a onclick="show('./vocab/1504.html')">絶え</a>ないような気がする。</span>
+        <span class="content-sent vocab-sent">これからも内乱、紛争、戦争は絶えないような気がする。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -577,22 +639,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_15" class="sentence">
+    <tr id="14b-15" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_15" class="fas fa-play"></i>
-        <audio id="audio_14b_15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_15.mp3" type="audio/mpeg">
+        <i id="play_14b-15" class="fas fa-play"></i>
+        <audio id="audio_14b-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-15.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">時代、場所、スケールこそ違うが、長明の 言ったごとく、「よどみに浮かぶうたかたはかつ消え、かつ結びて」いくようだ。</span>
+        <span class="content-sent grammar-sent is-hidden">時代、場所、スケールこそ違うが、長明の言ったごとく、「よどみに浮かぶうたかたはかつ消え、かつ結びて」いくようだ。</span>
         <span class="content-sent kanji-sent is-hidden">時代、場所、スケールこそ違うが、長明の言ったごとく、「よどみに浮かぶうたかたはかつ消え、かつ結びて」いくようだ。</span>
         <span class="content-sent plain-sent is-hidden">時代、場所、スケールこそ違うが、長明の言ったごとく、「よどみに浮かぶうたかたはかつ消え、かつ結びて」いくようだ。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1746.html')">時代</a>、場所、スケールこそ<a onclick="show('./vocab/1720.html')">違う</a>が、<a onclick="show('./vocab/530.html')">長明</a>の言ったごとく、「<a onclick="show('./vocab/521.html')">よどみ</a>に<a onclick="show('./vocab/2050.html')">浮か</a>ぶ<a onclick="show('./vocab/522.html')">うたかた</a>は<a onclick="show('./vocab/2151.html')">かつ</a><a onclick="show('./vocab/1506.html')">消え</a>、かつ<a onclick="show('./vocab/1507.html')">結びて</a>」いくようだ。</span>
+        <span class="content-sent vocab-sent">時代、場所、スケールこそ違うが、長明の言ったごとく、「よどみに浮かぶうたかたはかつ消え、かつ結びて」いくようだ。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -604,22 +667,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_16" class="sentence">
+    <tr id="14b-16" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_16" class="fas fa-play"></i>
-        <audio id="audio_14b_16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_16.mp3" type="audio/mpeg">
+        <i id="play_14b-16" class="fas fa-play"></i>
+        <audio id="audio_14b-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-16.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">新しい千年の始まりは、日本人だけでなく、人類が通らなくてはならない転換期だと言われている。</span>
-        <span class="content-sent kanji-sent is-hidden">新しい千年の始まりは、日本人だけでなく、人<a onclick="show('./kanji/354.html')">類</a>が通らなくてはならない転換期だと言われている。</span>
+        <span class="content-sent kanji-sent is-hidden">新しい千年の始まりは、日本人だけでなく、人類が通らなくてはならない転換期だと言われている。</span>
         <span class="content-sent plain-sent is-hidden">新しい千年の始まりは、日本人だけでなく、人類が通らなくてはならない転換期だと言われている。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1661.html')">新しい</a><a onclick="show('./vocab/1189.html')">千年</a>の始まりは、日本人<a onclick="show('./vocab/1642.html')">だけでなく</a>、<a onclick="show('./vocab/1412.html')">人類</a>が通らなくてはならない<a onclick="show('./vocab/1508.html')">転換期</a>だと言われている。</span>
+        <span class="content-sent vocab-sent">新しい千年の始まりは、日本人だけでなく、人類が通らなくてはならない転換期だと言われている。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -631,12 +695,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_17" class="sentence">
+    <tr id="14b-17" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_17" class="fas fa-play"></i>
-        <audio id="audio_14b_17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_17.mp3" type="audio/mpeg">
+        <i id="play_14b-17" class="fas fa-play"></i>
+        <audio id="audio_14b-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-17.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -644,9 +708,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">これは、１６世紀にコペルニクスがそれまでの天動説を正し、地動説を唱えたように、自国中心ではなく、世界中心の世界観に変わらなくてはいけないということである。</span>
         <span class="content-sent kanji-sent is-hidden">これは、１６世紀にコペルニクスがそれまでの天動説を正し、地動説を唱えたように、自国中心ではなく、世界中心の世界観に変わらなくてはいけないということである。</span>
         <span class="content-sent plain-sent is-hidden">これは、１６世紀にコペルニクスがそれまでの天動説を正し、地動説を唱えたように、自国中心ではなく、世界中心の世界観に変わらなくてはいけないということである。</span>
-        <span class="content-sent vocab-sent">これは、１６<a onclick="show('./vocab/2098.html')">世紀</a>に<a onclick="show('./vocab/1509.html')">コペルニクス</a>がそれまでの<a onclick="show('./vocab/1510.html')">天動説</a>を正し、<a onclick="show('./vocab/1511.html')">地動説</a>を<a onclick="show('./vocab/1512.html')">唱えた</a>ように、<a onclick="show('./vocab/1513.html')">自国</a><a onclick="show('./vocab/1699.html')">中心</a>ではなく、<a onclick="show('./vocab/2176.html')">世界中</a>心の<a onclick="show('./vocab/1514.html')">世界観</a>に<a onclick="show('./vocab/2014.html')">変わ</a>らなくてはいけないということである。</span>
+        <span class="content-sent vocab-sent">これは、１６世紀にコペルニクスがそれまでの天動説を正し、地動説を唱えたように、自国中心ではなく、世界中心の世界観に変わらなくてはいけないということである。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -658,12 +723,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_18" class="sentence">
+    <tr id="14b-18" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_18" class="fas fa-play"></i>
-        <audio id="audio_14b_18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_18.mp3" type="audio/mpeg">
+        <i id="play_14b-18" class="fas fa-play"></i>
+        <audio id="audio_14b-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-18.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -671,9 +736,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">つまり、従来のウチからソトを学ぶのではなく、ソトが中心で、ウチは単なるその一部であるということを知ることである。</span>
         <span class="content-sent kanji-sent is-hidden">つまり、従来のウチからソトを学ぶのではなく、ソトが中心で、ウチは単なるその一部であるということを知ることである。</span>
         <span class="content-sent plain-sent is-hidden">つまり、従来のウチからソトを学ぶのではなく、ソトが中心で、ウチは単なるその一部であるということを知ることである。</span>
-        <span class="content-sent vocab-sent">つまり、<a onclick="show('./vocab/1515.html')">従来</a>の<a onclick="show('./vocab/1483.html')">ウチ</a>から<a onclick="show('./vocab/1482.html')">ソト</a>を学ぶのではなく、ソトが<a onclick="show('./vocab/1699.html')">中心</a>で、ウチは<a onclick="show('./vocab/1516.html')">単なる</a>その一部であるということを<a onclick="show('./vocab/1517.html')">知る</a>ことである。</span>
+        <span class="content-sent vocab-sent">つまり、従来のウチからソトを学ぶのではなく、ソトが中心で、ウチは単なるその一部であるということを知ることである。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -685,22 +751,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_19" class="sentence">
+    <tr id="14b-19" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_19" class="fas fa-play"></i>
-        <audio id="audio_14b_19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_19.mp3" type="audio/mpeg">
+        <i id="play_14b-19" class="fas fa-play"></i>
+        <audio id="audio_14b-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-19.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
-        <span class="content-sent grammar-sent is-hidden">イギリスのバラクラフ教授という著名な歴史学者が発表したことだが、現代は「グローバル・スィビリゼーション（全地球文明）」の時代に<a onclick="show('./grammar/78.html')">なったとしている</a>。</span>
+        <span class="content-sent grammar-sent is-hidden">イギリスのバラクラフ教授という著名な歴史学者が発表したことだが、現代は「グローバル・スィビリゼーション（全地球文明）」の時代になったとしている。</span>
         <span class="content-sent kanji-sent is-hidden">イギリスのバラクラフ教授という著名な歴史学者が発表したことだが、現代は「グローバル・スィビリゼーション（全地球文明）」の時代になったとしている。</span>
         <span class="content-sent plain-sent is-hidden">イギリスのバラクラフ教授という著名な歴史学者が発表したことだが、現代は「グローバル・スィビリゼーション（全地球文明）」の時代になったとしている。</span>
-        <span class="content-sent vocab-sent">イギリスのバラクラフ<a onclick="show('./vocab/1518.html')">教授</a>という<a onclick="show('./vocab/1519.html')">著名な</a><a onclick="show('./vocab/1520.html')">歴史</a><a onclick="show('./vocab/1573.html')">学者</a>が<a onclick="show('./vocab/1521.html')">発表した</a>ことだが、<a onclick="show('./vocab/2051.html')">現代</a>は「<a onclick="show('./vocab/1522.html')">グローバル・スィビリゼーション</a>（<a onclick="show('./vocab/2181.html')">全地球文明</a>）」の<a onclick="show('./vocab/1746.html')">時代</a>になったとしている。</span>
+        <span class="content-sent vocab-sent">イギリスのバラクラフ教授という著名な歴史学者が発表したことだが、現代は「グローバル・スィビリゼーション（全地球文明）」の時代になったとしている。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -708,16 +775,16 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">A famous British historian, Professor Baraclaugh,         said that now is a period of &quot;global civilization (world-wide global civilization).&quot;</span>
+        <span class="trans is-invisible">A famous British historian, Professor Baraclaugh, said that now is a period of &quot;global civilization (world-wide global civilization).&quot;</span>
       </td>
     </tr>
 
-    <tr id="14b_20" class="sentence">
+    <tr id="14b-20" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_20" class="fas fa-play"></i>
-        <audio id="audio_14b_20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_20.mp3" type="audio/mpeg">
+        <i id="play_14b-20" class="fas fa-play"></i>
+        <audio id="audio_14b-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-20.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -725,9 +792,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">しかし、いかにグローバルな世の中になっても、健全なナショナリズムや愛国心を捨てろとは言えないだろう。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、いかにグローバルな世の中になっても、健全なナショナリズムや愛国心を捨てろとは言えないだろう。</span>
         <span class="content-sent plain-sent is-hidden">しかし、いかにグローバルな世の中になっても、健全なナショナリズムや愛国心を捨てろとは言えないだろう。</span>
-        <span class="content-sent vocab-sent">しかし、いかにグローバルな世の中になっても、<a onclick="show('./vocab/1523.html')">健全な</a><a onclick="show('./vocab/1524.html')">ナショナリズム</a>や<a onclick="show('./vocab/20.html')">愛国心</a>を<a onclick="show('./vocab/417.html')">捨て</a>ろとは言えないだろう。</span>
+        <span class="content-sent vocab-sent">しかし、いかにグローバルな世の中になっても、健全なナショナリズムや愛国心を捨てろとは言えないだろう。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -739,22 +807,23 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_21" class="sentence">
+    <tr id="14b-21" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_21" class="fas fa-play"></i>
-        <audio id="audio_14b_21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_21.mp3" type="audio/mpeg">
+        <i id="play_14b-21" class="fas fa-play"></i>
+        <audio id="audio_14b-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-21.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
       <td>
         <span class="content-sent grammar-sent is-hidden">人間の生活で自分の生まれた郷土や伝統を忘れないのと同じように、生まれた国土やその歴史は無視することができないどころか、それから学ぶべきである。</span>
-        <span class="content-sent kanji-sent is-hidden">人間の生活で自分の生まれた郷土や伝統を忘れないのと同じように、生まれた国土やその歴史は無<a onclick="show('./kanji/395.html')">視</a>することができないどころか、それから学ぶべきである。</span>
+        <span class="content-sent kanji-sent is-hidden">人間の生活で自分の生まれた郷土や伝統を忘れないのと同じように、生まれた国土やその歴史は無視することができないどころか、それから学ぶべきである。</span>
         <span class="content-sent plain-sent is-hidden">人間の生活で自分の生まれた郷土や伝統を忘れないのと同じように、生まれた国土やその歴史は無視することができないどころか、それから学ぶべきである。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/111.html')">人間</a>の<a onclick="show('./vocab/1607.html')">生活</a>で自分の生まれた<a onclick="show('./vocab/1526.html')">郷土</a>や<a onclick="show('./vocab/1527.html')">伝統</a>を<a onclick="show('./vocab/899.html')">忘れ</a>ないのと<a onclick="show('./vocab/1713.html')">同じ</a>ように、生まれた<a onclick="show('./vocab/1525.html')">国土</a>やその<a onclick="show('./vocab/1520.html')">歴史</a>は<a onclick="show('./vocab/1529.html')">無視する</a>ことができない<a onclick="show('./vocab/1530.html')">どころか</a>、それから学ぶべきである。</span>
+        <span class="content-sent vocab-sent">人間の生活で自分の生まれた郷土や伝統を忘れないのと同じように、生まれた国土やその歴史は無視することができないどころか、それから学ぶべきである。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -766,12 +835,12 @@ nav.navbar.is-fixed-bottom > .field {
       </td>
     </tr>
 
-    <tr id="14b_22" class="sentence">
+    <tr id="14b-22" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_22" class="fas fa-play"></i>
-        <audio id="audio_14b_22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_22.mp3" type="audio/mpeg">
+        <i id="play_14b-22" class="fas fa-play"></i>
+        <audio id="audio_14b-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-22.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -779,9 +848,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">論語の中に、「温故知新」ということばがあるが、過去から学び、ますます小さくなっていく将来の世界で、人間がどのような営みをすべきか知る必要があると思う。</span>
         <span class="content-sent kanji-sent is-hidden">論語の中に、「温故知新」ということばがあるが、過去から学び、ますます小さくなっていく将来の世界で、人間がどのような営みをすべきか知る必要があると思う。</span>
         <span class="content-sent plain-sent is-hidden">論語の中に、「温故知新」ということばがあるが、過去から学び、ますます小さくなっていく将来の世界で、人間がどのような営みをすべきか知る必要があると思う。</span>
-        <span class="content-sent vocab-sent"><a onclick="show('./vocab/1531.html')">論語</a>の中に、「<a onclick="show('./vocab/1532.html')">温故知新</a>」ということばがあるが、<a onclick="show('./vocab/1444.html')">過去</a>から学び、ますます小さくなっていく<a onclick="show('./vocab/1294.html')">将来</a>の<a onclick="show('./vocab/1550.html')">世界</a>で、<a onclick="show('./vocab/111.html')">人間</a>がどのような<a onclick="show('./vocab/492.html')">営み</a>をすべきか<a onclick="show('./vocab/1517.html')">知る</a><a onclick="show('./vocab/2052.html')">必要</a>があると思う。</span>
+        <span class="content-sent vocab-sent">論語の中に、「温故知新」ということばがあるが、過去から学び、ますます小さくなっていく将来の世界で、人間がどのような営みをすべきか知る必要があると思う。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -789,16 +859,16 @@ nav.navbar.is-fixed-bottom > .field {
         </span>
       </td>
       <td>
-        <span class="trans is-invisible">As a teaching says in the Analects of Confucius, &quot;look to the past         for the future,&quot; we must learn from history to know what endeavors we         humans should undertake in the future in this increasingly smaller world.</span>
+        <span class="trans is-invisible">As a teaching says in the Analects of Confucius, &quot;look to the past for the future,&quot; we must learn from history to know what endeavors we humans should undertake in the future in this increasingly smaller world.</span>
       </td>
     </tr>
 
-    <tr id="14b_23" class="sentence">
+    <tr id="14b-23" class="sentence">
       <td class="has-text-centered" style="vertical-align: middle">
       <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_14b_23" class="fas fa-play"></i>
-        <audio id="audio_14b_23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/14b_23.mp3" type="audio/mpeg">
+        <i id="play_14b-23" class="fas fa-play"></i>
+        <audio id="audio_14b-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/14b-23.mp3" type="audio/mpeg">
         </audio>
       </span>
       </td>
@@ -806,9 +876,10 @@ nav.navbar.is-fixed-bottom > .field {
         <span class="content-sent grammar-sent is-hidden">このような時代に生きる人達は、どのような世界を作り、どのような歴史をこれから記していくのだろうか。</span>
         <span class="content-sent kanji-sent is-hidden">このような時代に生きる人達は、どのような世界を作り、どのような歴史をこれから記していくのだろうか。</span>
         <span class="content-sent plain-sent is-hidden">このような時代に生きる人達は、どのような世界を作り、どのような歴史をこれから記していくのだろうか。</span>
-        <span class="content-sent vocab-sent">このような<a onclick="show('./vocab/1746.html')">時代</a>に生きる人達は、どのような<a onclick="show('./vocab/1550.html')">世界</a>を作り、どのような<a onclick="show('./vocab/1520.html')">歴史</a>をこれから記していくのだろうか。</span>
+        <span class="content-sent vocab-sent">このような時代に生きる人達は、どのような世界を作り、どのような歴史をこれから記していくのだろうか。</span>
       </td>
     </tr>
+
     <tr class="is-clickable" onclick="show_hide_trans(this)">
       <td class="has-text-centered" style="vertical-align: middle">
         <span class="icon">
@@ -826,9 +897,11 @@ nav.navbar.is-fixed-bottom > .field {
         <p class="control">
           <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
         </p>
+
         <p class="control">
           <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
         </p>
+
         <p class="control">
           <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
         </p>

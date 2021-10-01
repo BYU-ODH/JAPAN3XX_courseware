@@ -1,0 +1,970 @@
+<html>
+
+<head>
+  <title>
+    Japanese 302
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
+}
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
+</script>
+
+<style>
+i.fa-play {
+	padding-right: 9;
+}
+
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 302</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>織田信長</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u91d1\u95a3": ["\u91d1\u95a3", "\u304d\u3093\u304b\u304f", "(Temple of) the Golden Pavilion, built in 1397 by Ashikaga Yoshimitsu during the Muromachi period."], "\u9280\u95a3": ["\u9280\u95a3", "\u304e\u3093\u304b\u304f", "(Temple of) the Silver Pavilion, built in 1489 by Ashikaga Yoshimasa during the Muromachi eara"], "\u5efa\u3066": ["\u5efa\u3066\u308b", "\u305f\u3066\u308b", "to build"], "\u306f\u306a\u3084\u304b\u306a": ["\u306f\u306a\u3084\u304b\u306a", "MISSING KANA", "flowery; bright; gorgeous"], "\u751f\u6d3b": ["\u751f\u6d3b", "\u305b\u3044\u304b\u3064", "life"], "\u697d\u3057\u3093\u3060": ["\u697d\u3057\u3080", "\u305f\u306e\u3057\u3080", "to enjoy; get pleasure"], "\u5ba4\u753a\u5e55\u5e9c": ["\u5ba4\u753a\u5e55\u5e9c", "\u3080\u308d\u307e\u3061\u3070\u304f\u3075", "the Muromachi shogunate"], "\u4e16\u7d00": ["\u4e16\u7d00", "\u305b\u3044\u304d", "century"], "\u672b": ["\u672b", "\u3059\u3048", "the end"], "\u5168\u304f": ["\u5168\u304f", "\u307e\u3063\u305f\u304f", "exactly; completely"], "\u6307\u5c0e\u8005": ["\u6307\u5c0e\u8005", "\u3057\u3069\u3046\u3057\u3083", "a leader"], "\u5927\u540d": ["\u5927\u540d", "\u3060\u3044\u307f\u3087\u3046", "a daimyou; a feudal lord"], "\u6211\u3082\u6211\u3082": ["\u6211\u3082\u6211\u3082", "\u308f\u308c\u3082\u308f\u308c\u3082", "each"], "\u4eac\u90fd": ["\u4eac\u90fd", "\u304d\u3087\u3046\u3068", "A city of west-central Honshu, Japan, north-northeast of \u014csaka. Founded in the eighth century, it has long been a cultural, artistic, and religious center. Ky\u014dto was Japan's capital from 794 until 1869, although its political importance declined after the rise of the shoguns (1192)."], "\u5168\u56fd": ["\u5168\u56fd", "\u305c\u3093\u3053\u304f", "the whole country; all over the country"], "\u6cbb\u3081": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to govern;  control"], "\u6226\u3044\u5408\u3044": ["\u6226\u3044\u5408\u3046", "\u305f\u305f\u304b\u3044\u3042\u3046", "to fight each other"], "\u6226\u56fd\u6642\u4ee3": ["\u6226\u56fd\u6642\u4ee3", "\u305b\u3093\u3054\u304f\u3058\u3060\u3044", "the Warring States period"], "\u6709\u540d": ["\u6709\u540d", "\u3086\u3046\u3081\u3044", "famous; well-known"], "\u6226\u3044": ["\u6226\u3044", "\u305f\u305f\u304b\u3044", "a fight; a battle; warfare"], "\u8d77\u3053\u308a": ["\u8d77\u3053\u308b", "\u304a\u3053\u308b", "to happen; occur"], "\u7279\u306b": ["\u7279\u306b", "\u3068\u304f\u306b", "specially; particularly"], "\u6b66\u7530\u4fe1\u7384": ["\u6b66\u7530\u4fe1\u7384(1521-1573)", "\u305f\u3051\u3060\u3057\u3093\u3052\u3093", "a general; in 1541 he became a sovereign of Kai (modern Yamanashi prefecture)."], "\u4e0a\u6749\u8b19\u4fe1": ["\u4e0a\u6749\u8b19\u4fe1(1530-1578)", "\u3046\u3048\u3059\u304e\u3051\u3093\u3057\u3093", "a general; formerly Nagao Kagetora; a sovereign of Echigo, Kaga, and Noto; he also served as Kant\u014d Kanrei, a position which administered political affairs of Muromachi bakufu."], "\u4fe1\u6fc3": ["\u4fe1\u6fc3", "\u3057\u306a\u306e", "Shinano Province (Nagano prefecture)"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3056\u3044", "the present time; at present"], "\u9577\u91ce\u770c": ["\u9577\u91ce\u770c", "\u306a\u304c\u306e\u3051\u3093", "Nagano Prefecture"], "\u5ddd\u4e2d\u5cf6": ["\u5ddd\u4e2d\u5cf6", "\u304b\u308f\u306a\u304b\u3058\u307e", "the name of a place"], "\u4f55\u5ea6\u3082": ["\u4f55\u5ea6\u3082", "\u306a\u3093\u3069\u3082", "any number of times; very often; over and over"], "\u5f15\u304d\u5206\u3051": ["\u5f15\u304d\u5206\u3051", "\u3072\u304d\u308f\u3051", "a draw"], "\u3064\u3044\u306b": ["\u3064\u3044\u306b", "MISSING KANA", "at last"], "\u52dd\u8ca0": ["\u52dd\u8ca0", "\u3057\u3087\u3046\u3076", "victory or defeat"], "\u4fe1\u7384": ["\u4fe1\u7384", "\u3057\u3093\u3052\u3093", "Takeda Shingen"], "\u8b19\u4fe1": ["\u8b19\u4fe1", "\u3051\u3093\u3057\u3093", "Uesugi Kenshin"], "\u65d7\u3092\u3042\u3052\u3066": ["\u65d7\u3092\u3042\u3052\u308b", "\u306f\u305f\u3092\u3042\u3052\u308b", "to raise a flag"], "\u3088\u3046\u3084\u304f": ["\u3088\u3046\u3084\u304f", "MISSING KANA", "at last; finally"], "\u5c3e\u5f35": ["\u5c3e\u5f35", "\u304a\u308f\u308a", "Owari Province (Aichi prefecture)"], "\u611b\u77e5\u770c": ["\u611b\u77e5\u770c", "\u3042\u3044\u3061\u3051\u3093", "Aichi prefecture"], "\u7d71\u4e00": ["\u7d71\u4e00", "\u3068\u3046\u3044\u3064", "unification"], "\u7e54\u7530\u4fe1\u9577": ["\u7e54\u7530\u4fe1\u9577(1534-1582)", "\u304a\u3060\u306e\u3076\u306a\u304c", "a general; the second son of Oda Nobuhide; in 1573 he overthrew Muromachi bakufu and built Azuchi castle."], "\u4fe1\u9577": ["\u4fe1\u9577", "\u306e\u3076\u306a\u304c", "Oda Nobunaga"], "\u975e\u5e38\u306b": ["\u975e\u5e38\u306b", "\u3072\u3058\u3087\u3046\u306b", "very; extremely"], "\u512a\u308c\u305f": ["\u512a\u308c\u308b", "\u3059\u3050\u308c\u308b", "to excel; surpass"], "\u5bb6\u6765": ["\u5bb6\u6765", "\u3051\u3089\u3044", "a retainer; one's servant"], "\u6728\u4e0b\u85e4\u5409\u90ce": ["\u6728\u4e0b\u85e4\u5409\u90ce", "\u304d\u306e\u3057\u305f\u3068\u3046\u304d\u3061\u308d\u3046", "childhood name of Toyotomi Hideyoshi"], "\u8c4a\u81e3\u79c0\u5409": ["\u8c4a\u81e3\u79c0\u5409(1537-1598)", "\u3068\u3088\u3068\u307f\u3072\u3067\u3088\u3057", "a general; he later became a taikou (an honorific name for a regent or a dajoudaijin)."], "\u65b0\u3057\u3044": ["\u65b0\u3057\u3044", "\u3042\u305f\u3089\u3057\u3044", "new"], "\u6226\u4e89": ["\u6226\u4e89", "\u305b\u3093\u305d\u3046", "war"], "\u6280\u8853": ["\u6280\u8853", "\u304e\u3058\u3085\u3064", "skill"], "\u52a9\u3051": ["\u52a9\u3051\u308b", "\u305f\u3059\u3051\u308b", "to help"], "\u5012\u3057": ["\u5012\u3059", "\u305f\u304a\u3059", "to topple"], "\u6b8b\u5ff5\u306a\u3053\u3068\u306b": ["\u6b8b\u5ff5\u306a\u3053\u3068\u306b", "\u3056\u3093\u306d\u3093\u306a\u3053\u3068\u306b", "unfortunately"], "\u3082\u3046\u4e00\u6b69": ["\u3082\u3046\u4e00\u6b69", "\u3082\u3046\u3044\u3063\u307d", "one more step"], "\u660e\u667a\u5149\u79c0": ["\u660e\u667a\u5149\u79c0(1526-1582)", "\u3042\u3051\u3061\u307f\u3064\u3072\u3067", "a retainer of Oda Nobunaga"], "\u6b66\u58eb": ["\u6b66\u58eb", "\u3076\u3057", "samurai; Japanese warrior"], "\u4e0d\u610f\u306b": ["\u4e0d\u610f\u306b", "\u3075\u3044\u306b", "suddenly; unexpectedly"], "\u8972\u308f\u308c": ["\u8972\u308f\u308c\u308b", "\u304a\u305d\u308f\u308c\u308b", "to be attacked"], "\u547d\u3092\u843d\u3068\u3057\u3066": ["\u547d\u3092\u843d\u3068\u3059", "\u3044\u306e\u3061\u3092\u304a\u3068\u3059", "to lose one's life"], "\u77ed\u3059\u304e\u308b": ["\u77ed\u3044", "\u307f\u3058\u304b\u3044", "short"], "\u4f8b\u3048\u3070": ["\u4f8b\u3048\u3070", "\u305f\u3068\u3048\u3070", "for example"], "\u5fdc\u63f4\u3057": ["\u5fdc\u63f4\u3059\u308b", "\u304a\u3046\u3048\u3093\u3059\u308b", "to support"], "\u713c\u304d\u6255\u3044": ["\u713c\u304d\u6255\u3046", "\u3084\u304d\u306f\u3089\u3046", "to burn down"], "\u6bd4\u53e1\u5c71": ["\u6bd4\u53e1\u5c71", "\u3072\u3048\u3044\u3056\u3093", "Mt. Hiei"], "\u5ef6\u66a6\u5bfa": ["\u5ef6\u66a6\u5bfa", "\u3048\u3093\u308a\u3083\u304f\u3058", "the name of a temple"], "\u7acb\u6d3e\u306a": ["\u7acb\u6d3e\u306a", "\u308a\u3063\u3071\u306a", "fine; honarable; admirable; splendid"], "\u5efa\u7269": ["\u5efa\u7269", "\u305f\u3066\u3082\u306e", "building"], "\u6587\u5316\u8ca1": ["\u6587\u5316\u8ca1", "\u3076\u3093\u304b\u3056\u3044", "a cultural treasure"], "\u3059\u3063\u304b\u308a": ["\u3059\u3063\u304b\u308a", "MISSING KANA", "all; utterly; quite; entirely"], "\u713c": ["\u713c\u304f", "\u3084\u304f", "to burn"], "\u6075\u6797\u5bfa": ["\u6075\u6797\u5bfa", "\u3048\u308a\u3093\u3058", "the name of a temple"], "\u547d": ["\u547d", "\u3044\u306e\u3061", "life"], "\u6575\u306e": ["\u6575", "\u3066\u304d", "an enemy"], "\u5175\u968a\u3092\u304b\u304f\u307e\u3063\u3066": ["\u5175\u968a\u3092\u304b\u304f\u307e\u3046", "\u3078\u3044\u305f\u3044\u3092\u304b\u304f\u307e\u3046", "to give refuge to the military forces"], "\u5149\u79c0": ["\u5149\u79c0", "\u307f\u3064\u3072\u3067", "Akechi Mitsuhide"], "\u5f93\u304a\u3046": ["\u5f93\u3046", "\u3057\u305f\u304c\u3046", "to obey; follow"], "\u304a\u5bfa": ["\u304a\u5bfa", "\u304a\u3066\u3089", "a Buddhist temple"], "\u304a\u574a\u3055\u3093": ["\u304a\u574a\u3055\u3093", "\u304a\u307c\u3046\u3055\u3093", "a Buddhist priest"], "\u5927\u5207": ["\u5927\u5207", "\u305f\u3044\u305b\u3064", "important"], "\u52e7\u3081": ["\u52e7\u3081\u308b", "\u3059\u3059\u3081\u308b", "to suggest; advise"], "\u304b\u3093\u304b\u3093\u306b\u304a\u3053\u3063\u3066": ["\u304b\u3093\u304b\u3093\u306b\u304a\u3053\u308b", "MISSING KANA", "to be extremely angry"], "\u4e0d\u5f93\u9806": ["\u4e0d\u5f93\u9806", "\u3075\u3058\u3085\u3046\u3058\u3085\u3093", "disobedience"], "\u614b\u5ea6": ["\u614b\u5ea6", "\u305f\u3044\u3069", "attitude; manner"], "\u3057\u304b\u308a": ["\u3057\u304b\u308b", "MISSING KANA", "to scold; reprove"], "\u96a3": ["\u96a3", "\u3068\u306a\u308a", "neighboring; next door"], "\u5fb3\u5ddd\u5bb6\u5eb7": ["\u5fb3\u5ddd\u5bb6\u5eb7(1542-1616)", "\u3068\u304f\u304c\u308f\u3044\u3048\u3084\u3059", "the first Sh\u014dgun in the Edo period; the first son of Matsudaira Hirotada"], "\u8a2a\u306d": ["\u8a2a\u306d\u308b", "\u305f\u305a\u306d\u308b", "to visit"], "\u3082\u3066\u306a\u3057": ["\u3082\u3066\u306a\u3057", "MISSING KANA", "treatment"], "\u8cac\u4efb": ["\u8cac\u4efb", "\u305b\u304d\u306b\u3093", "responsibility"], "\u53d7\u3051": ["\u53d7\u3051\u308b", "\u3046\u3051\u308b", "to get; receive; be given"], "\u3042\u307e\u308a": ["\u3042\u307e\u308a", "MISSING KANA", "too (in a negative meaning)"], "\u8c6a\u83ef": ["\u8c6a\u83ef", "\u3054\u3046\u304b", "gorgeous; splendid; deluxe"], "\u3057\u304b\u3089\u308c": ["\u3057\u304b\u3089\u308c\u308b", "MISSING KANA", "to be scolded"], "\u7a4d\u3082": ["\u7a4d\u3082\u308b", "\u3064\u3082\u308b", "to pile up; accumulate"], "\u3068\u3046\u3068\u3046": ["\uff08\u5012\u982d\uff09", "\u3068\u3046\u3068\u3046", "finally; at last"], "\u8b00\u53cd": ["\u8b00\u53cd", "\u3080\u307b\u3093", "rebellion; revolt"], "\u6c7a\u5fc3": ["\u6c7a\u5fc3\u3059\u308b", "\u3051\u3063\u3057\u3093\u3059\u308b", "to make up one's mind"], "\u5099\u4e2d": ["\u5099\u4e2d", "\u3073\u3061\u3085\u3046", "Bitchu Province"], "\u5ca1\u5c71\u770c": ["\u5ca1\u5c71\u770c", "\u304a\u304b\u3084\u307e\u3051\u3093", "Okayama prefecture"], "\u6cbb\u3081\u3066": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to rule; govern"], "\u6bdb\u5229\u5bb6": ["\u6bdb\u5229\u5bb6", "\u3082\u3046\u308a\u3051", "the M\u014dri clan"], "\u5f81\u4f10": ["\u5f81\u4f10\u3059\u308b", "\u305b\u3044\u3070\u3064\u3059\u308b", "to conquer; subjugate"], "\u9014\u4e2d": ["\u9014\u4e2d", "\u3068\u3061\u3085\u3046", "on the way; in the middle"], "\u6570\u4eba": ["\u6570\u4eba", "\u3059\u3046\u306b\u3093", "a few people"], "\u672c\u80fd\u5bfa": ["\u672c\u80fd\u5bfa", "\u307b\u3093\u306e\u3046\u3058", "the name of a temple"], "\u6cca\u307e\u3063\u3066": ["\u6cca\u307e\u308b", "\u3068\u307e\u308b", "to stay for the night"], "\u5148\u306b": ["\u5148\u306b", "\u3055\u304d\u306b", "earlier; formerly; previously"], "\u51fa\u767a\u3057": ["\u51fa\u767a\u3059\u308b", "\u3057\u3085\u3063\u3071\u3064\u3059\u308b", "to depart; start; set out"], "\u65b9\u5411": ["\u65b9\u5411", "\u307b\u3046\u3053\u3046", "a direction"], "\u304f\u308b\u308a\u3068": ["\u304f\u308b\u308a\u3068", "MISSING KANA", "to turn around"], "\u653b\u3081\u5bc4\u308a": ["\u653b\u3081\u5bc4\u308b", "\u305b\u3081\u3088\u308b", "to rush to attack"], "\u4e0d\u610f\u3092\u3064\u304b": ["\u4e0d\u610f\u3092\u3064\u304f", "\u3075\u3044\u3092\u3064\u304f", "to take a person by surprise"], "\u6b7b\u3093\u3067": ["\u6b7b\u306c", "\u3057\u306c", "to die"], "\u591c\u660e\u3051": ["\u591c\u660e\u3051", "\u3088\u3042\u3051", "dawn"], "\u660e\u308b\u304f\u306a\u308a \u304b\u3051\u305f": ["\u304b\u3051\u305f", "MISSING KANA", "to begin to (do)"], "\u713c\u3051\u8de1": ["\u713c\u3051\u8de1", "\u3084\u3051\u3042\u3068", "ruins of a fire"], "\u304f\u3059\u3076\u3063\u305f": ["\u304f\u3059\u3076\u308b", "MISSING KANA", "to smolder"], "\u6d88\u3048\u3066": ["\u6d88\u3048\u308b", "\u304d\u3048\u308b", "to die out"], "\u671d\u65e5": ["\u671d\u65e5", "\u3042\u3055\u3072", "the rising sun"], "\u5e73\u5b9a\u3059\u308b": ["\u5e73\u5b9a\u3059\u308b", "\u3078\u3044\u3066\u3044\u3059\u308b", "to subjugate"], "\u3042\u3068\u4e00\u6b69": ["\u3042\u3068\u4e00\u6b69", "\u3042\u3068\u3044\u3063\u307d", "one more step"], "\u53bb\u3063\u3066": ["\u53bb\u308b", "\u3055\u308b", "to leave"], "\u5929\u6b63": ["\u5929\u6b63", "\u3066\u3093\u3057\u3087\u3046", "the Tensh\u014d era"]};
+  var grammar_json = {"\u5bfa\u3067\u3042\u308d\u3046\u3068\u4f55\u3067\u3042\u308d\u3046\u3068": [" N \u3067\u3042\u308d\u3046\u3068 N \u3067\u3042\u308d\u3046\u3068", " whether N or N; even N and N <br/><br/> In this expression, the speaker makes a statement about two conditions: Whether N or N. The comparable form for adjectives is stem + \u304b\u308d\u3046 and for verb: ichidan verb stem + \u3088\u3046 and godan stem(Base V \u3046) + \u304a\u3046. ", [["\u5b50\u4f9b\u3067\u3042\u308d\u3046\u3068\u5927\u4eba\u3067\u3042\u308d\u3046\u3068\u307f\u306a\u3084\u3063\u3066\u304d\u307e\u3057\u305f\u3002", "Everyone, children and adults alike, came."], ["\u5148\u751f\u3067\u3042\u308d\u3046\u3068\u5b66\u751f\u3067\u3042\u308d\u3046\u3068\u52c9\u5f37\u3057\u306a\u304f\u3066\u306f\u3044\u3051\u307e\u305b\u3093\u3002", "Whether one is a teacher or a student, one must study."]]]};
+  var kanji_json = {"\u95a3": ["", "\u30ab\u30af", "TOWER; PALACE; GOVERNMENT CABINET", []], "\u672b": ["\u3059\u3048", "\u30de\u30c4\u30fb\u30d0\u30c4", "LATTER; LAST; FUTURE; END", []], "\u6307": ["\u3086\u3073\u30fb\u3055\uff08\u3059\uff09", "\u30b7", "FINGER; POINT", []], "\u5c0e": ["\u307f\u3061\u3073\uff08\u304f\uff09", "\u30c9\u30a6", "GUIDE", []], "\u6211": ["\u308f\u308c\u30fb\u308f", "\u30ac", "I; ONESELF; MY; EGO", []], "\u65d7": ["\u306f\u305f", "\u30ad", "FLAG; BANNER", []], "\u81e3": ["*\u8c4a\u81e3\uff1a\u3068\u3088\u3068\u307f", "\u30b7\u30f3\u30fb\u30b8\u30f3", "SUBJECT; VASSAL; RETAINER; SERVANT", []], "\u8853": ["", "\u30b8\u30e5\u30c4", "MEANS; METHOD; ACT; ART", []], "\u5fdc": ["", "\u30aa\u30a6", "ANSWER; BE APPLICABLE; AGREE; RESPOND TO", []], "\u5ef6": ["\u306e\uff08\u3073\u308b\uff09\u30fb\u306e\uff08\u3079\u308b\uff09\u30fb\u306e\uff08\u3070\u3059\uff09", "\u30a8\u30f3", "POSTPONE; PROLONG", []], "\u8ca1": ["", "\u30b6\u30a4\u30fb\u30b5\u30a4", "TREASURE; MONEY; VALUABLE GOODS", []], "\u9806": ["", "\u30b8\u30e5\u30f3", "ORDER; MEEK", []], "\u614b": ["", "\u30bf\u30a4", "ATTITUDE; FORM; CONDITION", []], "\u5eb7": ["", "\u30b3\u30a6", "PEACEFUL; CALM", []], "\u8cac": ["\u305b\uff08\u3081\u308b\uff09", "\u30bb\u30ad", "BLAME; REPROACH; DUTY; SERVICE", []], "\u4efb": ["\u307e\u304b\uff08\u305b\u308b\uff09\u30fb\u307e\u304b\uff08\u3059\uff09", "\u30cb\u30f3", "DUTY; SERVICE; DELEGATE; ENTRUST", []], "\u5229": ["\u304d\uff08\u304f\uff09", "\u30ea", "CONVENIENT; PROFITABLE; ADVANTAGEOUS", []]};
+  </script>
+  <div class="block title">織田信長</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/L08a.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="08a-01" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-01" class="fas fa-play"></i>
+        <audio id="audio_08a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-01.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">金閣、銀閣を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の末になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">金<a onclick="show_kanji_data('閣')">閣</a>、銀<a onclick="show_kanji_data('閣')">閣</a>を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の<a onclick="show_kanji_data('末')">末</a>になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">金閣、銀閣を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の末になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('金閣')">金閣</a>、<a onclick="show_vocab_data('銀閣')">銀閣</a>を<a onclick="show_vocab_data('建て')">建て</a>て<a onclick="show_vocab_data('はなやかな')">はなやかな</a><a onclick="show_vocab_data('生活')">生活</a>を<a onclick="show_vocab_data('楽しんだ')">楽しんだ</a><a onclick="show_vocab_data('室町幕府')">室町幕府</a>も、１５<a onclick="show_vocab_data('世紀')">世紀</a>の<a onclick="show_vocab_data('末')">末</a>になると<a onclick="show_vocab_data('全く')">全く</a>力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The Muromachi Bakufu, which had built the Kinkaku and the Ginkaku and had enjoyed a gorgeous lifestyle, lost power completely toward the end of the 15th century, and there was no longer anyone who paid them any heed.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-02" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-02" class="fas fa-play"></i>
+        <audio id="audio_08a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-02.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そして、日本中がいろいろな国に分かれ、その指導者である大名が、我も我もと京都に進んで、全国を治めようと戦い合いました。</span>
+        <span class="content-sent kanji-sent is-hidden">そして、日本中がいろいろな国に分かれ、その<a onclick="show_kanji_data('指')">指</a><a onclick="show_kanji_data('導')">導</a>者である大名が、<a onclick="show_kanji_data('我')">我</a>も<a onclick="show_kanji_data('我')">我</a>もと京都に進んで、全国を治めようと戦い合いました。</span>
+        <span class="content-sent plain-sent is-hidden">そして、日本中がいろいろな国に分かれ、その指導者である大名が、我も我もと京都に進んで、全国を治めようと戦い合いました。</span>
+        <span class="content-sent vocab-sent">そして、日本中がいろいろな国に分かれ、その<a onclick="show_vocab_data('指導者')">指導者</a>である<a onclick="show_vocab_data('大名')">大名</a>が、<a onclick="show_vocab_data('我も我も')">我も我も</a>と<a onclick="show_vocab_data('京都')">京都</a>に進んで、<a onclick="show_vocab_data('全国')">全国</a>を<a onclick="show_vocab_data('治め')">治め</a>ようと<a onclick="show_vocab_data('戦い合い')">戦い合い</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In addition, the country of Japan was divided into provinces, and the leaders of the provinces, the Daimyō (Feudal Lords), fought among themselves, each trying to advance on Kyōto and control the whole country.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-03" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-03" class="fas fa-play"></i>
+        <audio id="audio_08a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-03.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
+        <span class="content-sent kanji-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
+        <span class="content-sent plain-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
+        <span class="content-sent vocab-sent">このような時代が百年間ぐらい続きますが、これを<a onclick="show_vocab_data('戦国時代')">戦国時代</a>と呼んでいます。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This period, known as the Warring States period, would continue for some 100 years.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-04" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-04" class="fas fa-play"></i>
+        <audio id="audio_08a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-04.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
+        <span class="content-sent kanji-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
+        <span class="content-sent plain-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('戦国時代')">戦国時代</a>に<a onclick="show_vocab_data('有名')">有名</a>な<a onclick="show_vocab_data('戦い')">戦い</a>がいろいろ<a onclick="show_vocab_data('起こり')">起こり</a>ましたが、<a onclick="show_vocab_data('特に')">特に</a>、<a onclick="show_vocab_data('武田信玄')">武田信玄</a>と<a onclick="show_vocab_data('上杉謙信')">上杉謙信</a>の<a onclick="show_vocab_data('戦い')">戦い</a>は<a onclick="show_vocab_data('有名')">有名</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">There were various well-known battles in the Warring States period, but particularly famous were the battles between Takeda Shingen and Uesugi Kenshin.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-05" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-05" class="fas fa-play"></i>
+        <audio id="audio_08a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-05.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も旗をあげて京都に進むことはできませんでした。</span>
+        <span class="content-sent kanji-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も<a onclick="show_kanji_data('旗')">旗</a>をあげて京都に進むことはできませんでした。</span>
+        <span class="content-sent plain-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も旗をあげて京都に進むことはできませんでした。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('信濃')">信濃</a>の国（<a onclick="show_vocab_data('現在')">現在</a>の<a onclick="show_vocab_data('長野県')">長野県</a>）の<a onclick="show_vocab_data('川中島')">川中島</a>で<a onclick="show_vocab_data('何度も')">何度も</a><a onclick="show_vocab_data('何度も')">何度も</a><a onclick="show_vocab_data('戦い')">戦い</a>ましたが、いつも<a onclick="show_vocab_data('引き分け')">引き分け</a>に終わり、<a onclick="show_vocab_data('ついに')">ついに</a><a onclick="show_vocab_data('勝負')">勝負</a>がつかず、<a onclick="show_vocab_data('信玄')">信玄</a>も<a onclick="show_vocab_data('謙信')">謙信</a>も<a onclick="show_vocab_data('旗をあげて')">旗をあげて</a><a onclick="show_vocab_data('京都')">京都</a>に進むことはできませんでした。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">They fought battle after battle at Kawanakajima in Shinano Province (currently Nagano Prefecture), but each battle ended in a draw, and in the end no victor emerged; thus neither Shingen nor Kenshin were able to raise his banner and march on Kyōto.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-06" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-06" class="fas fa-play"></i>
+        <audio id="audio_08a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-06.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
+        <span class="content-sent kanji-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
+        <span class="content-sent plain-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
+        <span class="content-sent vocab-sent">１６<a onclick="show_vocab_data('世紀')">世紀</a>の終わりになって、<a onclick="show_vocab_data('ようやく')">ようやく</a><a onclick="show_vocab_data('尾張')">尾張</a>の国（<a onclick="show_vocab_data('現在')">現在</a>の<a onclick="show_vocab_data('愛知県')">愛知県</a>）の<a onclick="show_vocab_data('大名')">大名</a>が<a onclick="show_vocab_data('全国')">全国</a>を<a onclick="show_vocab_data('統一')">統一</a>しかけました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Finally, toward the end of the 16th century, the Daimyō of Owari Province (modern Aichi Prefecture) began unifying Japan.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-07" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-07" class="fas fa-play"></i>
+        <audio id="audio_08a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-07.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この大名が織田信長です。</span>
+        <span class="content-sent kanji-sent is-hidden">この大名が織田信長です。</span>
+        <span class="content-sent plain-sent is-hidden">この大名が織田信長です。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('大名')">大名</a>が<a onclick="show_vocab_data('織田信長')">織田信長</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">He was Oda Nobunaga.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-08" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-08" class="fas fa-play"></i>
+        <audio id="audio_08a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-08.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊臣秀吉）や新しい戦争の技術などの助けで、次々と大名を倒し京都に上りました。</span>
+        <span class="content-sent kanji-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊<a onclick="show_kanji_data('臣')">臣</a>秀吉）や新しい戦争の技<a onclick="show_kanji_data('術')">術</a>などの助けで、次々と大名を倒し京都に上りました。</span>
+        <span class="content-sent plain-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊臣秀吉）や新しい戦争の技術などの助けで、次々と大名を倒し京都に上りました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('信長')">信長</a>は<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('優れた')">優れた</a><a onclick="show_vocab_data('家来')">家来</a>、<a onclick="show_vocab_data('木下藤吉郎')">木下藤吉郎</a>（後の<a onclick="show_vocab_data('豊臣秀吉')">豊臣秀吉</a>）や<a onclick="show_vocab_data('新しい')">新しい</a><a onclick="show_vocab_data('戦争')">戦争</a>の<a onclick="show_vocab_data('技術')">技術</a>などの<a onclick="show_vocab_data('助け')">助け</a>で、次々と<a onclick="show_vocab_data('大名')">大名</a>を<a onclick="show_vocab_data('倒し')">倒し</a><a onclick="show_vocab_data('京都')">京都</a>に上りました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nobunaga, with the help of his outstanding retainer, Kinoshita Tōkichirō (later called Toyotomi Hideyoshi), and new fighting tactics (technology) overthrew Daimyō after Daimyō and advanced on Kyōto.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-09" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-09" class="fas fa-play"></i>
+        <audio id="audio_08a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-09.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('残念なことに')">残念なことに</a>、日本<a onclick="show_vocab_data('統一')">統一</a><a onclick="show_vocab_data('もう一歩')">もう一歩</a>というところで、自分の<a onclick="show_vocab_data('家来')">家来</a>の一人、<a onclick="show_vocab_data('明智光秀')">明智光秀</a>という<a onclick="show_vocab_data('武士')">武士</a>に<a onclick="show_vocab_data('不意に')">不意に</a><a onclick="show_vocab_data('襲われ')">襲われ</a>、<a onclick="show_vocab_data('命を落として')">命を落として</a>しまいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Unfortunately, just on the verge of achieving full unification, he was taken in a surprise attack from his own retainer, the warrior Akechi Mitsuhide, and lost his life.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-10" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-10" class="fas fa-play"></i>
+        <audio id="audio_08a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-10.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
+        <span class="content-sent kanji-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
+        <span class="content-sent plain-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('信長')">信長</a>は気が<a onclick="show_vocab_data('短すぎる')">短すぎる</a>のでこんなことになってしまったと言われています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Things arrived at such a state, it is said, because Nobunaga was too short-tempered.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-11" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-11" class="fas fa-play"></i>
+        <audio id="audio_08a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-11.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">例えば、信長は、ほかの大名を助けたり応援したりする者は、<a onclick="show_grammar_data('寺であろうと何であろうと')">寺であろうと何であろうと</a>すべて焼き払いました。</span>
+        <span class="content-sent kanji-sent is-hidden">例えば、信長は、ほかの大名を助けたり<a onclick="show_kanji_data('応')">応</a>援したりする者は、寺であろうと何であろうとすべて焼き払いました。</span>
+        <span class="content-sent plain-sent is-hidden">例えば、信長は、ほかの大名を助けたり応援したりする者は、寺であろうと何であろうとすべて焼き払いました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('例えば')">例えば</a>、<a onclick="show_vocab_data('信長')">信長</a>は、ほかの<a onclick="show_vocab_data('大名')">大名</a>を<a onclick="show_vocab_data('助け')">助け</a>たり<a onclick="show_vocab_data('応援し')">応援し</a>たりする者は、寺であろうと何であろうとすべて<a onclick="show_vocab_data('焼き払い')">焼き払い</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">For example, Nobunaga burned to the ground anything, be it a temple or whatever, that provided aid to other Daimyō.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-12" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-12" class="fas fa-play"></i>
+        <audio id="audio_08a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-12.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">京都の比叡山にある延暦寺という非常に有名な寺も、立派な建物や文化財を信長にすっかり焼かれてしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">京都の比叡山にある<a onclick="show_kanji_data('延')">延</a>暦寺という非常に有名な寺も、立派な建物や文化<a onclick="show_kanji_data('財')">財</a>を信長にすっかり焼かれてしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">京都の比叡山にある延暦寺という非常に有名な寺も、立派な建物や文化財を信長にすっかり焼かれてしまいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('京都')">京都</a>の<a onclick="show_vocab_data('比叡山')">比叡山</a>にある<a onclick="show_vocab_data('延暦寺')">延暦寺</a>という<a onclick="show_vocab_data('非常に')">非常に</a><a onclick="show_vocab_data('有名')">有名</a>な寺も、<a onclick="show_vocab_data('立派な')">立派な</a><a onclick="show_vocab_data('建物')">建物</a>や<a onclick="show_vocab_data('文化財')">文化財</a>を<a onclick="show_vocab_data('信長')">信長</a>に<a onclick="show_vocab_data('すっかり')">すっかり</a><a onclick="show_vocab_data('焼')">焼</a>かれてしまいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Even the very famous Enryakuji on Mt. Hiei had its splendid buildings and cultural treasures burned completely to the ground by Nobunaga.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-13" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-13" class="fas fa-play"></i>
+        <audio id="audio_08a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-13.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
+        <span class="content-sent kanji-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
+        <span class="content-sent plain-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
+        <span class="content-sent vocab-sent">そのような<a onclick="show_vocab_data('信長')">信長</a>が、<a onclick="show_vocab_data('恵林寺')">恵林寺</a>という寺を<a onclick="show_vocab_data('焼')">焼</a>き払ってしまえと<a onclick="show_vocab_data('命')">命</a>じました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nobunaga commanded [his men] to burn down a temple known as Erinji.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-14" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-14" class="fas fa-play"></i>
+        <audio id="audio_08a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-14.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
+        <span class="content-sent kanji-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
+        <span class="content-sent plain-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('敵の')">敵の</a><a onclick="show_vocab_data('兵隊をかくまって')">兵隊をかくまって</a>いたからです。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The reason was that it harbored enemy soldiers.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-15" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-15" class="fas fa-play"></i>
+        <audio id="audio_08a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-15.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
+        <span class="content-sent vocab-sent">ところが、<a onclick="show_vocab_data('光秀')">光秀</a>は<a onclick="show_vocab_data('信長')">信長</a>に<a onclick="show_vocab_data('従おう')">従おう</a>とせず、「もう少し<a onclick="show_vocab_data('お寺')">お寺</a>や<a onclick="show_vocab_data('お坊さん')">お坊さん</a>を<a onclick="show_vocab_data('大切')">大切</a>にするように」と<a onclick="show_vocab_data('勧め')">勧め</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">However, Mitsuhide, making no effort to obey Nobunaga, encouraged him to place a little more value on temples and priests.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-16" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-16" class="fas fa-play"></i>
+        <audio id="audio_08a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-16.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従順な態度をしかりました。</span>
+        <span class="content-sent kanji-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従<a onclick="show_kanji_data('順')">順</a>な<a onclick="show_kanji_data('態')">態</a>度をしかりました。</span>
+        <span class="content-sent plain-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従順な態度をしかりました。</span>
+        <span class="content-sent vocab-sent">すると、<a onclick="show_vocab_data('信長')">信長</a>は<a onclick="show_vocab_data('かんかんにおこって')">かんかんにおこって</a>、<a onclick="show_vocab_data('光秀')">光秀</a>の<a onclick="show_vocab_data('不従順')">不従順</a>な<a onclick="show_vocab_data('態度')">態度</a>を<a onclick="show_vocab_data('しかり')">しかり</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Nobunaga was angered and scolded Mitsuhide for his unfaithful attitude.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-17" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-17" class="fas fa-play"></i>
+        <audio id="audio_08a-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-17.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家康が信長を訪ねて来た時、光秀はそのもてなしの責任を受けました。</span>
+        <span class="content-sent kanji-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家<a onclick="show_kanji_data('康')">康</a>が信長を訪ねて来た時、光秀はそのもてなしの<a onclick="show_kanji_data('責')">責</a><a onclick="show_kanji_data('任')">任</a>を受けました。</span>
+        <span class="content-sent plain-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家康が信長を訪ねて来た時、光秀はそのもてなしの責任を受けました。</span>
+        <span class="content-sent vocab-sent">また、<a onclick="show_vocab_data('尾張')">尾張</a>の国のすぐ<a onclick="show_vocab_data('隣')">隣</a>の国の<a onclick="show_vocab_data('大名')">大名</a>、<a onclick="show_vocab_data('徳川家康')">徳川家康</a>が<a onclick="show_vocab_data('信長')">信長</a>を<a onclick="show_vocab_data('訪ね')">訪ね</a>て来た時、<a onclick="show_vocab_data('光秀')">光秀</a>はその<a onclick="show_vocab_data('もてなし')">もてなし</a>の<a onclick="show_vocab_data('責任')">責任</a>を<a onclick="show_vocab_data('受け')">受け</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Also, when Tokugawa Ieyasu, the Daimyō of the province neighboring Owari Province, visited Nobunaga, Mitsuhide was charged with hosting him.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-18" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-18" class="fas fa-play"></i>
+        <audio id="audio_08a-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-18.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
+        <span class="content-sent vocab-sent">ところが、<a onclick="show_vocab_data('あまり')">あまり</a>に<a onclick="show_vocab_data('豪華')">豪華</a>な<a onclick="show_vocab_data('もてなし')">もてなし</a>方をするので、<a onclick="show_vocab_data('光秀')">光秀</a>はまたまた<a onclick="show_vocab_data('信長')">信長</a>に<a onclick="show_vocab_data('しかられ')">しかられ</a>てしまいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Once again, however, Mitsuhide was scolded by Nobunaga because of his overly ostentatious treatment of Tokugawa.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-19" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-19" class="fas fa-play"></i>
+        <audio id="audio_08a-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-19.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
+        <span class="content-sent kanji-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
+        <span class="content-sent plain-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
+        <span class="content-sent vocab-sent">このようなことが<a onclick="show_vocab_data('積も')">積も</a>り<a onclick="show_vocab_data('積も')">積も</a>って、<a onclick="show_vocab_data('光秀')">光秀</a>は、<a onclick="show_vocab_data('とうとう')">とうとう</a><a onclick="show_vocab_data('信長')">信長</a>に対して<a onclick="show_vocab_data('謀反')">謀反</a>を起こす<a onclick="show_vocab_data('決心')">決心</a>をしました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Events such as these accumulated, and at length Mitsuhide determined to mount a rebellion against Nobunaga.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-20" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-20" class="fas fa-play"></i>
+        <audio id="audio_08a-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-20.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">備中の国（現在の岡山県）を治めていた毛利家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
+        <span class="content-sent kanji-sent is-hidden">備中の国（現在の岡山県）を治めていた毛<a onclick="show_kanji_data('利')">利</a>家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
+        <span class="content-sent plain-sent is-hidden">備中の国（現在の岡山県）を治めていた毛利家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('備中')">備中</a>の国（<a onclick="show_vocab_data('現在')">現在</a>の<a onclick="show_vocab_data('岡山県')">岡山県</a>）を<a onclick="show_vocab_data('治めて')">治めて</a>いた<a onclick="show_vocab_data('毛利家')">毛利家</a>を<a onclick="show_vocab_data('征伐')">征伐</a>に行く<a onclick="show_vocab_data('途中')">途中</a>、<a onclick="show_vocab_data('信長')">信長</a>は<a onclick="show_vocab_data('数人')">数人</a>の<a onclick="show_vocab_data('家来')">家来</a>と<a onclick="show_vocab_data('本能寺')">本能寺</a>という寺に<a onclick="show_vocab_data('泊まって')">泊まって</a>いました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">On his way to subjugate the Mōri Clan, who governed Bichū Province (current Okayama Prefecture), Nobunaga put up in Honnōji with a few retainers.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-21" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-21" class="fas fa-play"></i>
+        <audio id="audio_08a-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-21.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
+        <span class="content-sent kanji-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
+        <span class="content-sent plain-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('先に')">先に</a><a onclick="show_vocab_data('出発し')">出発し</a>ていた<a onclick="show_vocab_data('光秀')">光秀</a>は、<a onclick="show_vocab_data('方向')">方向</a>を<a onclick="show_vocab_data('くるりと')">くるりと</a>変えて<a onclick="show_vocab_data('本能寺')">本能寺</a>めがけて<a onclick="show_vocab_data('攻め寄り')">攻め寄り</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Mitsuhide, who had set off in advance, reversed his direction and attacked Honnōji.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-22" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-22" class="fas fa-play"></i>
+        <audio id="audio_08a-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-22.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
+        <span class="content-sent kanji-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
+        <span class="content-sent plain-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('不意をつか')">不意をつか</a>れた<a onclick="show_vocab_data('信長')">信長</a>は、<a onclick="show_vocab_data('本能寺')">本能寺</a>に火をつけ、その中で<a onclick="show_vocab_data('死んで')">死んで</a>いきました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Caught by surprise, Nobunaga set fire to Honnōji, and died there.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-23" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-23" class="fas fa-play"></i>
+        <audio id="audio_08a-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-23.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
+        <span class="content-sent kanji-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
+        <span class="content-sent plain-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('夜明け')">夜明け</a>の明るくなりかけた空に、<a onclick="show_vocab_data('本能寺')">本能寺</a>の<a onclick="show_vocab_data('焼け跡')">焼け跡</a>の<a onclick="show_vocab_data('くすぶった')">くすぶった</a>煙がだんだんと<a onclick="show_vocab_data('消えて')">消えて</a>いきました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The smoke from the smoldering ruins of Honnōji gradually wafted away in the dawn sky.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-24" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-24" class="fas fa-play"></i>
+        <audio id="audio_08a-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-24.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
+        <span class="content-sent kanji-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
+        <span class="content-sent plain-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
+        <span class="content-sent vocab-sent">そのきれいな<a onclick="show_vocab_data('朝日')">朝日</a>が見られなかったように、百年も続いた<a onclick="show_vocab_data('戦国時代')">戦国時代</a>を<a onclick="show_vocab_data('平定する')">平定する</a><a onclick="show_vocab_data('あと一歩')">あと一歩</a>というところで、<a onclick="show_vocab_data('信長')">信長</a>は<a onclick="show_vocab_data('ついに')">ついに</a>この世を<a onclick="show_vocab_data('去って')">去って</a>いってしまいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In the same way that he was unable to see that beautiful dawning sun, Nobunaga finally left the world just on the verge of bringing to an end the Warring States period which had continued already 100 years.</span>
+      </td>
+    </tr>
+
+    <tr id="08a-25" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_08a-25" class="fas fa-play"></i>
+        <audio id="audio_08a-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/08a-25.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
+        <span class="content-sent kanji-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
+        <span class="content-sent plain-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('天正')">天正</a>１０年（１５８２年）６月２日のことでした。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It happened the second day of the sixth month of the tenth year of Tenshō (1582).</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

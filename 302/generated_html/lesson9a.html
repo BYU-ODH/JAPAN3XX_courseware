@@ -1,0 +1,998 @@
+<html>
+
+<head>
+  <title>
+    Japanese 302
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
+}
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
+</script>
+
+<style>
+i.fa-play {
+	padding-right: 9;
+}
+
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 302</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>徳川家康</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u5fb3\u5ddd\u5bb6\u5eb7": ["\u5fb3\u5ddd\u5bb6\u5eb7(1542-1616)", "\u3068\u304f\u304c\u308f\u3044\u3048\u3084\u3059", "the first Sh\u014dgun in the Edo period; the first son of Matsudaira Hirotada"], "\u7af9\u5343\u4ee3": ["\u7af9\u5343\u4ee3", "\u305f\u3051\u3061\u3088", "childhood name of Tokugawa Ieyasu"], "\u9803": ["\u9803", "\u3053\u308d\uff08\u3054\u308d\uff09", "time; about; when; around the time"], "\u5bb6\u6765": ["\u5bb6\u6765", "\u3051\u3089\u3044", "a retainer; one's servant"], "\u304a\u3076\u308f": ["\u304a\u3076\u3046", "MISSING KANA", "to carry on one's back"], "\u6563\u6b69": ["\u6563\u6b69", "\u3055\u3093\u307d", "a walk; stroll"], "\u8fd1\u6240": ["\u8fd1\u6240", "\u304d\u3093\u3058\u3087", "the neighborhood"], "\u5b50\u4f9b": ["\u5b50\u4f9b", "\u3053\u3069\u3082", "a child; children"], "\u306f\u3055\u3093\u3067": ["\u306f\u3055\u3080", "MISSING KANA", "to put \u203e between"], "\u77f3\u5408\u6226": ["\u77f3\u5408\u6226", "\u3044\u3057\u304c\u3063\u305b\u3093", "rock fight"], "\u304a\u3082\u3057\u308d\u3044": ["\u304a\u3082\u3057\u308d\u3044", "MISSING KANA", "interesting"], "\u904a\u3073\u534a\u5206": ["\u904a\u3073\u534a\u5206", "\u3042\u305d\u3073\u306f\u3093\u3076\u3093", "half out of fun"], "\u4eba\u6570": ["\u4eba\u6570", "\u306b\u3093\u305a\u3046", "number of people"], "\u5dee": ["\u5dee", "\u3055", "difference"], "\u8a66\u5408": ["\u8a66\u5408", "\u3057\u3042\u3044", "a contest; a game"], "\u304d\u3063\u3068": ["\u304d\u3063\u3068", "MISSING KANA", "surely; undoubtedly; without fail"], "\u52dd": ["\u52dd\u3064", "\u304b\u3064", "to win"], "\u8a00\u3044\u51fa\u3057": ["\u8a00\u3044\u51fa\u3059", "\u3044\u3044\u3060\u3059", "to begin to speak; blurt out"], "\u78ba\u304b\u306b": ["\u78ba\u304b\u306b", "\u305f\u3057\u304b\u306b", "for sure"], "\u4e00\u65b9\u306f": ["\u4e00\u65b9\u306f", "\u3044\u3063\u307d\u3046\u306f", "on one side"], "\u76f8\u624b": ["\u76f8\u624b", "\u3042\u3044\u3066", "the other side; opposing side"], "\u307b\u3093\u306e": ["\u307b\u3093\u306e", "MISSING KANA", "just; only; mere"], "\u5c0f\u4eba\u6570": ["\u5c0f\u4eba\u6570", "\u3057\u3087\u3046\u306b\u3093\u305a\u3046", "a small number of people"], "\u80cc\u4e2d": ["\u80cc\u4e2d", "\u305b\u306a\u304b", "one's back"], "\u5802\u3005\u3068": ["\u5802\u3005\u3068", "\u3069\u3046\u3069\u3046\u3068", "stately; dignifiedly"], "\u58f0\u3092\u5f35\u308a": ["\u58f0\u3092\u5f35\u308b", "\u3053\u3048\u3092\u306f\u308b", "to raise one's voice"], "\u3084\u306f\u308a": ["\u3084\u306f\u308a", "MISSING KANA", "after all; sure enough"], "\u5927\u52e2": ["\u5927\u52e2", "\u304a\u304a\u305c\u3044", "many"], "\u6cb9\u65ad": ["\u6cb9\u65ad", "\u3086\u3060\u3093", "carelessness"], "\u304b\u3048\u3063\u3066": ["\u304b\u3048\u3063\u3066", "MISSING KANA", "rather"], "\u6c17\u3092\u5f15\u304d\u3057\u3081\u3066": ["\u6c17\u3092\u5f15\u304d\u3057\u3081\u308b", "\u304d\u3092\u3072\u304d\u3057\u3081\u308b", "to brace up"], "\u611f\u5fc3\u3057": ["\u611f\u5fc3\u3059\u308b", "\u304b\u3093\u3057\u3093\u3059\u308b", "to admire; be very impressed"], "\u6226\u4e89": ["\u6226\u4e89", "\u305b\u3093\u305d\u3046", "war"], "\u3046\u307e\u304f": ["\u3046\u307e\u304f", "MISSING KANA", "well; skilfully"], "\u7acb\u6d3e\u306a": ["\u7acb\u6d3e\u306a", "\u308a\u3063\u3071\u306a", "fine; honarable; admirable; splendid"], "\u5927\u5c06": ["\u5927\u5c06", "\u305f\u3044\u3057\u3087\u3046", "a head; a chief"], "\u79c0\u5409": ["\u79c0\u5409", "\u3072\u3067\u3088\u3057", "Toyotomi Hideyoshi"], "\u6b7b\u5f8c": ["\u6b7b\u5f8c", "\u3057\u3054", "after death"], "\u6cbb\u3081": ["\u6cbb\u3081\u308b", "\u304a\u3055\u3081\u308b", "to govern;  control"], "\u3082\u3061\u308d\u3093": ["\u3082\u3061\u308d\u3093", "MISSING KANA", "of course"], "\u79c0\u983c": ["\u8c4a\u81e3\u79c0\u983c(1593-1615)", "\u3068\u3088\u3068\u307f\u3072\u3067\u3088\u308a", "a son of Toyotomi Hideyoshi"], "\u606f\u5b50": ["\u606f\u5b50", "\u3080\u3059\u3053", "son"], "\u5bb6\u5eb7": ["\u5bb6\u5eb7", "\u3044\u3048\u3084\u3059", "Tokugawa Ieyasu"], "\u7c21\u5358\u306b": ["\u7c21\u5358\u306b", "\u304b\u3093\u305f\u3093\u306b", "simply; easily"], "\u653f\u6a29": ["\u653f\u6a29", "\u305b\u3044\u3051\u3093", "political power"], "\u63e1\u3063\u305f": ["\u63e1\u308b", "\u306b\u304e\u308b", "to be in power; grasp; hold"], "\u6301\u3061\u524d": ["\u6301\u3061\u524d", "\u3082\u3061\u307e\u3048", "one's nature"], "\u8f9b\u62b1\u5f37\u3055": ["\u8f9b\u62b1\u5f37\u3055", "\u3057\u3093\u307c\u3046\u3065\u3088\u3055", "patience"], "\u78ba\u5b9f": ["\u78ba\u5b9f", "\u304b\u304f\u3058\u3064", "sure"], "\u3058\u308a\u3058\u308a": ["\u3058\u308a\u3058\u308a", "MISSING KANA", "little by little"], "\u5897\u3057": ["\u5897\u3059", "\u307e\u3059", "to increase; gain; grow"], "\u3064\u3044\u306b": ["\u3064\u3044\u306b", "MISSING KANA", "at last"], "\u5929\u4e0b\u5206\u3051\u76ee\u306e\u6226\u3044": ["\u5929\u4e0b\u5206\u3051\u76ee\u306e\u6226\u3044", "\u3066\u3093\u304b\u308f\u3051\u3081\u306e\u305f\u305f\u304b\u3044", "a decisive battle"], "\u95a2\u304c\u539f\u306e\u6226\u3044": ["\u95a2\u304c\u539f\u306e\u6226\u3044", "\u305b\u304d\u304c\u306f\u3089\u306e\u305f\u305f\u304b\u3044", "the Battle of Sekigahara"], "\u52dd\u5229\u3092\u53ce\u3081": ["\u52dd\u5229\u3092\u53ce\u3081\u308b", "\u3057\u3087\u3046\u308a\u3092\u304a\u3055\u3081\u308b", "to obtain victory"], "\u6c5f\u6238": ["\u6c5f\u6238", "\u3048\u3069", "a city name; renamed T\u014dky\u014d in September 1868"], "\u73fe\u5728": ["\u73fe\u5728", "\u3052\u3093\u3056\u3044", "the present time; at present"], "\u6771\u4eac": ["\u6771\u4eac", "\u3068\u3046\u304d\u3088\u3046", "T\u014dky\u014d"], "\u5e55\u5e9c": ["\u5e55\u5e9c", "\u3070\u304f\u3075", "the shogunate"], "\u653f\u6cbb": ["\u653f\u6cbb", "\u305b\u3044\u3058", "government; politics"], "\u884c\u3044": ["\u884c\u3046", "\u304a\u3053\u306a\u3046", "to do"], "\u660e\u6cbb\u7dad\u65b0": ["\u660e\u6cbb\u7dad\u65b0", "\u3081\u3044\u3058\u3044\u3057\u3093", "the Meiji Restoration"], "\u4fe1\u9577": ["\u4fe1\u9577", "\u306e\u3076\u306a\u304c", "Oda Nobunaga"], "\u6bd4\u3079": ["\u6bd4\u3079\u308b", "\u304f\u3089\u3079\u308b", "to compare"], "\u6210\u308a\u884c\u304d": ["\u6210\u308a\u884c\u304d", "\u306a\u308a\u3086\u304d", "course of events"], "\u78ba\u304b\u3081": ["\u78ba\u304b\u3081\u308b", "\u305f\u3057\u304b\u3081\u308b", "to make sure"], "\u5fcd\u8010": ["\u5fcd\u8010", "\u306b\u3093\u305f\u3044", "patience"], "\u4f55\u4e8b": ["\u4f55\u4e8b", "\u306a\u306b\u3054\u3068", "everything"], "\u305f\u3061": ["\u305f\u3061", "MISSING KANA", "one's nature"], "\u672b\u671f": ["\u672b\u671f", "\u307e\u3063\u304d", "the latter period"], "\u82f1\u96c4": ["\u82f1\u96c4", "\u3048\u3044\u3086\u3046", "hero"], "\u6027\u683c": ["\u6027\u683c", "\u305b\u3044\u304b\u304f", "character; personality"], "\u8868\u3057": ["\u8868\u3059", "\u3042\u3089\u308f\u3059", "to show; indicate; display"], "\u9cf4\u304b": ["\u9cf4\u304f", "\u306a\u304f", "to sing"], "\u6bba\u3057": ["\u6bba\u3059", "\u3053\u308d\u3059", "to kill"], "\u307b\u3068\u3068\u304e\u3059": ["\u307b\u3068\u3068\u304e\u3059", "MISSING KANA", "a small type of bird; cuckoo"], "\u5f85": ["\u5f85\u3064", "\u307e\u3064", "to wait"], "\u77ed\u6c17": ["\u77ed\u6c17", "\u305f\u3093\u304d", "short temper"], "\u5de7\u307f\u3055": ["\u5de7\u307f\u3055", "\u305f\u304f\u307f\u3055", "skill; cleverness; ingenuity"], "\u6c17\u9577\u3055": ["\u6c17\u9577\u3055", "\u304d\u306a\u304c\u3055", "patience"], "\u672c\u5f53\u306b": ["\u672c\u5f53\u306b", "\u307b\u3093\u3068\u3046\u306b", "really; truly; actually"], "\u5168\u56fd": ["\u5168\u56fd", "\u305c\u3093\u3053\u304f", "the whole country; all over the country"], "\u85e9": ["\u85e9", "\u306f\u3093", "feudal fief"], "\u5404": ["\u5404", "\u304b\u304f", "each"], "\u5927\u540d": ["\u5927\u540d", "\u3060\u3044\u307f\u3087\u3046", "a daimyou; a feudal lord"], "\u58eb\u8fb2\u5de5\u5546": ["\u58eb\u8fb2\u5de5\u5546", "\u3057\u306e\u3046\u3053\u3046\u3057\u3087\u3046", "the four social classes in the Japanese feudal society: warriors, farmers, craftsmen, and merchants"], "\u8eab\u5206": ["\u8eab\u5206", "\u307f\u3076\u3093", "social class"], "\u5b9a\u3081": ["\u5b9a\u3081\u308b", "\u3055\u3060\u3081\u308b", "to establish; lay down"], "\u6b66\u58eb": ["\u6b66\u58eb", "\u3076\u3057", "samurai; Japanese warrior"], "\u4e00\u756a": ["\u4e00\u756a", "\u3044\u3061\u3070\u3093", "the most"], "\u8fb2\u6c11": ["\u8fb2\u6c11", "\u306e\u3046\u307f\u3093", "farmer; peasant"], "\u753a\u4eba": ["\u753a\u4eba", "\u3061\u3087\u3046\u306b\u3093", "townspeople"], "\u652f\u914d\u3057": ["\u652f\u914d\u3059\u308b", "\u3057\u306f\u3044\u3059\u308b", "to manage; rule over"], "\u52dd\u624b\u306b": ["\u52dd\u624b\u306b", "\u304b\u3063\u3066\u306b", "as one pleases; freely"], "\u571f\u5730": ["\u571f\u5730", "\u3068\u3061", "land"], "\u96e2\u308c\u308b": ["\u96e2\u308c\u308b", "\u306f\u306a\u308c\u308b", "to leave"], "\u5e73\u5b89\u6642\u4ee3": ["\u5e73\u5b89\u6642\u4ee3", "\u3078\u3044\u3042\u3093\u3058\u3060\u3044", "the Heian period"], "\u52e2\u529b": ["\u52e2\u529b", "\u305b\u3044\u308a\u3087\u304f", "power; influence"], "\u8cb4\u65cf": ["\u8cb4\u65cf", "\u304d\u305e\u304f", "the nobility; the aristocracy"], "\u6226\u56fd\u6642\u4ee3": ["\u6226\u56fd\u6642\u4ee3", "\u305b\u3093\u3054\u304f\u3058\u3060\u3044", "the Warring States period"], "\u3059\u3063\u304b\u308a": ["\u3059\u3063\u304b\u308a", "MISSING KANA", "all; utterly; quite; entirely"], "\u9818\u571f": ["\u9818\u571f", "\u308a\u3087\u3046\u3069", "territory"], "\u7121\u529b": ["\u7121\u529b", "\u3080\u308a\u3087\u304f", "powerless"], "\u5b58\u5728": ["\u5b58\u5728", "\u305d\u3093\u3056\u3044", "existence"], "\u7d4c\u6e08\u7684\u306a\u529b": ["\u7d4c\u6e08\u7684\u306a\u529b", "\u3051\u3044\u3056\u3044\u3066\u304d\u306a\u3061\u304b\u3089", "power over the economy"], "\u4e0d\u5229": ["\u4e0d\u5229", "\u3075\u308a", "disadvantage"], "\u4e8b\u696d": ["\u4e8b\u696d", "\u3058\u304e\u3087\u3046", "enterprise, undertaking"], "\u796d\u3063": ["\u796d\u308b", "\u307e\u3064\u308b", "to worship; deify"], "\u65e5\u5149": ["\u65e5\u5149", "\u306b\u3063\u3053\u3046", "the name of a place"], "\u6771\u7167\u5bae": ["\u6771\u7167\u5bae", "\u3068\u3046\u3057\u3087\u3046\u3050\u3046", "the name of a shrine in Nikk\u014d"], "\u9020": ["\u9020\u308b", "\u3064\u304f\u308b", "to build"], "\u53c2\u52e4\u4ea4\u4ee3": ["\u53c2\u52e4\u4ea4\u4ee3", "\u3055\u3093\u304d\u3093\u3053\u3046\u305f\u3044", "system of vassalage during Edo period"], "\u5236\u5ea6": ["\u5236\u5ea6", "\u305b\u3044\u3069", "system"], "\u4e00\u5e74\u304a\u304d\u306b": ["\u4e00\u5e74\u304a\u304d\u306b", "\u3044\u3061\u306d\u3093\u304a\u304d\u306b", "every other year"], "\u4ed5\u3048": ["\u4ed5\u3048\u308b", "\u3064\u304b\u3048\u308b", "to serve"], "\u7fa9\u52d9": ["\u7fa9\u52d9", "\u304e\u3080", "duty"], "\u91d1": ["\u91d1", "\u304f\u304c\u306d", "gold (archaic)"], "\u9396\u56fd": ["\u9396\u56fd", "\u3055\u3053\u304f", "closed country"], "\u4ea4\u969b": ["\u4ea4\u969b", "\u3053\u3046\u3055\u3044", "association; relations"], "\u4e00\u5207": ["\u4e00\u5207", "\u3044\u3063\u3055\u3044", "(not) at all"], "\u7981\u6b62": ["\u7981\u6b62\u3059\u308b", "\u304d\u3093\u3057\u3059\u308b", "to prohibit"], "\u653f\u7b56": ["\u653f\u7b56", "\u305b\u3044\u3055\u304f", "policy"], "\u5b9f\u969b\u5316": ["\u5b9f\u969b\u5316\u3059\u308b", "\u3058\u3063\u3055\u3044\u304b\u3059\u308b", "to make practical"], "\u4e2d\u5fc3": ["\u4e2d\u5fc3", "\u3061\u3085\u3046\u3057\u3093", "the center; the middle"], "\u793e\u4f1a": ["\u793e\u4f1a", "\u3057\u3083\u304b\u3044", "society"], "\u7bc9\u3044\u305f": ["\u7bc9\u304f", "\u304d\u305a\u304f", "to build"], "\u4ee3\u3005": ["\u4ee3\u3005", "\u3060\u3044\u3060\u3044", "generation after generation"], "\u5b50\u5b6b": ["\u5b50\u5b6b", "\u3057\u305d\u3093", "descendants"], "\u57fa\u790e": ["\u57fa\u790e", "\u304d\u305d", "the foundation"]};
+  var grammar_json = {"\u52dd\u3064\u306b\u6c7a\u307e\u3063\u3066\u3044\u308b": [" S \u306b\u6c7a\u307e\u3063\u3066\u3044\u308b", " for sure; it is certain that S <br/><br/> S could be any sentence. When the sentence ends with a na-nominal (keiy\u014d-d\u014dshi), \u3060 is deleted before \u306b. e.g. \u304d\u308c\u3044\u306b\u6c7a\u307e\u3063\u3066\u3044\u308b; \u6709\u540d\u306b\u6c7a\u307e\u3063\u3066\u3044\u308b. The speaker expresses a strong opinion with this pattern. ", [["\u4e2d\u56fd\u306e\u65b9\u304c\u65e5\u672c\u3088\u308a\u5927\u304d\u3044\u306b\u6c7a\u307e\u3063\u3066\u3044\u308b\u3002", "It is certain that China is bigger than Japan."], ["\u7530\u4e2d\u541b\u306f\u50d5\u306e\u3084\u308a\u65b9\u3092\u307e\u306d\u3057\u305f\u306b\u6c7a\u307e\u3063\u3066\u3044\u308b\u3002", "I'm sure that Tanaka imitated my way of doing it."]]], "\u52dd\u3061\u307e\u3059\u3088": [" \u301c\u3088", " emphasis; exclamatory <br/><br/> By adding \u3088 at the end of a sentence, the speaker is claiming that the information presented in the sentence is his own information. Hence, make sure that the statement is something that you can claim, otherwise it could sound overconfident and convey arrogance or overfamiliarity. ", [["\u304c\u307e\u3093\u3057\u3066\u3044\u308c\u3070\u3088\u304f\u306a\u308a\u307e\u3059\u3088\u3002", "If you put up with it, you'll get better."], ["\u501f\u91d1\u3067\u3082\u3057\u306a\u3044\u3068\u3084\u3063\u3066\u3044\u3051\u306a\u3044\u3093\u3067\u3059\u3088\u3002", "We can't get by without going into debt."]]], "\u63e1\u3063\u305f\u308f\u3051\u3067\u306f\u3042\u308a\u307e\u305b\u3093": [" \u301c\u308f\u3051\u3067\u306f\u306a\u3044", " that is not the case <br/><br/> This structure indicates an assurance by the speaker that \u301c is not the case. \u4f8b. \u65e5\u672c\u4eba\u304c\u307f\u306a\u6069\u3084\u7fa9\u7406\u3092\u77e5\u3063\u3066\u3044\u308b\u308f\u3051\u3067\u306f\u3042\u308a\u307e\u305b\u3093\u3002 It is not true that all Japanese know \"on\" and \"giri.\" ", []], "\u78ba\u5b9f\u306b\u3084\u308b\u305f\u3061": [" \u301c\u305f\u3061\u3060 ", " disposition; quality; nature <br/><br/> The clause \u301c before \u305f\u3061 must be a verbal clause. In other words, nouns and adjectives cannot modify \u305f\u3061. Generally speaking, \u305f\u3061 implies an undesirable or negative disposition, but that is not always the case as in examples 1 and 2. ", [["\u3042\u306e\u4eba\u306f\u4f55\u3067\u3082\u4e00\u751f\u61f8\u547d\u3084\u308b\u305f\u3061\u3060\u304b\u3089\u304d\u3063\u3068\u6210\u529f\u3059\u308b\u3002", "He tends to do everything diligently, so he'll surely succeed."], ["\u3042\u306e\u4eba\u306f\u305d\u3046\u3044\u3046\u305f\u3061\u3060\u304b\u3089\u8a31\u3057\u3066\u3042\u3052\u3066\u4e0b\u3055\u3044\u3002", "Please forgive him. It's just his nature."]]], "\u9cf4\u304b\u306c\u306a\u3089": [" \u301c\u306a\u3089", " if (assertive) <br/><br/> An if-clause with \u306a\u3089 usually indicates an assertion, meaning \"if you tell me \u301c, then . . . .\" Hence, this clause is used often with subjective statements. ", [["\u52c9\u5f37\u3057\u305f\u3044\u306a\u3089\u56f3\u66f8\u9928\u3078\u884c\u304d\u306a\u3055\u3044\u3002", "If you want to study, go to the library."], ["\u81ea\u5206\u306b\u90fd\u5408\u304c\u3044\u3044\u306e\u306a\u3089\u4f55\u3067\u3082\u3059\u308b\u305f\u3061\u306a\u306e\u3067\u3059\u3002", "He's the type that does anything if it's convenient for him."]]], "\u9cf4\u304b\u305b\u3066\u307f\u305b\u3088\u3046": [" \u301c\u3088\u3046(\u3046)", " I will <br/><br/> \u3088\u3046 follows the stem of the ichidan verbs and \u3046the stem + O (BaseV) of godan verbs. This structure indicates the speaker's strong intention \"I will\" or a suggestion to do something together Let's \u301c .\" \u4f8b. \u3061\u3087\u3046\u3069\u884c\u3053\u3046\u3068\u601d\u3063\u3066\u3044\u307e\u3057\u305f\u3002 I was just thinking about going. ", []]};
+  var kanji_json = {"\u904a": ["\u3042\u305d\uff08\u3076\uff09", "\u30e6\u30a6\u30fb\u30e6", "PLAY; AMUSE ONESELF; VISIT; GO ON A TRIP", []], "\u5dee": ["\u3055\uff08\u3059\uff09", "\u30b5", "DIFFERENCE; DISTINCTION", []], "\u8a66": ["\u3053\u3053\u308d\uff08\u307f\u308b\uff09\u30fb\u305f\u3081\uff08\u3059\uff09", "\u30b7", "TRY; ATTEMPT; TEST; EXPERIMENT", []], "\u78ba": ["\u305f\u3057\uff08\u304b\uff09\u30fb\u305f\u3057\uff08\u304b\u3081\u308b\uff09", "\u30ab\u30af", "CERTAIN; MAKE SURE; HARD", []], "\u5802": ["", "\u30c9\u30a6", "HALL; BUILDING", []], "\u5358": ["", "\u30bf\u30f3", "SINGLE; SIMPLE", []], "\u652f": ["\u3055\u3055\uff08\u3048\u308b\uff09", "\u30b7", "SUPPORT; DIVIDE; SPLIT; APPORTION; BRANCH", []], "\u5b58": ["", "\u30bd\u30f3\u30fb\u30be\u30f3", "EXIST; THINK; KNOW; PRESERVE", []], "\u53c2": ["\u307e\u3044\uff08\u308b\uff09", "\u30b5\u30f3", "ARRANGE IN ORDER; COME (HUMBLE); GO (HUMBLE); REFER", []], "\u52e4": ["\u3064\u3068\uff08\u3081\u308b\uff09\u30fb\u3064\u3068\uff08\u307e\u308b\uff09", "\u30ad\u30f3\u30fb\u30b4\u30f3", "SERVE; WORK", []], "\u5236": ["", "\u30bb\u30a4", "PUT THINGS IN ORDER; SYSTEM; CONTROL", []], "\u52d9": ["\u3064\u3068\uff08\u3081\u308b\uff09", "\u30e0", "WORK; JOB; DUTY", []], "\u7981": ["", "\u30ad\u30f3", "PROHIBIT; TABOO; STOP; IMPRISON", []], "\u7b56": ["", "\u30b5\u30af", "PLAN; SCHEME; POLICY; WHIP", []]};
+  </script>
+  <div class="block title">徳川家康</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/L09a.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="09a-01" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-01" class="fas fa-play"></i>
+        <audio id="audio_09a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-01.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
+        <span class="content-sent kanji-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
+        <span class="content-sent plain-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('徳川家康')">徳川家康</a>が、まだ小さくて<a onclick="show_vocab_data('竹千代')">竹千代</a>と言っていた<a onclick="show_vocab_data('頃')">頃</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The following event happened when Tokugawa Ieyasu was still small and called [by his boyhood name of] Takechiyo.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-02" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-02" class="fas fa-play"></i>
+        <audio id="audio_09a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-02.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
+        <span class="content-sent kanji-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
+        <span class="content-sent plain-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('家来')">家来</a>に<a onclick="show_vocab_data('おぶわ')">おぶわ</a>れて<a onclick="show_vocab_data('散歩')">散歩</a>に出てみると、<a onclick="show_vocab_data('近所')">近所</a>の<a onclick="show_vocab_data('子供')">子供</a>達が川を<a onclick="show_vocab_data('はさんで')">はさんで</a><a onclick="show_vocab_data('石合戦')">石合戦</a>をしていました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">As he went for a stroll, carried piggyback by a retainer, the children of the neighborhood were having a rock fight on both sides of a river.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-03" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-03" class="fas fa-play"></i>
+        <audio id="audio_09a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-03.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">おもしろいので遊び半分に見ていると、一人の家来が、「こんなに人数の差があっては試合にならない。きっと人数の多い方が<a onclick="show_grammar_data('勝つに決まっている')">勝つに決まっている</a>」と言い出しました。</span>
+        <span class="content-sent kanji-sent is-hidden">おもしろいので<a onclick="show_kanji_data('遊')">遊</a>び半分に見ていると、一人の家来が、「こんなに人数の<a onclick="show_kanji_data('差')">差</a>があっては<a onclick="show_kanji_data('試')">試</a>合にならない。きっと人数の多い方が勝つに決まっている」と言い出しました。</span>
+        <span class="content-sent plain-sent is-hidden">おもしろいので遊び半分に見ていると、一人の家来が、「こんなに人数の差があっては試合にならない。きっと人数の多い方が勝つに決まっている」と言い出しました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('おもしろい')">おもしろい</a>ので<a onclick="show_vocab_data('遊び半分')">遊び半分</a>に見ていると、一人の<a onclick="show_vocab_data('家来')">家来</a>が、「こんなに<a onclick="show_vocab_data('人数')">人数</a>の<a onclick="show_vocab_data('差')">差</a>があっては<a onclick="show_vocab_data('試合')">試合</a>にならない。<a onclick="show_vocab_data('きっと')">きっと</a><a onclick="show_vocab_data('人数')">人数</a>の多い方が<a onclick="show_vocab_data('勝')">勝</a>つに決まっている」と<a onclick="show_vocab_data('言い出し')">言い出し</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">As they watched, half in amusement, one retainer said, &quot;With such a large difference in numbers it will be no contest. Surely, the larger side will win.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="09a-04" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-04" class="fas fa-play"></i>
+        <audio id="audio_09a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-04.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">確かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
+        <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('確')">確</a>かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
+        <span class="content-sent plain-sent is-hidden">確かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('確かに')">確かに</a>、<a onclick="show_vocab_data('一方は')">一方は</a>とても<a onclick="show_vocab_data('人数')">人数</a>が多いのですが、<a onclick="show_vocab_data('相手')">相手</a>は<a onclick="show_vocab_data('ほんの')">ほんの</a><a onclick="show_vocab_data('小人数')">小人数</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Indeed, one side was large, while the other was very small.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-05" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-05" class="fas fa-play"></i>
+        <audio id="audio_09a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-05.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が<a onclick="show_grammar_data('勝ちますよ')">勝ちますよ</a>。」と堂々と声を張りました。</span>
+        <span class="content-sent kanji-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が勝ちますよ。」と<a onclick="show_kanji_data('堂')">堂</a>々と声を張りました。</span>
+        <span class="content-sent plain-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が勝ちますよ。」と堂々と声を張りました。</span>
+        <span class="content-sent vocab-sent">ところが、<a onclick="show_vocab_data('家来')">家来</a>の<a onclick="show_vocab_data('背中')">背中</a>に<a onclick="show_vocab_data('おぶわ')">おぶわ</a>れている<a onclick="show_vocab_data('竹千代')">竹千代</a>は、「いや、<a onclick="show_vocab_data('きっと')">きっと</a><a onclick="show_vocab_data('小人数')">小人数</a>の方が<a onclick="show_vocab_data('勝')">勝</a>ちますよ。」と<a onclick="show_vocab_data('堂々と')">堂々と</a><a onclick="show_vocab_data('声を張り')">声を張り</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Takechiyo, however, still carried by his retainer, said with great dignity in a tense voice, &quot;No. The side with the fewer numbers will surely win.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="09a-06" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-06" class="fas fa-play"></i>
+        <audio id="audio_09a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-06.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
+        <span class="content-sent kanji-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
+        <span class="content-sent plain-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('石合戦')">石合戦</a>が終わってみると、<a onclick="show_vocab_data('やはり')">やはり</a>、<a onclick="show_vocab_data('竹千代')">竹千代</a>の言ったように<a onclick="show_vocab_data('小人数')">小人数</a>の方が<a onclick="show_vocab_data('勝')">勝</a>ちました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Sure enough, when the battle came to an end the smaller group had won, just as Takechiyo had said.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-07" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-07" class="fas fa-play"></i>
+        <audio id="audio_09a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-07.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
+        <span class="content-sent kanji-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
+        <span class="content-sent plain-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('竹千代')">竹千代</a>は、「<a onclick="show_vocab_data('大勢')">大勢</a>の方は、<a onclick="show_vocab_data('人数')">人数</a>が多いからと言って<a onclick="show_vocab_data('油断')">油断</a>をしていた。でも、<a onclick="show_vocab_data('小人数')">小人数</a>の方は数が少ないので、<a onclick="show_vocab_data('かえって')">かえって</a><a onclick="show_vocab_data('気を引きしめて')">気を引きしめて</a>力を合わせてやったので<a onclick="show_vocab_data('勝')">勝</a>ったのだ。」と言いました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">&quot;The large group was careless because they outnumbered the other. The small group, on the other hand, because they were outnumbered, disciplined themselves and worked together, so they won,&quot; he said.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-08" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-08" class="fas fa-play"></i>
+        <audio id="audio_09a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-08.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
+        <span class="content-sent kanji-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
+        <span class="content-sent plain-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('家来')">家来</a>はとても<a onclick="show_vocab_data('感心し')">感心し</a>て、「<a onclick="show_vocab_data('竹千代')">竹千代</a>様は、<a onclick="show_vocab_data('きっと')">きっと</a><a onclick="show_vocab_data('戦争')">戦争</a>も<a onclick="show_vocab_data('うまく')">うまく</a>なり、<a onclick="show_vocab_data('立派な')">立派な</a><a onclick="show_vocab_data('大将')">大将</a>になられるでしょう。」と言ったと言われています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The story says that the retainers, very impressed, said, &quot;Lord Takechiyo will no doubt be good at battle strategy and will make a splendid general.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="09a-09" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-09" class="fas fa-play"></i>
+        <audio id="audio_09a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-09.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
+        <span class="content-sent kanji-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
+        <span class="content-sent plain-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('竹千代')">竹千代</a>が、<a onclick="show_vocab_data('秀吉')">秀吉</a>の<a onclick="show_vocab_data('死後')">死後</a>、日本の国を<a onclick="show_vocab_data('治め')">治め</a>るようになった<a onclick="show_vocab_data('徳川家康')">徳川家康</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">This Takechiyo was Tokugawa Ieyasu, who came to rule the nation of Japan after Hideyoshi&#39;s death.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-10" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-10" class="fas fa-play"></i>
+        <audio id="audio_09a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-10.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡単に政権を<a onclick="show_grammar_data('握ったわけではありません')">握ったわけではありません</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡<a onclick="show_kanji_data('単')">単</a>に政権を握ったわけではありません。</span>
+        <span class="content-sent plain-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡単に政権を握ったわけではありません。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('もちろん')">もちろん</a>、<a onclick="show_vocab_data('秀吉')">秀吉</a>には<a onclick="show_vocab_data('秀頼')">秀頼</a>という<a onclick="show_vocab_data('息子')">息子</a>があり、<a onclick="show_vocab_data('家康')">家康</a>もそう<a onclick="show_vocab_data('簡単に')">簡単に</a><a onclick="show_vocab_data('政権')">政権</a>を<a onclick="show_vocab_data('握った')">握った</a>わけではありません。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It was, of course, not all that easy for Ieyasu to get control of political power because Hideyoshi had a son named Hideyori.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-11" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-11" class="fas fa-play"></i>
+        <audio id="audio_09a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-11.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">しかし、持ち前の辛抱強さと確実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
+        <span class="content-sent kanji-sent is-hidden">しかし、持ち前の辛抱強さと<a onclick="show_kanji_data('確')">確</a>実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
+        <span class="content-sent plain-sent is-hidden">しかし、持ち前の辛抱強さと確実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
+        <span class="content-sent vocab-sent">しかし、<a onclick="show_vocab_data('持ち前')">持ち前</a>の<a onclick="show_vocab_data('辛抱強さ')">辛抱強さ</a>と<a onclick="show_vocab_data('確実')">確実</a>さで<a onclick="show_vocab_data('じりじり')">じりじり</a>と力を<a onclick="show_vocab_data('増し')">増し</a>、<a onclick="show_vocab_data('ついに')">ついに</a><a onclick="show_vocab_data('天下分け目の戦い')">天下分け目の戦い</a>と言われた<a onclick="show_vocab_data('関が原の戦い')">関が原の戦い</a>で<a onclick="show_vocab_data('勝利を収め')">勝利を収め</a>、１６０３年、<a onclick="show_vocab_data('江戸')">江戸</a>（<a onclick="show_vocab_data('現在')">現在</a>の<a onclick="show_vocab_data('東京')">東京</a>）に<a onclick="show_vocab_data('幕府')">幕府</a>を開き<a onclick="show_vocab_data('政治')">政治</a>を<a onclick="show_vocab_data('行い')">行い</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">However, thanks to his innate patience and steadiness, he built his power little by little, and after attaining victory in what is known as the decisive battle at Sekigahara, he established a bakufu [military government] in Edo (currently Tōkyō) from where he took charge of the government.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-12" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-12" class="fas fa-play"></i>
+        <audio id="audio_09a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-12.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
+        <span class="content-sent kanji-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
+        <span class="content-sent plain-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('江戸')">江戸</a><a onclick="show_vocab_data('幕府')">幕府</a>が、１８６８年の<a onclick="show_vocab_data('明治維新')">明治維新</a>になるまでの長い間続いたわけです。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The Edo Shogunate continued all the way until the Meiji restoration in 1868.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-13" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-13" class="fas fa-play"></i>
+        <audio id="audio_09a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-13.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく確かめて、忍耐強く、何事も<a onclick="show_grammar_data('確実にやるたち')">確実にやるたち</a>でした。</span>
+        <span class="content-sent kanji-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく<a onclick="show_kanji_data('確')">確</a>かめて、忍耐強く、何事も<a onclick="show_kanji_data('確')">確</a>実にやるたちでした。</span>
+        <span class="content-sent plain-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく確かめて、忍耐強く、何事も確実にやるたちでした。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('家康')">家康</a>は、<a onclick="show_vocab_data('秀吉')">秀吉</a>や<a onclick="show_vocab_data('信長')">信長</a>と<a onclick="show_vocab_data('比べ')">比べ</a>ると、ものごとの<a onclick="show_vocab_data('成り行き')">成り行き</a>をよく<a onclick="show_vocab_data('確かめ')">確かめ</a>て、<a onclick="show_vocab_data('忍耐')">忍耐</a>強く、<a onclick="show_vocab_data('何事')">何事</a>も<a onclick="show_vocab_data('確実')">確実</a>にやる<a onclick="show_vocab_data('たち')">たち</a>でした。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Compared to Hideyoshi and Nobunaga, Ieyasu was of a disposition to patiently make very certain of things and to act very deliberately.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-14" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-14" class="fas fa-play"></i>
+        <audio id="audio_09a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-14.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
+        <span class="content-sent kanji-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
+        <span class="content-sent plain-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
+        <span class="content-sent vocab-sent">この戦国<a onclick="show_vocab_data('末期')">末期</a>の三<a onclick="show_vocab_data('英雄')">英雄</a>、<a onclick="show_vocab_data('信長')">信長</a>、<a onclick="show_vocab_data('秀吉')">秀吉</a>、<a onclick="show_vocab_data('家康')">家康</a>の<a onclick="show_vocab_data('性格')">性格</a>をよく<a onclick="show_vocab_data('表し')">表し</a>たとても<a onclick="show_vocab_data('おもしろい')">おもしろい</a>歌があります。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">There is a very interesting poem expressing well the characters of Nobunaga, Hideyoshi, and Ieyasu, the three great heroes of the last part of the Warring States Period:</span>
+      </td>
+    </tr>
+
+    <tr id="09a-15" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-15" class="fas fa-play"></i>
+        <audio id="audio_09a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-15.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a>殺してしまえほととぎす</span>
+        <span class="content-sent kanji-sent is-hidden">鳴かぬなら殺してしまえほととぎす</span>
+        <span class="content-sent plain-sent is-hidden">鳴かぬなら殺してしまえほととぎす</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('鳴か')">鳴か</a>ぬなら<a onclick="show_vocab_data('殺し')">殺し</a>てしまえ<a onclick="show_vocab_data('ほととぎす')">ほととぎす</a></span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The nightingale: if she won&#39;t sing, kill her.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-16" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-16" class="fas fa-play"></i>
+        <audio id="audio_09a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-16.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a><a onclick="show_grammar_data('鳴かせてみせよう')">鳴かせてみせよう</a>ほととぎす</span>
+        <span class="content-sent kanji-sent is-hidden">鳴かぬなら鳴かせてみせようほととぎす</span>
+        <span class="content-sent plain-sent is-hidden">鳴かぬなら鳴かせてみせようほととぎす</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('鳴か')">鳴か</a>ぬなら<a onclick="show_vocab_data('鳴か')">鳴か</a>せてみせよう<a onclick="show_vocab_data('ほととぎす')">ほととぎす</a></span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The nightingale: if she won&#39;t sing, I&#39;ll force her to do it.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-17" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-17" class="fas fa-play"></i>
+        <audio id="audio_09a-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-17.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a>鳴くまで待とうほととぎす</span>
+        <span class="content-sent kanji-sent is-hidden">鳴かぬなら鳴くまで待とうほととぎす</span>
+        <span class="content-sent plain-sent is-hidden">鳴かぬなら鳴くまで待とうほととぎす</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('鳴か')">鳴か</a>ぬなら鳴くまで<a onclick="show_vocab_data('待')">待</a>とう<a onclick="show_vocab_data('ほととぎす')">ほととぎす</a></span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The nightingale: if she won&#39;t sing, I&#39;ll wait until she does.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-18" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-18" class="fas fa-play"></i>
+        <audio id="audio_09a-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-18.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
+        <span class="content-sent kanji-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
+        <span class="content-sent plain-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('信長')">信長</a>の<a onclick="show_vocab_data('短気')">短気</a>、<a onclick="show_vocab_data('秀吉')">秀吉</a>の<a onclick="show_vocab_data('巧みさ')">巧みさ</a>、<a onclick="show_vocab_data('家康')">家康</a>の<a onclick="show_vocab_data('気長さ')">気長さ</a>を<a onclick="show_vocab_data('本当に')">本当に</a><a onclick="show_vocab_data('うまく')">うまく</a><a onclick="show_vocab_data('表し')">表し</a>ていると思います。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The poem seems to me to clearly reveal Nobunaga&#39;s short temper, Hideyoshi&#39;s ingenuity, and Ieyasu&#39;s patience.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-19" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-19" class="fas fa-play"></i>
+        <audio id="audio_09a-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-19.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
+        <span class="content-sent kanji-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
+        <span class="content-sent plain-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('江戸')">江戸</a><a onclick="show_vocab_data('幕府')">幕府</a>は<a onclick="show_vocab_data('全国')">全国</a>を<a onclick="show_vocab_data('藩')">藩</a>に分けて、<a onclick="show_vocab_data('各')">各</a><a onclick="show_vocab_data('藩')">藩</a>に<a onclick="show_vocab_data('大名')">大名</a>を置いて<a onclick="show_vocab_data('治め')">治め</a>させました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The Edo Shogunate divided the whole country into fiefs and placed a Daimyō in each to rule it.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-20" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-20" class="fas fa-play"></i>
+        <audio id="audio_09a-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-20.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を支配しました。</span>
+        <span class="content-sent kanji-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を<a onclick="show_kanji_data('支')">支</a>配しました。</span>
+        <span class="content-sent plain-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を支配しました。</span>
+        <span class="content-sent vocab-sent">また、人々は<a onclick="show_vocab_data('士農工商')">士農工商</a>という<a onclick="show_vocab_data('身分')">身分</a>に<a onclick="show_vocab_data('定め')">定め</a>られ、<a onclick="show_vocab_data('武士')">武士</a>が<a onclick="show_vocab_data('一番')">一番</a>上で、<a onclick="show_vocab_data('農民')">農民</a>や<a onclick="show_vocab_data('町人')">町人</a>を<a onclick="show_vocab_data('支配し')">支配し</a>ました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The people were also divided into [the four classes of] warrior, peasant, artisan, and merchant, with the warrior in control at the top.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-21" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-21" class="fas fa-play"></i>
+        <audio id="audio_09a-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-21.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
+        <span class="content-sent kanji-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
+        <span class="content-sent plain-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('農民')">農民</a>は<a onclick="show_vocab_data('勝手に')">勝手に</a>自分達の<a onclick="show_vocab_data('土地')">土地</a>を<a onclick="show_vocab_data('離れる')">離れる</a>ことはできませんでした。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The peasants were not free to leave their lands at will.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-22" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-22" class="fas fa-play"></i>
+        <audio id="audio_09a-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-22.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な存在になっていました。</span>
+        <span class="content-sent kanji-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な<a onclick="show_kanji_data('存')">存</a>在になっていました。</span>
+        <span class="content-sent plain-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な存在になっていました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('平安時代')">平安時代</a>に<a onclick="show_vocab_data('勢力')">勢力</a>のあった<a onclick="show_vocab_data('貴族')">貴族</a>達は長い<a onclick="show_vocab_data('戦国時代')">戦国時代</a>で<a onclick="show_vocab_data('すっかり')">すっかり</a><a onclick="show_vocab_data('領土')">領土</a>を失い、<a onclick="show_vocab_data('無力')">無力</a>な<a onclick="show_vocab_data('存在')">存在</a>になっていました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The nobility, who had held power during the Heian period, lost their estates completely over the long warring states period, ending up powerless.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-23" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-23" class="fas fa-play"></i>
+        <audio id="audio_09a-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-23.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
+        <span class="content-sent kanji-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
+        <span class="content-sent plain-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('江戸')">江戸</a><a onclick="show_vocab_data('幕府')">幕府</a>は、ほかの<a onclick="show_vocab_data('大名')">大名</a>達が<a onclick="show_vocab_data('経済的な力')">経済的な力</a>を持つと<a onclick="show_vocab_data('不利')">不利</a>になるとみて、いろいろな<a onclick="show_vocab_data('事業')">事業</a>を<a onclick="show_vocab_data('大名')">大名</a>達にさせました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Thinking it would be to their own disadvantage if other Daimyō possessed economic power, the Edo Shōgunate forced the Daimyō to undertake various projects.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-24" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-24" class="fas fa-play"></i>
+        <audio id="audio_09a-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-24.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">家康を祭った日光の東照宮を造らせたり、参勤交代の制度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義務にし、お金を使わせたのです。</span>
+        <span class="content-sent kanji-sent is-hidden">家康を祭った日光の東照宮を造らせたり、<a onclick="show_kanji_data('参')">参</a><a onclick="show_kanji_data('勤')">勤</a>交代の<a onclick="show_kanji_data('制')">制</a>度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義<a onclick="show_kanji_data('務')">務</a>にし、お金を使わせたのです。</span>
+        <span class="content-sent plain-sent is-hidden">家康を祭った日光の東照宮を造らせたり、参勤交代の制度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義務にし、お金を使わせたのです。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('家康')">家康</a>を<a onclick="show_vocab_data('祭っ')">祭っ</a>た<a onclick="show_vocab_data('日光')">日光</a>の<a onclick="show_vocab_data('東照宮')">東照宮</a>を<a onclick="show_vocab_data('造')">造</a>らせたり、<a onclick="show_vocab_data('参勤交代')">参勤交代</a>の<a onclick="show_vocab_data('制度')">制度</a>を<a onclick="show_vocab_data('定め')">定め</a>て<a onclick="show_vocab_data('大名')">大名</a>達が<a onclick="show_vocab_data('一年おきに')">一年おきに</a><a onclick="show_vocab_data('江戸')">江戸</a>に出て<a onclick="show_vocab_data('幕府')">幕府</a>に<a onclick="show_vocab_data('仕え')">仕え</a>るのを<a onclick="show_vocab_data('義務')">義務</a>にし、お<a onclick="show_vocab_data('金')">金</a>を使わせたのです。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">They caused them to use up their funds by having them build the Nikkō Tōshōgū shrine, where Ieyasu is worshipped, and established the alternate attendance system, whereby Daimyō were given the duty to journey to Edo to be in attendance on the Shogunate every other year.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-25" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-25" class="fas fa-play"></i>
+        <audio id="audio_09a-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-25.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">また、鎖国と言って、外国との交際を一切禁止しました。</span>
+        <span class="content-sent kanji-sent is-hidden">また、鎖国と言って、外国との交際を一切<a onclick="show_kanji_data('禁')">禁</a>止しました。</span>
+        <span class="content-sent plain-sent is-hidden">また、鎖国と言って、外国との交際を一切禁止しました。</span>
+        <span class="content-sent vocab-sent">また、<a onclick="show_vocab_data('鎖国')">鎖国</a>と言って、外国との<a onclick="show_vocab_data('交際')">交際</a>を<a onclick="show_vocab_data('一切')">一切</a><a onclick="show_vocab_data('禁止')">禁止</a>しました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Also, [under a policy] known as sakoku (national isolation), they outlawed exchange with foreign countries altogether.</span>
+      </td>
+    </tr>
+
+    <tr id="09a-26" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_09a-26" class="fas fa-play"></i>
+        <audio id="audio_09a-26" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/09a-26.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このような政策や制度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
+        <span class="content-sent kanji-sent is-hidden">このような政<a onclick="show_kanji_data('策')">策</a>や<a onclick="show_kanji_data('制')">制</a>度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
+        <span class="content-sent plain-sent is-hidden">このような政策や制度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
+        <span class="content-sent vocab-sent">このような<a onclick="show_vocab_data('政策')">政策</a>や<a onclick="show_vocab_data('制度')">制度</a>を<a onclick="show_vocab_data('実際化')">実際化</a>して、<a onclick="show_vocab_data('武士')">武士</a><a onclick="show_vocab_data('中心')">中心</a>の<a onclick="show_vocab_data('社会')">社会</a>を<a onclick="show_vocab_data('築いた')">築いた</a>のは<a onclick="show_vocab_data('家康')">家康</a><a onclick="show_vocab_data('代々')">代々</a>続いた<a onclick="show_vocab_data('子孫')">子孫</a>達ですが、この長い<a onclick="show_vocab_data('江戸')">江戸</a><a onclick="show_vocab_data('幕府')">幕府</a>を開き<a onclick="show_vocab_data('基礎')">基礎</a>を作ったのが<a onclick="show_vocab_data('徳川家康')">徳川家康</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It was the succeeding generations of descendants of Ieyasu who put the policies and systems into effect, and built a feudal society, but it was Tokugawa Ieyasu who established and provided the foundation for the lengthy Edo Shogunate.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+

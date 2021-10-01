@@ -1,0 +1,718 @@
+<html>
+
+<head>
+  <title>
+    Japanese 302
+  </title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="fontawesome-free-5.15.3-web/css/all.min.css">
+<script>
+function aud_play_pause(this_elem, elemId) {
+    var myIcon = this_elem.getElementsByTagName("i")[0]
+    var myAudio = this_elem.getElementsByTagName("audio")[0]
+    if (myAudio.paused) {
+        myIcon.classList.remove('fas', 'fa-play')
+        myIcon.classList.add('fas', 'fa-pause')
+        myAudio.play()
+    } else {
+        unplay(myIcon)
+        myAudio.pause()
+    }
+}
+
+
+function unplay(elem) {
+    elem.classList.remove('fas', 'fa-pause')
+    elem.classList.add('fas', 'fa-play')
+}
+
+
+function show_hide_trans(elem) {
+    trans_elem = elem.getElementsByClassName('trans')[0]
+    if (trans_elem.classList.contains('is-invisible')) {
+        trans_elem.classList.remove('is-invisible')
+    } else {
+        trans_elem.classList.add('is-invisible')
+    }
+}
+
+
+function change_mode(mode) {
+    mode_buttons = document.getElementsByClassName('mode-button')
+    for (let i = 0; i < mode_buttons.length; i++) {
+        mode_buttons[i].classList.remove('is-primary')
+    }
+    document.getElementsByClassName(mode)[0].classList.add('is-primary')
+
+    all_sents = document.getElementsByClassName('content-sent')
+    for (let i = 0; i < all_sents.length; i++) {
+        all_sents[i].classList.add('is-hidden')
+    }
+
+    mode_sents = document.getElementsByClassName(mode + '-sent')
+    for (let i = 0; i < mode_sents.length; i++) {
+        mode_sents[i].classList.remove('is-hidden')
+    }
+}
+
+
+function show(content_path) {
+    modal_card_body = document.getElementById("modal-card-body")
+    fetch(content_path)
+        .then(response => response.text())
+        .then(content_src => modal_card_body.innerHTML = content_src)
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_html(card_HTML) {
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = card_HTML
+    modal_card = document.getElementById("modal-card")
+    modal_card.classList.add("is-active")
+}
+
+
+function show_grammar_data(kanji) {
+	grammar_data = grammar_json[kanji]
+	title = grammar_data[0]
+	explan = grammar_data[1]
+	examples = grammar_data[2]
+	card_html = '<div class="has-text-centered"><h1 class="title">' + title + '</h1></div><hr><p><b>Explanation: </b>' + explan + '</p>'
+    for (i = 0; i < examples.length; i++) {
+        ex_html = '<br><br>' + examples[i][0] + '<br>' + examples[i][1]
+        card_html += ex_html
+    }
+    show_html(card_html)
+}
+
+
+function show_vocab_data(link) {
+    // TODO is there a difference between `link` and `kanji`
+    vocab_data = vocab_json[link]
+    kanji = vocab_data[0]
+    kana = vocab_data[1]
+    definition = vocab_data[2]
+    card_html = '<div class="has-text-centered"><h1 class="title">' + kanji + '</h1>' + kana + "</div><hr><p><b>Definition: </b>" + definition + "</p>"
+    show_html(card_html)
+}
+
+
+function show_kanji_data(link) {
+    kanji_data = kanji_json[link]
+    kanji_kun = kanji_data[0]
+    kanji_on = kanji_data[1]
+    definition = kanji_data[2]
+    examples = kanji_data[3]
+    kanji_code = link.charCodeAt(0)
+    parser = new DOMParser()
+    card_html = fetch('kanji/' + kanji_code + ".svg")
+                .then(response => response.text())
+                .then(kanji_svg => `<div class="has-text-centered">
+			              <h1 class="title">${kanji_svg}</h1>
+			            </div>
+			            <hr>
+					<p><strong>音: </strong>${kanji_kun}</p>
+					<p><strong>訓: </strong>${kanji_on}</p>
+					<p><strong>Definition: </strong><br>${definition}</p>`)
+                .then(card_html => show_html(card_html))
+		.then(() => reset_paths());
+}
+
+function show_gif(gif_path) {
+    var img = document.createElement("IMG")
+    img.src = gif_path
+    document.getElementById('modal-content-img').appendChild(img)
+    modal = document.getElementById("modal-img")
+    modal.classList.add("is-active")
+}
+
+function close_modal() {
+    modals = document.getElementsByClassName("modal")
+    modals[0].classList.remove("is-active")
+    modals[1].classList.remove("is-active")
+
+    modal_card_body = document.getElementById("modal-card-body")
+    modal_card_body.innerHTML = ''
+
+    modal_content_img = document.getElementById("modal-content-img")
+    modal_content_img.innerHTML = ''
+}
+
+const undraw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = 'none'; // Resets lines to gray.
+    });
+    setTimeout(draw, 0, svgPaths, finalTiming); // Start drawing black lines again.
+}
+
+const draw = (svgPaths, finalTiming) => {
+    svgPaths.forEach(svgPath => {
+        svgPath.style.animation = ''; // Defaults animation back to CSS style definition.
+    });
+    setTimeout(undraw, finalTiming, svgPaths, finalTiming); // Resets the draw after the time, dynamic to each SVG.
+}
+
+function reset_paths() {
+	// Get all path elements.
+	svgPaths = document.querySelectorAll('svg path[clip-path]');
+	// Get the animation delay from the last path in milliseconds and add one second.
+	finalPath = svgPaths[svgPaths.length - 1];
+	finalTiming = parseInt(window.getComputedStyle(finalPath).animationDelay.split('s')[0]) * 1000 + 1800;
+	draw(svgPaths, finalTiming); // Start the initial drawing.
+}
+</script>
+
+<style>
+i.fa-play {
+	padding-right: 9;
+}
+
+.sentence {
+    border-top-color: gray;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+
+nav.navbar.is-fixed-bottom > .field {
+    justify-content: center;
+}
+
+svg {
+    width: 75px;
+    height: 75px;
+}
+</style>
+</head>
+
+<body class="has-navbar-fixed-bottom">
+
+<section class="section">
+
+<div id="modal-card" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <div class="modal-card">
+    <section id="modal-card-body" class="modal-card-body" onclick="close_modal()">
+    </section>
+  </div>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+<div id="modal-img" class="modal">
+  <div class="modal-background" onclick="close_modal()"></div>
+  <p id="modal-content-img" class="image is-96x96" onclick="close_modal()"></p>
+  <button class="modal-close is-large" aria-label="close" onclick="close_modal()"></button>
+</div>
+
+
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li>
+      <a href="index.html">
+        <span class="icon is-small">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </span>
+        <span>Japanese 302</span>
+      </a>
+    </li>
+    <li class="is-active">
+      <a href="#">
+
+        <span>紫式部</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+  <script>
+  var vocab_json = {"\u30c9\u30f3\u30fb\u30d5\u30a1\u30f3": ["\u30c9\u30f3\u30fb\u30d5\u30a1\u30f3", "MISSING KANA", "Don Juan: the legendary Spanish nobleman and libertine"], "\u30ab\u30b5\u30ce\u30d0": ["\u30ab\u30b5\u30ce\u30d0(1725-1798)", "\u30ab\u30b5\u30ce\u30d0", "Casanova, Giovanni Giacomo"], "\u4e16\u754c\u7684\u306b": ["\u4e16\u754c\u7684\u306b", "\u305b\u304b\u3044\u3066\u304d\u306b", "internationally; worldwide"], "\u6709\u540d": ["\u6709\u540d", "\u3086\u3046\u3081\u3044", "famous; well-known"], "\u597d\u7537\u5b50": ["\u597d\u7537\u5b50", "\u3053\u3046\u3060\u3093\u3057", "a handsome man"], "\u6e90\u6c0f\u7269\u8a9e": ["\u6e90\u6c0f\u7269\u8a9e", "\u3052\u3093\u3058\u3082\u306e\u304c\u305f\u308a", "The Tale of Genji"], "\u4e3b\u4eba\u516c": ["\u4e3b\u4eba\u516c", "\u3057\u3085\u3058\u3093\u3053\u3046", "hero; heroine; leading character"], "\u5149\u6e90\u6c0f": ["\u5149\u6e90\u6c0f", "\u3072\u304b\u308b\u3052\u3093\u3058", "The Shining Prince Genji"], "\u7f8e\u8c8c": ["\u7f8e\u8c8c", "\u3073\u307c\u3046", "good looks"], "\u624d\u80fd": ["\u624d\u80fd", "\u3055\u3044\u306e\u3046", "talent"], "\u6bd4\u3079": ["\u6bd4\u3079\u308b", "\u304f\u3089\u3079\u308b", "to compare"], "\u3082\u3061\u308d\u3093": ["\u3082\u3061\u308d\u3093", "MISSING KANA", "of course"], "\u7d2b\u5f0f\u90e8": ["\u7d2b\u5f0f\u90e8(978-1031?)", "\u3080\u3089\u3055\u304d\u3057\u304d\u3076", "a female author of the Heian period"], "\u5929\u624d": ["\u5929\u624d", "\u3066\u3093\u3055\u3044", "genius"], "\u5973\u6d41\u4f5c\u5bb6": ["\u5973\u6d41\u4f5c\u5bb6", "\u3058\u3087\u308a\u3085\u3046\u3055\u3063\u304b", "a female author"], "\u63cf\u304d\u51fa\u3055": ["\u63cf\u304d\u51fa\u3059", "\u3048\u304c\u304d\u3060\u3059", "to depict; describe"], "\u67b6\u7a7a": ["\u67b6\u7a7a", "\u304b\u304f\u3046", "fictitious; imaginary"], "\u4eba\u7269": ["\u4eba\u7269", "\u3058\u3093\u3076\u3064", "a person; a character"], "\u5149\u308a\u8f1d\u304f": ["\u5149\u308a\u8f1d\u304f", "\u3072\u304b\u308a\u304b\u304c\u3084\u304f", "brilliant; effulgent"], "\u7f8e\u3057\u3044": ["\u7f8e\u3057\u3044", "\u3046\u3064\u304f\u3057\u3044", "beautiful; lovely; noble"], "\u6e90\u6c0f": ["\u6e90\u6c0f", "\u3052\u3093\u3058", "Genji, the Minamoto clan"], "\u541b\u3092": ["\u541b", "\u304d\u307f", "a ruler; one's master"], "\u3042\u3053\u304c\u308c": ["\u3042\u3053\u304c\u308c\u308b", "MISSING KANA", "to long for; yearn for"], "\u62b1\u304b": ["\u62b1\u304f", "\u3044\u3060\u304f", "to hold; have"], "\u5973\u6027": ["\u5973\u6027", "\u3058\u3087\u305b\u3044", "a woman; women"], "\u7d76\u4e16": ["\u7d76\u4e16", "\u305c\u3063\u305b\u3044", "peerless; matchless; unsurpassed"], "\u7f8e\u7537\u5b50": ["\u7f8e\u7537\u5b50", "\u3073\u3060\u3093\u3057\uff08\u3073\u306a\u3093\u3057\uff09", "a good-looking man"], "\u4e00\u751f": ["\u4e00\u751f", "\u3044\u3063\u3057\u3087\u3046", "one's whole life; a lifetime"], "\u7d75": ["\u7d75", "\u3048", "a picture; a drawing"], "\u5c0f\u8aac": ["\u5c0f\u8aac", "\u3057\u3087\u3046\u305b\u3064", "a novel"], "\u3044\u305a\u308c\u306e\u5fa1\u6642\u306b\u304b": ["\u3044\u305a\u308c\u306e\u5fa1\u6642\u306b\u304b", "\u3044\u305a\u308c\u306e\u304a\u3093\u3068\u304d\u306b\u304b", "in some royal reign or another"], "\u5973\u5fa1": ["\u5973\u5fa1", "\u306b\u3087\u3046\u3054", "Imperial concubine: one of the emperor's concubines"], "\u66f4\u8863": ["\u66f4\u8863", "\u3053\u3046\u3044", "Imperial wardrobe mistress: also a concubine"], "\u3042\u307e\u305f": ["\u3042\u307e\u305f", "MISSING KANA", "many"], "\u3055\u3076\u3089\u3044": ["\u3055\u3076\u3089\u3046", "\u3055\u3076\u3089\u3044", "to be"], "\u7d66\u3044": ["\u7d66\u3046", "\u305f\u307e\u3046", "It attaches to the reny\u014dkei of verbs to give an honorific meaning."], "\u3084\u3093\u3054\u3068\u306a\u304d": ["\u3084\u3093\u3054\u3068\u306a\u3044", "\u3084\u3093\u3054\u3068\u306a\u304d", "noble"], "\u969b\u306b\u306f": ["\u969b", "\u304d\u308f", "one's social rank; status"], "\u3042\u3089\u306c\u304c": ["\u3042\u3089\u306c", "MISSING KANA", "to have no \u203e; there is no \u203e"], "\u3059\u3050\u308c\u3066": ["\u3059\u3050\u308c\u3066", "MISSING KANA", "to be superior"], "\u6642\u3081\u304d": ["\u6642\u3081\u304f", "MISSING KANA", "to be prosperous; flourish"], "\u66f8\u304d\u51fa\u3057": ["\u66f8\u304d\u51fa\u3057", "\u304b\u304d\u3060\u3057", "the opening passage of a story or article"], "\u6850\u58fa": ["\u6850\u58fa", "\u304d\u308a\u3064\u307c", "The name by which Genj's mother is known in the novel. Actually, \u304d\u308a\u3064\u307c\u3000was the name of the wing of the palace in which she originally lived; translated literally, the name means "], "\u5dfb": ["\u5dfb", "\u307e\u304d", "a volume"], "\u6bcd\u89aa": ["\u6bcd\u89aa", "\u306f\u306f\u304a\u3084", "a mother"], "\u7236\u89aa": ["\u7236\u89aa", "\u3061\u3061\u304a\u3084", "a father"], "\u5929\u7687": ["\u5929\u7687", "\u3066\u3093\u306e\u3046", "emperor"], "\u611b": ["\u611b\u3059\u308b", "\u3042\u3044\u3059\u308b", "to love"], "\u539a\u3044": ["\u539a\u3044", "\u3042\u3064\u3044", "thick; true; warm"], "\u5bf5\u611b": ["\u5bf5\u611b", "\u3061\u3087\u3046\u3042\u3044", "special affection; deigned favor"], "\u53d7\u3051": ["\u53d7\u3051\u308b", "\u3046\u3051\u308b", "to get; receive; be given"], "\u8eab\u5206": ["\u8eab\u5206", "\u307f\u3076\u3093", "social class"], "\u4f4e\u304b\u3063\u305f": ["\u4f4e\u3044", "\u3072\u304f\u3044", "low; short"], "\u5bae\u5ef7": ["\u5bae\u5ef7", "\u304d\u3085\u3046\u3066\u3044", "the Court"], "\u4ed6": ["\u4ed6", "\u305f", "other"], "\u306d\u305f\u307e\u308c": ["\u306d\u305f\u307e\u308c\u308b", "MISSING KANA", "to be envied and hated"], "\u539f\u56e0": ["\u539f\u56e0", "\u3052\u3093\u3044\u3093", "cause"], "\u75c5\u6c17": ["\u75c5\u6c17", "\u3073\u3087\u3046\u304d", "sickness; illness"], "\u6b7b\u3093\u3067": ["\u6b7b\u306c", "\u3057\u306c", "to die"], "\u5883\u9047": ["\u5883\u9047", "\u304d\u3087\u3046\u3050\u3046", "circumstance"], "\u9762\u5f71": ["\u9762\u5f71", "\u304a\u3082\u304b\u3052", "image; traces of a person"], "\u6155\u3063\u3066": ["\u6155\u3046", "\u3057\u305f\u3046", "to long for; pine for"], "\u5bae\u4e2d": ["\u5bae\u4e2d", "\u304d\u3085\u3046\u3061\u3085\u3046", "within the palace"], "\u8907\u96d1": ["\u8907\u96d1", "\u3075\u304f\u3056\u3064", "complicated"], "\u95a2\u4fc2": ["\u95a2\u4fc2", "\u304b\u3093\u3051\u3044", "relationship"], "\u5e16": ["\u5e16", "\u3058\u3087\u3046", "a counter for notebooks (archaic)"], "\u9577\u7de8": ["\u9577\u7de8", "\u3061\u3087\u3046\u3078\u3093", "large-scale; long"], "\u71c3\u3048\u308b": ["\u71c3\u3048\u308b", "\u3082\u3048\u308b", "to burn; be full of; be passionate"], "\u4e2d\u5fc3": ["\u4e2d\u5fc3", "\u3061\u3085\u3046\u3057\u3093", "the center; the middle"], "\u5f53\u6642": ["\u5f53\u6642", "\u3068\u3046\u3058", "at the time"], "\u793e\u4f1a": ["\u793e\u4f1a", "\u3057\u3083\u304b\u3044", "society"], "\u591a\u304f": ["\u591a\u304f", "\u304a\u304a\u304f", "many; much"], "\u6b53\u559c": ["\u6b53\u559c", "\u304b\u3093\u304d", "joy; delight"], "\u60b2\u75db": ["\u60b2\u75db", "\u3072\u3064\u3046", "intense grief; pathos"], "\u5e78\u798f": ["\u5e78\u798f", "\u3053\u3046\u3075\u304f", "happiness"], "\u618e\u3057\u307f": ["\u618e\u3057\u307f", "\u306b\u304f\u3057\u307f", "hatred; enmity"], "\u4eba\u9593\u5fc3\u7406": ["\u4eba\u9593\u5fc3\u7406", "\u306b\u3093\u3052\u3093\u3057\u3093\u308a", "a state of human mind; mental state; psychology"], "\u72ec\u5275\u7684": ["\u72ec\u5275\u7684", "\u3069\u304f\u305d\u3046\u3066\u304d", "creative; original"], "\u63cf\u304b": ["\u63cf\u304f", "\u3048\u304c\u304f", "to draw; picture; sketch; depict"], "\u4f5c\u8005": ["\u4f5c\u8005", "\u3055\u304f\u3057\u3083", "the author; the writer"], "\u4e16\u7d00": ["\u4e16\u7d00", "\u305b\u3044\u304d", "century"], "\u9803": ["\u9803", "\u3053\u308d\uff08\u3054\u308d\uff09", "time; about; when; around the time"], "\u5e7c\u3044": ["\u5e7c\u3044", "\u304a\u3055\u306a\u3044", "infant; young"], "\u7269\u8a9e": ["\u7269\u8a9e", "\u3082\u306e\u304c\u305f\u308a", "a tale; a story"], "\u548c\u6b4c": ["\u548c\u6b4c", "\u308f\u304b", "a type of Japanese poetry"], "\u6f22\u6587\u5b66": ["\u6f22\u6587\u5b66", "\u304b\u3093\u3076\u3093\u304c\u304f", "Chinese classical literature"], "\u7236": ["\u7236", "\u3061\u3061", "a father"], "\u85e4\u539f\u70ba\u6642": ["\u85e4\u539f\u70ba\u6642", "\u3075\u3058\u308f\u3089\u306e\u305f\u3081\u3068\u304d", "the father of Murasaki Shikibu"], "\u7acb\u6d3e\u306a": ["\u7acb\u6d3e\u306a", "\u308a\u3063\u3071\u306a", "fine; honarable; admirable; splendid"], "\u6587\u5b66\u8005": ["\u6587\u5b66\u8005", "\u3076\u3093\u304c\u304f\u3057\u3083", "a scholar of literature"], "\u7956\u5148": ["\u7956\u5148", "\u305d\u305b\u3093", "ancestors, forefathers"], "\u540d\u9ad8\u3044": ["\u540d\u9ad8\u3044", "\u306a\u3060\u304b\u3044", "famous; celebrated"], "\u6b4c\u4eba": ["\u6b4c\u4eba", "\u304b\u3058\u3093", "a poet"], "\u307b\u3069\u306e": ["\u307b\u3069\u306e", "MISSING KANA", "to the extent of"], "\u512a\u308c\u305f": ["\u512a\u308c\u308b", "\u3059\u3050\u308c\u308b", "to excel; surpass"], "\u5bb6\u7cfb": ["\u5bb6\u7cfb", "\u304b\u3051\u3044", "family line"], "\u85e4\u539f\u5ba3\u5b5d": ["\u85e4\u539f\u5ba3\u5b5d", "\u3075\u3058\u308f\u3089\u306e\u306e\u3076\u305f\u304b", "the husband of Murasaki Shikibu"], "\u7d50\u5a5a": ["\u7d50\u5a5a\u3059\u308b", "\u3051\u3063\u3053\u3093\u3059\u308b", "to marry"], "\uff12\u5e74\u8db3\u3089\u305a": ["\uff12\u5e74\u8db3\u3089\u305a", "\u306b\u306d\u3093\u305f\u3089\u305a", "less than two years"], "\u592b": ["\u592b", "\u304a\u3063\u3068", "husband"], "\u6b7b\u5225\u3057": ["\u6b7b\u5225\u3059\u308b", "\u3057\u3079\u3064\u3059\u308b", "to go through separation by death; lose because of death"], "\u5bc2\u3057\u3044": ["\u5bc2\u3057\u3044", "\u3055\u3073\u3057\u3044", "lonely; solitary"], "\u4f59\u751f": ["\u4f59\u751f", "\u3088\u305b\u3044", "one's remaining years"], "\u4e00\u5ea6": ["\u4e00\u5ea6", "\u3044\u3061\u3069", "once; on one occasion"], "\u51fa\u5bb6": ["\u51fa\u5bb6\u3059\u308b", "\u3057\u3085\u3063\u3051\u3059\u308b", "to leave home to become priest"], "\u5a18": ["\u5a18", "\u3080\u3059\u3081", "daughter"], "\u4e00\u6761\u5929\u7687": ["\u4e00\u6761\u5929\u7687", "\u3044\u3061\u3058\u3087\u3046\u3066\u3093\u306e\u3046", "Emperor Ichij\u014d"], "\u4e2d\u5bae": ["\u4e2d\u5bae", "\u3061\u3085\u3046\u3050\u3046", "Empress (referring to Empresses of ancient times)"], "\u5f70\u5b50": ["\u85e4\u539f\u5f70\u5b50", "\u3075\u3058\u308f\u3089\u3057\u3087\u3046\u3057", "Empress Sh\u014dshi"], "\u4ed5\u3048": ["\u4ed5\u3048\u308b", "\u3064\u304b\u3048\u308b", "to serve"], "\u751f\u6d3b": ["\u751f\u6d3b", "\u305b\u3044\u304b\u3064", "life"], "\u7d4c\u9a13": ["\u7d4c\u9a13", "\u3051\u3044\u3051\u3093", "experience"], "\u5de7\u307f\u306b": ["\u5de7\u307f\u306b", "\u305f\u304f\u307f\u306b", "skillfully; masterfully"], "\u901a\u3057\u3066": ["\u901a\u3057\u3066", "\u3068\u304a\u3057\u3066", "through"], "\u865a\u69cb": ["\u865a\u69cb", "\u304d\u3087\u3053\u3046", "fabrications; falsehoods"], "\u6e80\u3061\u305f": ["\u6e80\u3061\u308b", "\u307f\u3061\u308b", "to be filled"], "\u65e5\u672c\u7d00": ["\u65e5\u672c\u7d00", "\u306b\u307b\u3093\u304e", "Japan's first official history; Nihonshoki"], "\u4e16\u9593": ["\u4e16\u9593", "\u305b\u3051\u3093", "the world; public opinion"], "\u3067\u304d\u3054\u3068": ["\u3067\u304d\u3054\u3068", "MISSING KANA", "incident; occurrence; happening"], "\u90e8\u5206": ["\u90e8\u5206", "\u3076\u3076\u3093", "part; section; portion"], "\u8a73\u3057\u304f": ["\u8a73\u3057\u304f", "\u304f\u308f\u3057\u304f", "in detail"], "\u8ff0\u3079\u3066": ["\u8ff0\u3079\u308b", "\u306e\u3079\u308b", "to state; express; tell"], "\u521d\u3081": ["\u521d\u3081(\u306e)", "\u306f\u3058\u3081(\u306e)", "the beginning (first; early)"], "\u4f4d\u7f6e": ["\u4f4d\u7f6e", "\u3044\u3061", "position; rank; place"], "\u5f79\u5272": ["\u5f79\u5272", "\u3084\u304f\u308f\u308a", "the role; the part"], "\u660e\u8a18": ["\u660e\u8a18\u3059\u308b", "\u3081\u3044\u304d\u3059\u308b", "to specify; state clearly"], "\u4e16\u754c": ["\u4e16\u754c", "\u305b\u304b\u3044", "the world"], "\u6570\u5c11\u306a\u3044": ["\u6570\u5c11\u306a\u3044", "\u304b\u305a\u3059\u304f\u306a\u3044", "to be small in number"], "\u610f\u5473": ["\u610f\u5473", "\u3044\u307f", "meaning"], "\u3060\u3051\u3067\u306a\u304f": ["\u3060\u3051\u3067\u306a\u304f", "MISSING KANA", "not only"], "\u8a87\u308a\u9ad8\u304d": ["\u8a87\u308a\u9ad8\u304d", "\u307b\u3053\u308a\u305f\u304b\u304d", "(an author) in whom one can take pride"], "\u4f5c\u5bb6": ["\u4f5c\u5bb6", "\u3055\u3063\u304b", "a writer"], "\u30e6\u30cd\u30b9\u30b3": ["\u30e6\u30cd\u30b9\u30b3", "MISSING KANA", "UNESCO (United Nations Educational, Scientific, and Cultural Organization)"], "\u5049\u4eba": ["\u5049\u4eba", "\u3044\u3058\u3093", "great person; prodigy"], "\u6570\u3048": ["\u6570\u3048\u308b", "\u304b\u305e\u3048\u308b", "to count"]};
+  var grammar_json = {"\u6bd4\u3079\u3082\u306e": [" \u6bd4\u3079\u3082\u306e\u306b\u306a\u3089\u306a\u3044", " no comparison <br/><br/> This expression is similar to its English equivalent: something that has \u201cno comparison\u201d is something very good. It usually takes the particle \u306b or \u3068 before it. \u4f8b. \u30b8\u30e3\u30a4\u30a2\u30f3\u30c4\u306e\u5f37\u3055\u306b\u306f\u6bd4\u3079\u3082\u306e\u306b\u306a\u3089\u306a\u3044\u3002 It's no comparison to the strength of the Giants. ", []], "\u306a\u3089\u306a\u3044\u306e\u3067\u306f\u306a\u3044\u3067\u3057\u3087\u3046\u304b": [" \u301c\u306e\u3067\u306f\u306a\u3044\u304b", " I'll bet\u301c; \u301c, isn't it? <br/><br/> This is a rhetorical device to be placed at the end of statement \u301c, meaning \"Isn\u2019t it \u301c,\" or \"Yes it is \u301c.\" It emphatically expresses the author's opinion that \u301c is true. \u4f8b. \u7236\u304c\u751f\u304d\u3066\u3044\u305f\u3089\u3053\u3093\u306a\u3053\u3068\u306b\u306f\u306a\u3089\u306a\u304b\u3063\u305f\u306e\u3067\u306f\u306a\u3044\u304b\u3002 I'll bet if my father had been living, this kind of thing would not have happened. ", []]};
+  var kanji_json = {"\u597d": ["\u3053\u306e\uff08\u3080\uff09\u30fb\u3059\uff08\u304f\uff09", "\u30b3\u30a6", "LIKE; LOVE", []], "\u541b": ["\u304d\u307f", "\u30af\u30f3", "MONARCH; YOU (COLLOQUIAL)", []], "\u7d66": ["[\u305f\u307e\uff08\u3046\uff09]", "\u30ad\u30e5\u30a6", "DISTRIBUTE; SALARY; GRANT; GIVE; [DEIGN TO]", []], "\u539a": ["\u3042\u3064\uff08\u3044\uff09", "\u30b3\u30a6", "THICK; HEAVY; RICH; CORDIAL", []], "\u4f4e": ["\u3072\u304f\uff08\u3044)\u30fb\u3072\u304f\uff08\u3081\u308b)\u30fb\u3072\u304f\uff08\u307e\u308b\uff09", "\u30c6\u30a4", "LOW; SHORT", []], "\u56e0": ["\u3088\uff08\u308b\uff09", "\u30a4\u30f3", "CAUSE; FACTOR; DEPEND ON", []], "\u8907": ["", "\u30d5\u30af", "MULTIPLE; COMPOUND; DOUBLE", []], "\u96d1": ["", "\u30b6\u30c4\u30fb\u30be\u30a6", "MISCELLANY; BE MIXED; ROUGHNESS", []], "\u4fc2": ["\u304b\u304b\uff08\u308b\uff09\u30fb\u304b\u304b\u308a", "\u30b1\u30a4", "CONNECT; LINK; JOIN; PERSON IN CHARGE; SECTION", []], "\u71c3": ["\u3082\uff08\u3048\u308b\uff09\u30fb\u3082\uff08\u3084\u3059\uff09\u30fb\u3082\uff08\u3059\uff09", "\u30cd\u30f3", "BURN; GLOW", []], "\u5e78": ["\u3055\u3044\u308f\uff08\u3044\uff09\u30fb\uff08\u3055\u3061\uff09\u30fb\u3057\u3042\u308f\uff08\u305b\uff09", "\u30b3\u30a6", "HAPPINESS", []], "\u5275": ["", "\u30bd\u30a6", "BEGINNING; CREATION", []], "\u5e7c": ["\u304a\u3055\u306a\uff08\u3044\uff09", "\u30e8\u30a6", "INFANCY; CHILDHOOD", []], "\u6d3e": ["", "\u30cf", "GROUP; PARTY; FACTION; SCHOOL (OF THOUGHT)", []], "\u7956": ["", "\u30bd", "ANCESTORS", []], "\u7cfb": ["", "\u30b1\u30a4", "CONNECTION; SYSTEM; GROUP; LINEAGE", []], "\u5ba3": ["", "\u30bb\u30f3", "PROCLAIM", []], "\u5b5d": ["", "\u30b3\u30a6", "FILIAL DUTY", []], "\u4f59": ["\u3042\u307e\uff08\u308b\uff09\u30fb\u3042\u307e\uff08\u3059\uff09", "\u30e8", "BE TOO MUCH; BE LEFT OVER", []], "\u69cb": ["\u304b\u307e\uff08\u3048\u308b\uff09\u30fb\u304b\u307e\uff08\u3046\uff09", "\u30b3\u30a6", "BUILD; TAKE A POSTURE; BE READY FOR", []], "\u6e80": ["\u307f\uff08\u3061\u308b\uff09\u30fb\u307f\uff08\u305f\u3059\uff09", "\u30de\u30f3", "FULL", []], "\u8ff0": ["\u306e\uff08\u3079\u308b\uff09", "\u30b8\u30e5\u30c4", "DECLARE", []], "\u5272": ["\u308f\uff08\u308b\uff09\u30fb\u308f\u308a\u30fb\u308f\uff08\u308c\u308b\uff09\u30fb\u3055\uff08\u304f\uff09", "\u30ab\u30c4", "DIVIDE; CUT; BREAK; SPLIT; RATE", []]};
+  </script>
+  <div class="block title">紫式部</div>
+  <hr>
+  <div class="block is-centered">
+    <p>
+      Listen to Whole Story <br>
+      <audio controls controlsList="nodownload">
+        <source src="sound/L04a.mp3" type="audio/mpeg">
+      </audio>
+      </a>
+    </p>
+  </div>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
+                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+
+  <table id="sentences" class="table-NOT"><tbody>
+
+    <tr id="04a-01" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-01" class="fas fa-play"></i>
+        <audio id="audio_04a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-01.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">ドン・ファンとかカサノバといえば世界的にも有名な好男子だったようですが、「源氏物語」の主人公、光源氏の美貌と才能には<a onclick="show_grammar_data('比べもの')">比べもの</a>に<a onclick="show_grammar_data('ならないのではないでしょうか')">ならないのではないでしょうか</a>。</span>
+        <span class="content-sent kanji-sent is-hidden">ドン・ファンとかカサノバといえば世界的にも有名な<a onclick="show_kanji_data('好')">好</a>男子だったようですが、「源氏物語」の主人公、光源氏の美貌と才能には比べものにならないのではないでしょうか。</span>
+        <span class="content-sent plain-sent is-hidden">ドン・ファンとかカサノバといえば世界的にも有名な好男子だったようですが、「源氏物語」の主人公、光源氏の美貌と才能には比べものにならないのではないでしょうか。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('ドン・ファン')">ドン・ファン</a>とか<a onclick="show_vocab_data('カサノバ')">カサノバ</a>といえば<a onclick="show_vocab_data('世界的に')">世界的に</a>も<a onclick="show_vocab_data('有名')">有名</a>な<a onclick="show_vocab_data('好男子')">好男子</a>だったようですが、「<a onclick="show_vocab_data('源氏物語')">源氏物語</a>」の<a onclick="show_vocab_data('主人公')">主人公</a>、<a onclick="show_vocab_data('光源氏')">光源氏</a>の<a onclick="show_vocab_data('美貌')">美貌</a>と<a onclick="show_vocab_data('才能')">才能</a>には<a onclick="show_vocab_data('比べ')">比べ</a>ものにならないのではないでしょうか。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It seems Don Juan and Casanova are world famous as handsome men, but I doubt they could hold a candle to the beauty and talent of the protagonist of &quot;The Tale of Genji.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04a-02" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-02" class="fas fa-play"></i>
+        <audio id="audio_04a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-02.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">もちろん、光源氏は紫式部という天才女流作家によって描き出された架空の人物です。</span>
+        <span class="content-sent kanji-sent is-hidden">もちろん、光源氏は紫式部という天才女流作家によって描き出された架空の人物です。</span>
+        <span class="content-sent plain-sent is-hidden">もちろん、光源氏は紫式部という天才女流作家によって描き出された架空の人物です。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('もちろん')">もちろん</a>、<a onclick="show_vocab_data('光源氏')">光源氏</a>は<a onclick="show_vocab_data('紫式部')">紫式部</a>という<a onclick="show_vocab_data('天才')">天才</a><a onclick="show_vocab_data('女流作家')">女流作家</a>によって<a onclick="show_vocab_data('描き出さ')">描き出さ</a>れた<a onclick="show_vocab_data('架空')">架空</a>の<a onclick="show_vocab_data('人物')">人物</a>です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Genji is, of course, a fictional character created by the talented female author, Murasaki Shikibu (Lady Murasaki).</span>
+      </td>
+    </tr>
+
+    <tr id="04a-03" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-03" class="fas fa-play"></i>
+        <audio id="audio_04a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-03.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">光り輝くほど美しい源氏の君を見て、あこがれを抱かなかった女性は一人もいなかったと書かれています。</span>
+        <span class="content-sent kanji-sent is-hidden">光り輝くほど美しい源氏の<a onclick="show_kanji_data('君')">君</a>を見て、あこがれを抱かなかった女性は一人もいなかったと書かれています。</span>
+        <span class="content-sent plain-sent is-hidden">光り輝くほど美しい源氏の君を見て、あこがれを抱かなかった女性は一人もいなかったと書かれています。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('光り輝く')">光り輝く</a>ほど<a onclick="show_vocab_data('美しい')">美しい</a><a onclick="show_vocab_data('源氏')">源氏</a>の<a onclick="show_vocab_data('君を')">君を</a>見て、<a onclick="show_vocab_data('あこがれ')">あこがれ</a>を<a onclick="show_vocab_data('抱か')">抱か</a>なかった<a onclick="show_vocab_data('女性')">女性</a>は一人もいなかったと書かれています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">It is written that there was not a single woman who, upon seeing Genji who was so handsome that he shone, was not attracted to him.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-04" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-04" class="fas fa-play"></i>
+        <audio id="audio_04a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-04.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この絶世の美男子の一生を絵のように書いた小説が「源氏物語」です。</span>
+        <span class="content-sent kanji-sent is-hidden">この絶世の美男子の一生を絵のように書いた小説が「源氏物語」です。</span>
+        <span class="content-sent plain-sent is-hidden">この絶世の美男子の一生を絵のように書いた小説が「源氏物語」です。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('絶世')">絶世</a>の<a onclick="show_vocab_data('美男子')">美男子</a>の<a onclick="show_vocab_data('一生')">一生</a>を<a onclick="show_vocab_data('絵')">絵</a>のように書いた<a onclick="show_vocab_data('小説')">小説</a>が「<a onclick="show_vocab_data('源氏物語')">源氏物語</a>」です。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The work which depicted the life of this excessively attractive man as clearly as a photograph is &quot;The Tale of Genji.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04a-05" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-05" class="fas fa-play"></i>
+        <audio id="audio_04a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-05.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">「いずれの御時にか女御更衣あまたさぶらい給いけるなかに、いとやんごとなき際にはあらぬがすぐれて時めき給うありけり。」という書き出しで始まる桐壺の巻には、光源氏の母親と、父親にあたる天皇との愛、そしてその中に生まれた源氏が１２になる時までのことが書かれています。</span>
+        <span class="content-sent kanji-sent is-hidden">「いずれの御時にか女御更衣あまたさぶらい<a onclick="show_kanji_data('給')">給</a>いけるなかに、いとやんごとなき際にはあらぬがすぐれて時めき<a onclick="show_kanji_data('給')">給</a>うありけり。」という書き出しで始まる桐壺の巻には、光源氏の母親と、父親にあたる天皇との愛、そしてその中に生まれた源氏が１２になる時までのことが書かれています。</span>
+        <span class="content-sent plain-sent is-hidden">「いずれの御時にか女御更衣あまたさぶらい給いけるなかに、いとやんごとなき際にはあらぬがすぐれて時めき給うありけり。」という書き出しで始まる桐壺の巻には、光源氏の母親と、父親にあたる天皇との愛、そしてその中に生まれた源氏が１２になる時までのことが書かれています。</span>
+        <span class="content-sent vocab-sent">「<a onclick="show_vocab_data('いずれの御時にか')">いずれの御時にか</a><a onclick="show_vocab_data('女御')">女御</a><a onclick="show_vocab_data('更衣')">更衣</a><a onclick="show_vocab_data('あまた')">あまた</a><a onclick="show_vocab_data('さぶらい')">さぶらい</a><a onclick="show_vocab_data('給い')">給い</a>けるなかに、いと<a onclick="show_vocab_data('やんごとなき')">やんごとなき</a><a onclick="show_vocab_data('際には')">際には</a><a onclick="show_vocab_data('あらぬが')">あらぬが</a><a onclick="show_vocab_data('すぐれて')">すぐれて</a><a onclick="show_vocab_data('時めき')">時めき</a>給うありけり。」という<a onclick="show_vocab_data('書き出し')">書き出し</a>で始まる<a onclick="show_vocab_data('桐壺')">桐壺</a>の<a onclick="show_vocab_data('巻')">巻</a>には、<a onclick="show_vocab_data('光源氏')">光源氏</a>の<a onclick="show_vocab_data('母親')">母親</a>と、<a onclick="show_vocab_data('父親')">父親</a>にあたる<a onclick="show_vocab_data('天皇')">天皇</a>との<a onclick="show_vocab_data('愛')">愛</a>、そしてその中に生まれた<a onclick="show_vocab_data('源氏')">源氏</a>が１２になる時までのことが書かれています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The &quot;Kiritsubo&quot; chapter, which begins with the words, &quot;In some royal reign or another, among the many concubines and consorts serving at the court, there was one who, though not of particularly high rank, was more attractive than the rest,&quot; contains the story of the love of Hikaru Genji&#39;s mother and his father, the emperor, and of Genji, born of their union, until he was the age of twelve.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-06" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-06" class="fas fa-play"></i>
+        <audio id="audio_04a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-06.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この桐壺の更衣は天皇の厚い寵愛を受けた女性でしたが、身分が低かったために宮廷の他の女性達にねたまれて、それが原因で病気になり死んでしまうのです。</span>
+        <span class="content-sent kanji-sent is-hidden">この桐壺の更衣は天皇の<a onclick="show_kanji_data('厚')">厚</a>い寵愛を受けた女性でしたが、身分が<a onclick="show_kanji_data('低')">低</a>かったために宮廷の他の女性達にねたまれて、それが原<a onclick="show_kanji_data('因')">因</a>で病気になり死んでしまうのです。</span>
+        <span class="content-sent plain-sent is-hidden">この桐壺の更衣は天皇の厚い寵愛を受けた女性でしたが、身分が低かったために宮廷の他の女性達にねたまれて、それが原因で病気になり死んでしまうのです。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('桐壺')">桐壺</a>の<a onclick="show_vocab_data('更衣')">更衣</a>は<a onclick="show_vocab_data('天皇')">天皇</a>の<a onclick="show_vocab_data('厚い')">厚い</a><a onclick="show_vocab_data('寵愛')">寵愛</a>を<a onclick="show_vocab_data('受け')">受け</a>た<a onclick="show_vocab_data('女性')">女性</a>でしたが、<a onclick="show_vocab_data('身分')">身分</a>が<a onclick="show_vocab_data('低かった')">低かった</a>ために<a onclick="show_vocab_data('宮廷')">宮廷</a>の<a onclick="show_vocab_data('他')">他</a>の<a onclick="show_vocab_data('女性')">女性</a>達に<a onclick="show_vocab_data('ねたまれ')">ねたまれ</a>て、それが<a onclick="show_vocab_data('原因')">原因</a>で<a onclick="show_vocab_data('病気')">病気</a>になり<a onclick="show_vocab_data('死んで')">死んで</a>しまうのです。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The consort, Kiritsubo, was a woman who was heavily favored by the emperor, but because her social status was low, she bore the brunt of the jealousy of the other ladies at court. Because of this, she eventually became ill and finally died.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-07" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-07" class="fas fa-play"></i>
+        <audio id="audio_04a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-07.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">このような境遇に生まれた光源氏は母の面影を慕って宮中のいろいろな女性と複雑な関係を持つようになります。</span>
+        <span class="content-sent kanji-sent is-hidden">このような境遇に生まれた光源氏は母の面影を慕って宮中のいろいろな女性と<a onclick="show_kanji_data('複')">複</a><a onclick="show_kanji_data('雑')">雑</a>な関<a onclick="show_kanji_data('係')">係</a>を持つようになります。</span>
+        <span class="content-sent plain-sent is-hidden">このような境遇に生まれた光源氏は母の面影を慕って宮中のいろいろな女性と複雑な関係を持つようになります。</span>
+        <span class="content-sent vocab-sent">このような<a onclick="show_vocab_data('境遇')">境遇</a>に生まれた<a onclick="show_vocab_data('光源氏')">光源氏</a>は母の<a onclick="show_vocab_data('面影')">面影</a>を<a onclick="show_vocab_data('慕って')">慕って</a><a onclick="show_vocab_data('宮中')">宮中</a>のいろいろな<a onclick="show_vocab_data('女性')">女性</a>と<a onclick="show_vocab_data('複雑')">複雑</a>な<a onclick="show_vocab_data('関係')">関係</a>を持つようになります。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Born into these circumstances, Hikaru Genji longed for his mother, and he later had complicated relationships with various women serving at court.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-08" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-08" class="fas fa-play"></i>
+        <audio id="audio_04a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-08.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">全巻５４帖というこの長編小説には、愛に燃える光源氏を中心に当時の社会に生きた多くの人々の歓喜、悲痛、幸福や憎しみなどの人間心理が独創的に描かれています。</span>
+        <span class="content-sent kanji-sent is-hidden">全巻５４帖というこの長編小説には、愛に<a onclick="show_kanji_data('燃')">燃</a>える光源氏を中心に当時の社会に生きた多くの人々の歓喜、悲痛、<a onclick="show_kanji_data('幸')">幸</a>福や憎しみなどの人間心理が独<a onclick="show_kanji_data('創')">創</a>的に描かれています。</span>
+        <span class="content-sent plain-sent is-hidden">全巻５４帖というこの長編小説には、愛に燃える光源氏を中心に当時の社会に生きた多くの人々の歓喜、悲痛、幸福や憎しみなどの人間心理が独創的に描かれています。</span>
+        <span class="content-sent vocab-sent">全<a onclick="show_vocab_data('巻')">巻</a>５４<a onclick="show_vocab_data('帖')">帖</a>というこの<a onclick="show_vocab_data('長編')">長編</a><a onclick="show_vocab_data('小説')">小説</a>には、<a onclick="show_vocab_data('愛')">愛</a>に<a onclick="show_vocab_data('燃える')">燃える</a><a onclick="show_vocab_data('光源氏')">光源氏</a>を<a onclick="show_vocab_data('中心')">中心</a>に<a onclick="show_vocab_data('当時')">当時</a>の<a onclick="show_vocab_data('社会')">社会</a>に生きた<a onclick="show_vocab_data('多く')">多く</a>の人々の<a onclick="show_vocab_data('歓喜')">歓喜</a>、<a onclick="show_vocab_data('悲痛')">悲痛</a>、<a onclick="show_vocab_data('幸福')">幸福</a>や<a onclick="show_vocab_data('憎しみ')">憎しみ</a>などの<a onclick="show_vocab_data('人間心理')">人間心理</a>が<a onclick="show_vocab_data('独創的')">独創的</a>に<a onclick="show_vocab_data('描か')">描か</a>れています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Focused on Hikaru Genji and his intense, burning love, this long novel (totaling fifty-four chapters) depicts realistically and beautifully the joy, intense pain, happiness and suffering of the many people living in the society of that time.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-09" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-09" class="fas fa-play"></i>
+        <audio id="audio_04a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-09.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">作者、紫式部は１０世紀の終り頃に生まれた天才的な女流作家で、幼い頃から物語や和歌の本を読み、漢文学も学んでいました。</span>
+        <span class="content-sent kanji-sent is-hidden">作者、紫式部は１０世紀の終り頃に生まれた天才的な女流作家で、<a onclick="show_kanji_data('幼')">幼</a>い頃から物語や和歌の本を読み、漢文学も学んでいました。</span>
+        <span class="content-sent plain-sent is-hidden">作者、紫式部は１０世紀の終り頃に生まれた天才的な女流作家で、幼い頃から物語や和歌の本を読み、漢文学も学んでいました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('作者')">作者</a>、<a onclick="show_vocab_data('紫式部')">紫式部</a>は１０<a onclick="show_vocab_data('世紀')">世紀</a>の終り<a onclick="show_vocab_data('頃')">頃</a>に生まれた<a onclick="show_vocab_data('天才')">天才</a>的な<a onclick="show_vocab_data('女流作家')">女流作家</a>で、<a onclick="show_vocab_data('幼い')">幼い</a><a onclick="show_vocab_data('頃')">頃</a>から<a onclick="show_vocab_data('物語')">物語</a>や<a onclick="show_vocab_data('和歌')">和歌</a>の本を読み、<a onclick="show_vocab_data('漢文学')">漢文学</a>も学んでいました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The author, Murasaki Shikibu, was a talented female author born late in the tenth century. From her youth she read romances and waka poetry, and she even learned Chinese writing.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-10" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-10" class="fas fa-play"></i>
+        <audio id="audio_04a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-10.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">父、藤原為時という人は、立派な文学者でもあり、その祖先にも名高い歌人がいたほどの文学的に優れた家系を持っていました。</span>
+        <span class="content-sent kanji-sent is-hidden">父、藤原為時という人は、立<a onclick="show_kanji_data('派')">派</a>な文学者でもあり、その<a onclick="show_kanji_data('祖')">祖</a>先にも名高い歌人がいたほどの文学的に優れた家<a onclick="show_kanji_data('系')">系</a>を持っていました。</span>
+        <span class="content-sent plain-sent is-hidden">父、藤原為時という人は、立派な文学者でもあり、その祖先にも名高い歌人がいたほどの文学的に優れた家系を持っていました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('父')">父</a>、<a onclick="show_vocab_data('藤原為時')">藤原為時</a>という人は、<a onclick="show_vocab_data('立派な')">立派な</a><a onclick="show_vocab_data('文学者')">文学者</a>でもあり、その<a onclick="show_vocab_data('祖先')">祖先</a>にも<a onclick="show_vocab_data('名高い')">名高い</a><a onclick="show_vocab_data('歌人')">歌人</a>がいた<a onclick="show_vocab_data('ほどの')">ほどの</a>文学的に<a onclick="show_vocab_data('優れた')">優れた</a><a onclick="show_vocab_data('家系')">家系</a>を持っていました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Her father, Fujiwara no Tametoki, was also a splendid man of letters with an outstanding literary pedigree that included famous poets.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-11" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-11" class="fas fa-play"></i>
+        <audio id="audio_04a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-11.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">二十二、三の頃、藤原宣孝という人と結婚しましたが、２年足らずで夫と死別し、寂しい余生を過ごさなくてはなりませんでした。</span>
+        <span class="content-sent kanji-sent is-hidden">二十二、三の頃、藤原<a onclick="show_kanji_data('宣')">宣</a><a onclick="show_kanji_data('孝')">孝</a>という人と結婚しましたが、２年足らずで夫と死別し、寂しい<a onclick="show_kanji_data('余')">余</a>生を過ごさなくてはなりませんでした。</span>
+        <span class="content-sent plain-sent is-hidden">二十二、三の頃、藤原宣孝という人と結婚しましたが、２年足らずで夫と死別し、寂しい余生を過ごさなくてはなりませんでした。</span>
+        <span class="content-sent vocab-sent">二十二、三の<a onclick="show_vocab_data('頃')">頃</a>、<a onclick="show_vocab_data('藤原宣孝')">藤原宣孝</a>という人と<a onclick="show_vocab_data('結婚')">結婚</a>しましたが、<a onclick="show_vocab_data('２年足らず')">２年足らず</a>で<a onclick="show_vocab_data('夫')">夫</a>と<a onclick="show_vocab_data('死別し')">死別し</a>、<a onclick="show_vocab_data('寂しい')">寂しい</a><a onclick="show_vocab_data('余生')">余生</a>を過ごさなくてはなりませんでした。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Murasaki married a man named Fujiwara no Nobutaka at the age of twenty-two or three, but was separated from him by death in less than two years time, and she was left to spend the rest of her life alone.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-12" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-12" class="fas fa-play"></i>
+        <audio id="audio_04a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-12.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">一度は出家までしようと考えたようですが、幼い娘のことを思い、一条天皇の中宮、彰子にお仕えすることにしました。</span>
+        <span class="content-sent kanji-sent is-hidden">一度は出家までしようと考えたようですが、<a onclick="show_kanji_data('幼')">幼</a>い娘のことを思い、一条天皇の中宮、彰子にお仕えすることにしました。</span>
+        <span class="content-sent plain-sent is-hidden">一度は出家までしようと考えたようですが、幼い娘のことを思い、一条天皇の中宮、彰子にお仕えすることにしました。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('一度')">一度</a>は<a onclick="show_vocab_data('出家')">出家</a>までしようと考えたようですが、<a onclick="show_vocab_data('幼い')">幼い</a><a onclick="show_vocab_data('娘')">娘</a>のことを思い、<a onclick="show_vocab_data('一条天皇')">一条天皇</a>の<a onclick="show_vocab_data('中宮')">中宮</a>、<a onclick="show_vocab_data('彰子')">彰子</a>にお<a onclick="show_vocab_data('仕え')">仕え</a>することにしました。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">She apparently even considered becoming a nun at one point, but concerned for her young daughter, she decided to take up service for Shōshi, empress to Emperor Ichijō.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-13" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-13" class="fas fa-play"></i>
+        <audio id="audio_04a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-13.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">この宮廷での生活や経験が巧みに「源氏物語」に描かれています。</span>
+        <span class="content-sent kanji-sent is-hidden">この宮廷での生活や経験が巧みに「源氏物語」に描かれています。</span>
+        <span class="content-sent plain-sent is-hidden">この宮廷での生活や経験が巧みに「源氏物語」に描かれています。</span>
+        <span class="content-sent vocab-sent">この<a onclick="show_vocab_data('宮廷')">宮廷</a>での<a onclick="show_vocab_data('生活')">生活</a>や<a onclick="show_vocab_data('経験')">経験</a>が<a onclick="show_vocab_data('巧みに')">巧みに</a>「<a onclick="show_vocab_data('源氏物語')">源氏物語</a>」に<a onclick="show_vocab_data('描か')">描か</a>れています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">The conditions and experiences of life at the imperial court are depicted skillfully in &quot;The Tale of Genji.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04a-14" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-14" class="fas fa-play"></i>
+        <audio id="audio_04a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-14.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">紫式部は主人公、光源氏を通して「物語は虚構に満ちたものだが、考えようによっては、日本紀などは、世間のできごとの一部分しか書いていないものである。物語ほど世間の様子を巧みに詳しく書いたものはないのではないか。」と述べています。</span>
+        <span class="content-sent kanji-sent is-hidden">紫式部は主人公、光源氏を通して「物語は虚<a onclick="show_kanji_data('構')">構</a>に<a onclick="show_kanji_data('満')">満</a>ちたものだが、考えようによっては、日本紀などは、世間のできごとの一部分しか書いていないものである。物語ほど世間の様子を巧みに詳しく書いたものはないのではないか。」と<a onclick="show_kanji_data('述')">述</a>べています。</span>
+        <span class="content-sent plain-sent is-hidden">紫式部は主人公、光源氏を通して「物語は虚構に満ちたものだが、考えようによっては、日本紀などは、世間のできごとの一部分しか書いていないものである。物語ほど世間の様子を巧みに詳しく書いたものはないのではないか。」と述べています。</span>
+        <span class="content-sent vocab-sent"><a onclick="show_vocab_data('紫式部')">紫式部</a>は<a onclick="show_vocab_data('主人公')">主人公</a>、<a onclick="show_vocab_data('光源氏')">光源氏</a>を<a onclick="show_vocab_data('通して')">通して</a>「<a onclick="show_vocab_data('物語')">物語</a>は<a onclick="show_vocab_data('虚構')">虚構</a>に<a onclick="show_vocab_data('満ちた')">満ちた</a>ものだが、考えようによっては、<a onclick="show_vocab_data('日本紀')">日本紀</a>などは、<a onclick="show_vocab_data('世間')">世間</a>の<a onclick="show_vocab_data('できごと')">できごと</a>の一<a onclick="show_vocab_data('部分')">部分</a>しか書いていないものである。<a onclick="show_vocab_data('物語')">物語</a>ほど<a onclick="show_vocab_data('世間')">世間</a>の様子を<a onclick="show_vocab_data('巧みに')">巧みに</a><a onclick="show_vocab_data('詳しく')">詳しく</a>書いたものはないのではないか。」と<a onclick="show_vocab_data('述べて')">述べて</a>います。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">Through her hero, Hikaru Genji, Shikibu states, &quot;Romances are filled with fictional events, but in one way of thinking, works like Nihongi contain only a small part of history. I doubt there is anything that depicts the conditions of society with such skill and detail as the romance.&quot;</span>
+      </td>
+    </tr>
+
+    <tr id="04a-15" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-15" class="fas fa-play"></i>
+        <audio id="audio_04a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-15.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">１１世紀もまだ初めの頃に、このように社会の中での小説の位置、役割というものを明記しているのは世界でも数少ないのではないでしょうか。</span>
+        <span class="content-sent kanji-sent is-hidden">１１世紀もまだ初めの頃に、このように社会の中での小説の位置、役<a onclick="show_kanji_data('割')">割</a>というものを明記しているのは世界でも数少ないのではないでしょうか。</span>
+        <span class="content-sent plain-sent is-hidden">１１世紀もまだ初めの頃に、このように社会の中での小説の位置、役割というものを明記しているのは世界でも数少ないのではないでしょうか。</span>
+        <span class="content-sent vocab-sent">１１<a onclick="show_vocab_data('世紀')">世紀</a>もまだ<a onclick="show_vocab_data('初め')">初め</a>の<a onclick="show_vocab_data('頃')">頃</a>に、このように<a onclick="show_vocab_data('社会')">社会</a>の中での<a onclick="show_vocab_data('小説')">小説</a>の<a onclick="show_vocab_data('位置')">位置</a>、<a onclick="show_vocab_data('役割')">役割</a>というものを<a onclick="show_vocab_data('明記')">明記</a>しているのは<a onclick="show_vocab_data('世界')">世界</a>でも<a onclick="show_vocab_data('数少ない')">数少ない</a>のではないでしょうか。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">I suspect that at this time, very early in the eleventh century, there were very few works anywhere in the world that defined so clearly the position and role of the novel in society.</span>
+      </td>
+    </tr>
+
+    <tr id="04a-16" class="sentence">
+      <td class="has-text-centered" style="vertical-align: middle">
+      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+        <i id="play_04a-16" class="fas fa-play"></i>
+        <audio id="audio_04a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/04a-16.mp3" type="audio/mpeg">
+        </audio>
+      </span>
+      </td>
+      <td>
+        <span class="content-sent grammar-sent is-hidden">そういう意味で紫式部は日本だけでなく世界でも誇り高き作家であり、ユネスコの世界の偉人の一人にも数えられています。</span>
+        <span class="content-sent kanji-sent is-hidden">そういう意味で紫式部は日本だけでなく世界でも誇り高き作家であり、ユネスコの世界の偉人の一人にも数えられています。</span>
+        <span class="content-sent plain-sent is-hidden">そういう意味で紫式部は日本だけでなく世界でも誇り高き作家であり、ユネスコの世界の偉人の一人にも数えられています。</span>
+        <span class="content-sent vocab-sent">そういう<a onclick="show_vocab_data('意味')">意味</a>で<a onclick="show_vocab_data('紫式部')">紫式部</a>は日本<a onclick="show_vocab_data('だけでなく')">だけでなく</a><a onclick="show_vocab_data('世界')">世界</a>でも<a onclick="show_vocab_data('誇り高き')">誇り高き</a><a onclick="show_vocab_data('作家')">作家</a>であり、<a onclick="show_vocab_data('ユネスコ')">ユネスコ</a>の<a onclick="show_vocab_data('世界')">世界</a>の<a onclick="show_vocab_data('偉人')">偉人</a>の一人にも<a onclick="show_vocab_data('数え')">数え</a>られています。</span>
+      </td>
+    </tr>
+
+    <tr class="is-clickable" onclick="show_hide_trans(this)">
+      <td class="has-text-centered" style="vertical-align: middle">
+        <span class="icon">
+          <i class="fas fa-language"></i>
+        </span>
+      </td>
+      <td>
+        <span class="trans is-invisible">In that sense, Lady Murasaki was an author of which we can be very proud, not only in Japan, but on a worldwide basis; she is numbered among UNESCO&#39;s great people of the world.</span>
+      </td>
+    </tr>
+
+  </tbody></table>
+  <nav class="navbar has-shadow is-fixed-bottom is-light is-spaced">
+      <div class="field has-addons">
+        <p class="control">
+          <button class="button is-primary mode-button vocab" onclick="change_mode('vocab')">Vocab</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button grammar" onclick="change_mode('grammar')">Grammar</button>
+        </p>
+
+        <p class="control">
+          <button class="button mode-button kanji" onclick="change_mode('kanji')">Kanji</button>
+        </p>
+    </div>
+  </nav>
+</section>
+</body>
+
+</html>
+
