@@ -109,10 +109,10 @@ def generate_lesson(lesson_soup, make_grammar=True, make_translation=True):
                '      </a>\n'
                '    </p>\n'
                '  </div>\n'
-               '  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.',
+               '  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.',
               file=f)
         if make_translation:
-            print(f'                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>\n',
+            print(f'                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>\n',
                   file=f)
         print(f'  <table id="sentences" class="table-NOT"><tbody>\n',
               file=f)
@@ -146,15 +146,17 @@ def generate_lesson(lesson_soup, make_grammar=True, make_translation=True):
             for kanji, (kun, on, kanji_eng, examples) in kanji_dict.items():
                 kanji_sent = kanji_sent.replace(kanji, f'''<a onclick="show_kanji_data('{kanji}')">{kanji}</a>''')
             print(f'    <tr id="{sent_id}" class="sentence">\n'
-                   '      <td class="has-text-centered" style="vertical-align: middle">\n'
-                   '      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">\n'
+                   '      <td style="vertical-align: middle">\n'
+                   '      <button class="button is-rounded" onclick="aud_play_pause(this)">\n'
+                   '      <span class="icon is-clickable is-small">\n'
                   f'        <i id="play_{sent_id}" class="fas fa-play"></i>\n'
                   f'        <audio id="audio_{sent_id}" onended="unplay(this.parentElement.getElementsByTagName(\'i\')[0])">\n'
                   f'          <source src="{sound_file}" type="audio/mpeg">\n'
                    '        </audio>\n'
                    '      </span>\n'
+                   '      </button>\n'
                    '      </td>\n'
-                   '      <td>\n'
+                   '      <td style="vertical-align: middle">\n'
                   f'        <span class="content-sent grammar-sent is-hidden">{grammar_sent.strip() or sent}</span>\n'
                   f'        <span class="content-sent kanji-sent is-hidden">{kanji_sent.strip() or sent}</span>\n'
                   f'        <span class="content-sent plain-sent is-hidden">{sent}</span>\n'
@@ -163,13 +165,15 @@ def generate_lesson(lesson_soup, make_grammar=True, make_translation=True):
                    '    </tr>\n',
                   file=f)
             if make_translation:
-                print(f'    <tr class="is-clickable" onclick="show_hide_trans(this)">\n'
-                       '      <td class="has-text-centered" style="vertical-align: middle">\n'
+                print(f'    <tr>\n'
+                       '      <td style="vertical-align: middle">\n'
+                       '        <button class="button is-rounded" onclick="show_hide_trans(this)">\n'
                       f'        <span class="icon">\n'
                       f'          <i class="fas fa-language"></i>\n'
                        '        </span>\n'
+                       '        </button>\n'
                        '      </td>\n'
-                       '      <td>\n'
+                       '      <td style="vertical-align: middle">\n'
                       f'        <span class="trans is-invisible">{trans}</span>\n'
                        '      </td>\n'
                        '    </tr>\n',

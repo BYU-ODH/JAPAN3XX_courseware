@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
     <tr id="13a-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-01" class="fas fa-play"></i>
         <audio id="audio_13a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-01.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">「君が代は千代に八千代にさざれ石のいわおとなりて苔のむすまで」という日本の国歌を小学校の生徒達が歌っているのをよく耳にすることがあると思いますが、どんな意味の歌か、ご存知ですか。</span>
         <span class="content-sent kanji-sent is-hidden">「君が代は千代に八千代にさざれ石のいわおとなりて苔のむすまで」という日本の国歌を小学校の生<a onclick="show_kanji_data('徒')">徒</a>達が歌っているのをよく耳にすることがあると思いますが、どんな意味の歌か、ご存知ですか。</span>
         <span class="content-sent plain-sent is-hidden">「君が代は千代に八千代にさざれ石のいわおとなりて苔のむすまで」という日本の国歌を小学校の生徒達が歌っているのをよく耳にすることがあると思いますが、どんな意味の歌か、ご存知ですか。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">&quot;Kimi ga yo wa/ chiyo ni, yachio ni/ sazareishi no/ iwao to narite/ koke no musu made.&quot; You have probably heard the Japanese National Anthem sung by elementary school students often, but do you know the meaning of the song?</span>
       </td>
     </tr>
 
     <tr id="13a-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-02" class="fas fa-play"></i>
         <audio id="audio_13a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-02.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">「君が代」とは、あなたの時代という意味で、「千代に八千代に」とは千年も八千年もの間という意味です。</span>
         <span class="content-sent kanji-sent is-hidden">「君が代」とは、あなたの時代という意味で、「千代に八千代に」とは千年も八千年もの間という意味です。</span>
         <span class="content-sent plain-sent is-hidden">「君が代」とは、あなたの時代という意味で、「千代に八千代に」とは千年も八千年もの間という意味です。</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">&quot;Kimi ga yo&quot; means &quot;your reign,&quot; and &quot;chiyo ni yachiyo ni&quot; means &quot;for a thousand, no eight thousand years.&quot;</span>
       </td>
     </tr>
 
     <tr id="13a-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-03" class="fas fa-play"></i>
         <audio id="audio_13a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-03.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そして、小さな石が集まり、大きな岩となって、その岩に苔が生える、そんなに長い間まで、という意味です。</span>
         <span class="content-sent kanji-sent is-hidden">そして、小さな石が集まり、大きな岩となって、その岩に苔が生える、そんなに長い間まで、という意味です。</span>
         <span class="content-sent plain-sent is-hidden">そして、小さな石が集まり、大きな岩となって、その岩に苔が生える、そんなに長い間まで、という意味です。</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It continues, &quot;until small pebbles gather to form a large boulder, and moss grows on it.&quot;</span>
       </td>
     </tr>
 
     <tr id="13a-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-04" class="fas fa-play"></i>
         <audio id="audio_13a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-04.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">つまり、あなたの時代が、千年も八千年も続き、小さな石が集まり大きな岩となりその岩に苔が生えるような長い間続きますように、という意味の歌です。</span>
         <span class="content-sent kanji-sent is-hidden">つまり、あなたの時代が、千年も八千年も続き、小さな石が集まり大きな岩となりその岩に苔が生えるような長い間続きますように、という意味の歌です。</span>
         <span class="content-sent plain-sent is-hidden">つまり、あなたの時代が、千年も八千年も続き、小さな石が集まり大きな岩となりその岩に苔が生えるような長い間続きますように、という意味の歌です。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Put another way, the song means, &quot;May your reign continue a thousand, no eight thousand years, until small pebbles gather together to become a large boulder, and on that boulder moss forms.&quot;</span>
       </td>
     </tr>
 
     <tr id="13a-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-05" class="fas fa-play"></i>
         <audio id="audio_13a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-05.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">この歌は、「古今和歌集」と言って、１０世紀に天皇の命令により作られた和歌集の中からとった一首です。</span>
         <span class="content-sent kanji-sent is-hidden">この歌は、「古今和歌集」と言って、１０世紀に天皇の命令により作られた和歌集の中からとった一首です。</span>
         <span class="content-sent plain-sent is-hidden">この歌は、「古今和歌集」と言って、１０世紀に天皇の命令により作られた和歌集の中からとった一首です。</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This song was a verse (poem) in the waka collection known as the Kokin Wakashū compiled in the 10th century by command of the emperor.</span>
       </td>
     </tr>
 
     <tr id="13a-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-06" class="fas fa-play"></i>
         <audio id="audio_13a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-06.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">「古今和歌集」では、「わが君は千代に八千代にさざれ石のいはほとなりてこけのむすまで」とありました。</span>
         <span class="content-sent kanji-sent is-hidden">「古今和歌集」では、「わが君は千代に八千代にさざれ石のいはほとなりてこけのむすまで」とありました。</span>
         <span class="content-sent plain-sent is-hidden">「古今和歌集」では、「わが君は千代に八千代にさざれ石のいはほとなりてこけのむすまで」とありました。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In the Kokin Wakashū the poem reads, &quot;Waga kimi wa/ chiyo ni yachiyo ni/ sazareishi no/ ihaho to narite/ koke no musu made.&quot;</span>
       </td>
     </tr>
 
     <tr id="13a-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-07" class="fas fa-play"></i>
         <audio id="audio_13a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-07.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">これは、「わが君」、つまり私のお仕え申す御主人が何年も何年も健康で長生きできますようにと歌った歌ですが、その「わが君は」の「わが」を省き、「君が代は」と直したものです。</span>
         <span class="content-sent kanji-sent is-hidden">これは、「わが君」、つまり私のお仕え<a onclick="show_kanji_data('申')">申</a>す御主人が何年も何年も<a onclick="show_kanji_data('健')">健</a>康で長生きできますようにと歌った歌ですが、その「わが君は」の「わが」を<a onclick="show_kanji_data('省')">省</a>き、「君が代は」と直したものです。</span>
         <span class="content-sent plain-sent is-hidden">これは、「わが君」、つまり私のお仕え申す御主人が何年も何年も健康で長生きできますようにと歌った歌ですが、その「わが君は」の「わが」を省き、「君が代は」と直したものです。</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This poem sang, &quot;May our emperor (waga kimi) whom we serve live a long, long healthy life.&quot; The national anthem version was changed to read &quot;kimi ga yo&quot; in place of &quot;waga kimi wa.&quot;</span>
       </td>
     </tr>
 
     <tr id="13a-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-08" class="fas fa-play"></i>
         <audio id="audio_13a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-08.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">明治１３年に、林広守という宮内庁に勤めていた音楽家が、これに合った日本的な曲を作って付けました。</span>
         <span class="content-sent kanji-sent is-hidden">明治１３年に、林広守という宮内<a onclick="show_kanji_data('庁')">庁</a>に勤めていた音楽家が、これに合った日本的な<a onclick="show_kanji_data('曲')">曲</a>を作って付けました。</span>
         <span class="content-sent plain-sent is-hidden">明治１３年に、林広守という宮内庁に勤めていた音楽家が、これに合った日本的な曲を作って付けました。</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In the thirteenth year of Meiji (1880), Hayashi Hiromori, a musician employed at the Imperial Household Agency, composed a Japanese style score to match the words.</span>
       </td>
     </tr>
 
     <tr id="13a-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-09" class="fas fa-play"></i>
         <audio id="audio_13a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-09.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">１８９３年、何曲かの童謡が国民唱歌と定められた時に、「君が代」も正式に日本国歌として認められました。</span>
         <span class="content-sent kanji-sent is-hidden">１８９３年、何<a onclick="show_kanji_data('曲')">曲</a>かの<a onclick="show_kanji_data('童')">童</a>謡が国民<a onclick="show_kanji_data('唱')">唱</a>歌と定められた時に、「君が代」も正式に日本国歌として認められました。</span>
         <span class="content-sent plain-sent is-hidden">１８９３年、何曲かの童謡が国民唱歌と定められた時に、「君が代」も正式に日本国歌として認められました。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In 1893, when several children&#39;s songs were established as national folk songs, &quot;Kimi ga yo&quot; was officially recognized as the national anthem of Japan.</span>
       </td>
     </tr>
 
     <tr id="13a-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-10" class="fas fa-play"></i>
         <audio id="audio_13a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-10.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">国歌の歌の内容だけではなく、短歌は五七五七七といって、ヨーロッパや他の国の詩の型とは全く違った日本独特のもので、日本の文化を表した世界的にも優れた国歌の一つだと思います。</span>
         <span class="content-sent kanji-sent is-hidden">国歌の歌の内容だけではなく、短歌は五七五七七といって、ヨーロッパや他の国の詩の<a onclick="show_kanji_data('型')">型</a>とは全く違った日本独特のもので、日本の文化を表した世界的にも優れた国歌の一つだと思います。</span>
         <span class="content-sent plain-sent is-hidden">国歌の歌の内容だけではなく、短歌は五七五七七といって、ヨーロッパや他の国の詩の型とは全く違った日本独特のもので、日本の文化を表した世界的にも優れた国歌の一つだと思います。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Not only are the contents of the national anthem singular, but its tanka form [31 syllable poem form] consisting of lines of 5-7-5-7-7 syllables respectively is a unique Japanese form very unlike the poems of Europe and other countries, revealing the anthem&#39;s Japanese cultural background. It seems to me to be an outstanding national anthem even on an international basis.</span>
       </td>
     </tr>
 
     <tr id="13a-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13a-11" class="fas fa-play"></i>
         <audio id="audio_13a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13a-11.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">今度、オリンピックや大相撲の閉会式などで演奏される「君が代」を耳にする時には、その意味と歴史を思い浮かべてみて下さい。</span>
         <span class="content-sent kanji-sent is-hidden">今度、オリンピックや大相撲の閉会式などで演<a onclick="show_kanji_data('奏')">奏</a>される「君が代」を耳にする時には、その意味と歴史を思い浮かべてみて下さい。</span>
         <span class="content-sent plain-sent is-hidden">今度、オリンピックや大相撲の閉会式などで演奏される「君が代」を耳にする時には、その意味と歴史を思い浮かべてみて下さい。</span>
@@ -544,13 +596,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In the future, when you hear &quot;Kimi ga yo&quot; performed at the Olympics or an opening ceremony for a major sumo tournament, please recall its meaning and history.</span>
       </td>
     </tr>

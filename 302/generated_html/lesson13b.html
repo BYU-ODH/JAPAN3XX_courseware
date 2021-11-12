@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
     <tr id="13b-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-01" class="fas fa-play"></i>
         <audio id="audio_13b-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-01.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ドーン、ドーンと花火が上がる<a onclick="show_grammar_data('音がしたかと思うと、')">音がしたかと思うと、</a>空に色とりどりの輪が５つ、チェーンのように描かれました。</span>
         <span class="content-sent kanji-sent is-hidden">ドーン、ドーンと花火が上がる音がしたかと思うと、空に色とりどりの<a onclick="show_kanji_data('輪')">輪</a>が５つ、チェーンのように描かれました。</span>
         <span class="content-sent plain-sent is-hidden">ドーン、ドーンと花火が上がる音がしたかと思うと、空に色とりどりの輪が５つ、チェーンのように描かれました。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Hardly had one heard the &quot;Bang, Bang&quot; of exploding fireworks than there were five rings of various colors, linked like a chain, drawn in the sky.</span>
       </td>
     </tr>
 
     <tr id="13b-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-02" class="fas fa-play"></i>
         <audio id="audio_13b-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-02.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
         <span class="content-sent kanji-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
         <span class="content-sent plain-sent is-hidden">そして東京の国立競技場に、アテネからはるばる運ばれて来た聖火がともされ、アジアで初めてのオリンピックが開かれました。</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The sacred flame, carried all the way from far-off Athens, blazed in the Tōkyō National Stadium, and the first Asian Olympics had begun.</span>
       </td>
     </tr>
 
     <tr id="13b-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-03" class="fas fa-play"></i>
         <audio id="audio_13b-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-03.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
         <span class="content-sent kanji-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
         <span class="content-sent plain-sent is-hidden">オリンピックは、古代ギリシャでゼウス神の祭礼行事として行なわれたのがその始まりだと言われています。</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It is said that the Olympics began as a worship ceremony dedicated to the God Zeus in ancient Greece.</span>
       </td>
     </tr>
 
     <tr id="13b-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-04" class="fas fa-play"></i>
         <audio id="audio_13b-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-04.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主唱により復興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
         <span class="content-sent kanji-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主<a onclick="show_kanji_data('唱')">唱</a>により<a onclick="show_kanji_data('復')">復</a>興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
         <span class="content-sent plain-sent is-hidden">近代オリンピックは、１８９６年にフランス人のクーベルタンの主唱により復興され、世界中の国々がスポーツのいろいろな種目で競い合うようになりました。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The modern Olympics were resurrected as a result of the advocacy of a Frenchman called Coubertin in the year 1896, and athletes from countries throughout the world began to compete in a variety of sporting events.</span>
       </td>
     </tr>
 
     <tr id="13b-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-05" class="fas fa-play"></i>
         <audio id="audio_13b-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-05.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
         <span class="content-sent kanji-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
         <span class="content-sent plain-sent is-hidden">日本も１９１２年、ストックホルムで開かれた第５回オリンピックに初出場しました。</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Japan participated for the first time in the Fifth Olympics held in Stockholm in 1912.</span>
       </td>
     </tr>
 
     <tr id="13b-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-06" class="fas fa-play"></i>
         <audio id="audio_13b-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-06.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">その当時は、世界の標準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日練習を欠かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水泳のほとんどの種目で優勝するほどの力になりました。</span>
         <span class="content-sent kanji-sent is-hidden">その当時は、世界の<a onclick="show_kanji_data('標')">標</a>準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日<a onclick="show_kanji_data('練')">練</a>習を<a onclick="show_kanji_data('欠')">欠</a>かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水<a onclick="show_kanji_data('泳')">泳</a>のほとんどの種目で優勝するほどの力になりました。</span>
         <span class="content-sent plain-sent is-hidden">その当時は、世界の標準に比べて大分劣っていたと思われた日本の選手達も毎日、毎日練習を欠かさず、ついに、１９３２年のロサンゼルス大会や、１９３６年のベルリン大会では、特に水泳のほとんどの種目で優勝するほどの力になりました。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">[After that] Japanese athletes, who were considered to be far below international standards at that time, practiced every day, finally becoming a power, particularly in swimming, able to win in nearly every event in the 1932 Los Angeles Olympics and the 1936 Berlin Olympics.</span>
       </td>
     </tr>
 
     <tr id="13b-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-07" class="fas fa-play"></i>
         <audio id="audio_13b-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-07.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが停止になり、皮肉にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが<a onclick="show_kanji_data('停')">停</a>止になり、<a onclick="show_kanji_data('皮')">皮</a><a onclick="show_kanji_data('肉')">肉</a>にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">そして東京オリンピックが計画されましたが、戦争中オリンピックが停止になり、皮肉にも世界各国からのスポーツ選手でにぎわうはずだった東京の町が、戦争で全くの焼け野原となってしまいました。</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Then there were plans to hold the Olympics in Tōkyō, but with the Olympics canceled during the war, ironically the streets of Tōkyō, which should have been lively with athletes from around the world, were turned into scorched fields owing to war.</span>
       </td>
     </tr>
 
     <tr id="13b-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-08" class="fas fa-play"></i>
         <audio id="audio_13b-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-08.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で管理する国際五輪委員会は、日本でオリンピックを開催することに決定しました。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で<a onclick="show_kanji_data('管')">管</a>理する国際五<a onclick="show_kanji_data('輪')">輪</a><a onclick="show_kanji_data('委')">委</a>員会は、日本でオリンピックを開催することに決定しました。</span>
         <span class="content-sent plain-sent is-hidden">しかし、戦後オリンピックが再開されるようになり、オリンピックを中央で管理する国際五輪委員会は、日本でオリンピックを開催することに決定しました。</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Olympics were reinstated after the war, however, and the International Olympic Committee (IOC), central managing body of the Olympics, determined that the games would be held in Japan.</span>
       </td>
     </tr>
 
     <tr id="13b-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-09" class="fas fa-play"></i>
         <audio id="audio_13b-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-09.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
         <span class="content-sent kanji-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
         <span class="content-sent plain-sent is-hidden">１９６４年、秋の日本晴れの日です。待ちに待った聖火が東京の国立競技場に点火されたのです。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It was a clear autumn day in 1964 in Japan. The long-awaited sacred flame was set ablaze in the Tōkyō National Stadium.</span>
       </td>
     </tr>
 
     <tr id="13b-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-10" class="fas fa-play"></i>
         <audio id="audio_13b-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-10.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆舌に<a onclick="show_grammar_data('尽くし難い')">尽くし難い</a>ものだったに違いありません。</span>
         <span class="content-sent kanji-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆<a onclick="show_kanji_data('舌')">舌</a>に尽くし難いものだったに違いありません。</span>
         <span class="content-sent plain-sent is-hidden">戦争のために、計画されていた東京オリンピックをあきらめなくてはならなかった人々のこの時の感激は、筆舌に尽くし難いものだったに違いありません。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It is difficult to express in writing how deeply moved those who had been forced to give up on the planned Tōkyō Olympics on account of the war were at that moment.</span>
       </td>
     </tr>
 
     <tr id="13b-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-11" class="fas fa-play"></i>
         <audio id="audio_13b-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-11.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">金メダル獲得も、柔道とレスリングの軽量級、体操、女子バレーボールなどと、いろいろな種目で優秀な成績を収めました。</span>
         <span class="content-sent kanji-sent is-hidden">金メダル獲得も、柔道とレスリングの<a onclick="show_kanji_data('軽')">軽</a><a onclick="show_kanji_data('量')">量</a>級、体<a onclick="show_kanji_data('操')">操</a>、女子バレーボールなどと、いろいろな種目で優秀な成<a onclick="show_kanji_data('績')">績</a>を収めました。</span>
         <span class="content-sent plain-sent is-hidden">金メダル獲得も、柔道とレスリングの軽量級、体操、女子バレーボールなどと、いろいろな種目で優秀な成績を収めました。</span>
@@ -544,27 +596,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">There was great success, including winning of gold medals and victories in various events such as judo and light weight wrestling, gymnastics, and women&#39;s volley ball.</span>
       </td>
     </tr>
 
     <tr id="13b-12" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-12" class="fas fa-play"></i>
         <audio id="audio_13b-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-12.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、賞など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印象的でした。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、<a onclick="show_kanji_data('賞')">賞</a>など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印<a onclick="show_kanji_data('象')">象</a>的でした。</span>
         <span class="content-sent plain-sent is-hidden">しかし、「オリンピックは勝つことではなく参加することである」と言われるように、賞など一つももらわなくても、オリンピックに参加した喜びを味わった選手達が涙を流して別れを惜しんだ東京オリンピックの閉会式は、非常に印象的でした。</span>
@@ -572,27 +628,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">True to the saying, however, that &quot;In the Olympics, it is not the winning but the participation that counts,&quot; the closing ceremony was very impressive, where athletes filled with the joy of participating in the Olympics, even if they hadn&#39;t won a single medal, shed tears of regret at parting.</span>
       </td>
     </tr>
 
     <tr id="13b-13" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_13b-13" class="fas fa-play"></i>
         <audio id="audio_13b-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/13b-13.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育館など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
         <span class="content-sent kanji-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育<a onclick="show_kanji_data('館')">館</a>など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
         <span class="content-sent plain-sent is-hidden">現在、この時に使われた国立競技場や代々木の国立体育館など、歴史的なオリンピックを物語る跡が東京各地に残っています。</span>
@@ -600,13 +660,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Today, here and there in Tōkyō, there are remnants of sites used during the Olympics, such as the National Stadium and the Yoyogi National Gymnasium, which tell the story of the historical Olympics.</span>
       </td>
     </tr>

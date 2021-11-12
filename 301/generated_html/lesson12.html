@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="12-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-01" class="fas fa-play"></i>
-        <audio id="audio_12-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-01.mp3" type="audio/mpeg">
+    <tr id="12-001" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-001" class="fas fa-play"></i>
+        <audio id="audio_12-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-001.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">日本人のよく知っていることわざの一つに、「七転八起」というのがあります。</span>
         <span class="content-sent kanji-sent is-hidden">日本人のよく知っていることわざの一つに、「七<a onclick="show_kanji_data('転')">転</a>八<a onclick="show_kanji_data('起')">起</a>」というのがあります。</span>
         <span class="content-sent plain-sent is-hidden">日本人のよく知っていることわざの一つに、「七転八起」というのがあります。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Among the proverbs that Japanese people know well, there is one that says, &quot;Fall down seven times, but get up eight.&quot;</span>
       </td>
     </tr>
 
-    <tr id="12-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-02" class="fas fa-play"></i>
-        <audio id="audio_12-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-02.mp3" type="audio/mpeg">
+    <tr id="12-002" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-002" class="fas fa-play"></i>
+        <audio id="audio_12-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-002.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このことわざには、「七回も転んでも、もう一度起き上がって<a onclick="show_grammar_data('歩きなさい')">歩きなさい</a>、</span>
         <span class="content-sent kanji-sent is-hidden">このことわざには、「七回も<a onclick="show_kanji_data('転')">転</a>んでも、もう一<a onclick="show_kanji_data('度')">度</a><a onclick="show_kanji_data('起')">起</a>き上がって歩きなさい、</span>
         <span class="content-sent plain-sent is-hidden">このことわざには、「七回も転んでも、もう一度起き上がって歩きなさい、</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This proverb has the meaning, &quot;Even if you fall seven times, get up once more and walk.</span>
       </td>
     </tr>
 
-    <tr id="12-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-03" class="fas fa-play"></i>
-        <audio id="audio_12-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-03.mp3" type="audio/mpeg">
+    <tr id="12-003" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-003" class="fas fa-play"></i>
+        <audio id="audio_12-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-003.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">つまり、何度も何度も失敗しても、</span>
         <span class="content-sent kanji-sent is-hidden">つまり、何<a onclick="show_kanji_data('度')">度</a>も何<a onclick="show_kanji_data('度')">度</a>も<a onclick="show_kanji_data('失')">失</a><a onclick="show_kanji_data('敗')">敗</a>しても、</span>
         <span class="content-sent plain-sent is-hidden">つまり、何度も何度も失敗しても、</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In other words, even if you fail over and over again,</span>
       </td>
     </tr>
 
-    <tr id="12-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-04" class="fas fa-play"></i>
-        <audio id="audio_12-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-04.mp3" type="audio/mpeg">
+    <tr id="12-004" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-004" class="fas fa-play"></i>
+        <audio id="audio_12-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-004.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">がっかりしてあきらめずに、もう一度頑張って<a onclick="show_grammar_data('やりなさい')">やりなさい</a>。」という意味がふくまれています。</span>
         <span class="content-sent kanji-sent is-hidden">がっかりしてあきらめずに、もう一<a onclick="show_kanji_data('度')">度</a>頑<a onclick="show_kanji_data('張')">張</a>ってやりなさい。」という意<a onclick="show_kanji_data('味')">味</a>がふくまれています。</span>
         <span class="content-sent plain-sent is-hidden">がっかりしてあきらめずに、もう一度頑張ってやりなさい。」という意味がふくまれています。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">without getting discouraged and giving up, try one more time.&quot;</span>
       </td>
     </tr>
 
-    <tr id="12-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-05" class="fas fa-play"></i>
-        <audio id="audio_12-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-05.mp3" type="audio/mpeg">
+    <tr id="12-005" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-005" class="fas fa-play"></i>
+        <audio id="audio_12-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-005.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このことわざを<a onclick="show_grammar_data('聞くと')">聞くと</a>、日本人は、大抵手も足もないダルマさんを思い出します。</span>
         <span class="content-sent kanji-sent is-hidden">このことわざを聞くと、日本人は、大抵手も足もないダルマさんを思い出します。</span>
         <span class="content-sent plain-sent is-hidden">このことわざを聞くと、日本人は、大抵手も足もないダルマさんを思い出します。</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">When they hear this proverb, the Japanese usually think of the &quot;Daruma,&quot; which has no arms or legs.</span>
       </td>
     </tr>
 
-    <tr id="12-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-06" class="fas fa-play"></i>
-        <audio id="audio_12-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-06.mp3" type="audio/mpeg">
+    <tr id="12-006" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-006" class="fas fa-play"></i>
+        <audio id="audio_12-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-006.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">かけじくなども、このことわざが書いてあったら、横に、ダルマさんの絵がついているのが普通です。</span>
         <span class="content-sent kanji-sent is-hidden">かけじくなども、このことわざが書いてあったら、<a onclick="show_kanji_data('横')">横</a>に、ダルマさんの絵がついているのが普通です。</span>
         <span class="content-sent plain-sent is-hidden">かけじくなども、このことわざが書いてあったら、横に、ダルマさんの絵がついているのが普通です。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">On things like hanging scrolls, when this proverb is written, normally there is a picture of Daruma beside it.</span>
       </td>
     </tr>
 
-    <tr id="12-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-07" class="fas fa-play"></i>
-        <audio id="audio_12-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-07.mp3" type="audio/mpeg">
+    <tr id="12-007" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-007" class="fas fa-play"></i>
+        <audio id="audio_12-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-007.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このダルマさんとは、六世紀ごろ、中国に渡って、禅宗を開いたと言われているインドのおぼうさん、</span>
         <span class="content-sent kanji-sent is-hidden">このダルマさんとは、六世紀ごろ、中国に渡って、禅宗を開いたと言われているインドのおぼうさん、</span>
         <span class="content-sent plain-sent is-hidden">このダルマさんとは、六世紀ごろ、中国に渡って、禅宗を開いたと言われているインドのおぼうさん、</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This Daruma is said to have originated from an Indian Buddhist priest, Bodhidarma, who is said to have crossed over to China about the sixth century and started the Zen Buddhist sect.</span>
       </td>
     </tr>
 
-    <tr id="12-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-08" class="fas fa-play"></i>
-        <audio id="audio_12-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-08.mp3" type="audio/mpeg">
+    <tr id="12-008" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-008" class="fas fa-play"></i>
+        <audio id="audio_12-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-008.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">菩提達磨に由来すると言われています。</span>
         <span class="content-sent kanji-sent is-hidden">菩提達磨に<a onclick="show_kanji_data('由')">由</a>来すると言われています。</span>
         <span class="content-sent plain-sent is-hidden">菩提達磨に由来すると言われています。</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This Daruma is said to have originated from an Indian Buddhist priest, Bodhidarma, who is said to have crossed over to China about the sixth century and started the Zen Buddhist sect.</span>
       </td>
     </tr>
 
-    <tr id="12-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-09" class="fas fa-play"></i>
-        <audio id="audio_12-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-09.mp3" type="audio/mpeg">
+    <tr id="12-009" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-009" class="fas fa-play"></i>
+        <audio id="audio_12-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-009.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">達磨は、壁に向かって、九年間座禅をして悟りを開きました。</span>
         <span class="content-sent kanji-sent is-hidden">達磨は、壁に<a onclick="show_kanji_data('向')">向</a>かって、九年間座禅をして悟りを開きました。</span>
         <span class="content-sent plain-sent is-hidden">達磨は、壁に向かって、九年間座禅をして悟りを開きました。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Bodhidarma faced a wall and meditated for nine years, and achieved enlightenment.</span>
       </td>
     </tr>
 
-    <tr id="12-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-10" class="fas fa-play"></i>
-        <audio id="audio_12-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-10.mp3" type="audio/mpeg">
+    <tr id="12-010" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-010" class="fas fa-play"></i>
+        <audio id="audio_12-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-010.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">九年間も座禅をしたので、手も足もなくなってしまい、ダルマのようになったと伝えられています。</span>
         <span class="content-sent kanji-sent is-hidden">九年間も座禅をしたので、手も足もなくなってしまい、ダルマのようになったと<a onclick="show_kanji_data('伝')">伝</a>えられています。</span>
         <span class="content-sent plain-sent is-hidden">九年間も座禅をしたので、手も足もなくなってしまい、ダルマのようになったと伝えられています。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It is told that since he sat in meditation for nine years, his arms and legs vanished and he became like the Daruma.</span>
       </td>
     </tr>
 
-    <tr id="12-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-11" class="fas fa-play"></i>
-        <audio id="audio_12-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-11.mp3" type="audio/mpeg">
+    <tr id="12-011" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-011" class="fas fa-play"></i>
+        <audio id="audio_12-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-011.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">これは少々おおげさな表現だもしれませんが、達磨のように、何事にも幸抱し、忍耐を養い、</span>
         <span class="content-sent kanji-sent is-hidden">これは少々おおげさな<a onclick="show_kanji_data('表')">表</a><a onclick="show_kanji_data('現')">現</a>だもしれませんが、達磨のように、何<a onclick="show_kanji_data('事')">事</a>にも幸抱し、忍耐を<a onclick="show_kanji_data('養')">養</a>い、</span>
         <span class="content-sent plain-sent is-hidden">これは少々おおげさな表現だもしれませんが、達磨のように、何事にも幸抱し、忍耐を養い、</span>
@@ -544,27 +596,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This is probably a somewhat exaggerated expression, but this proverb is often used to say, &quot;Like the Bodhidarma, persevere in all things, develop patience,</span>
       </td>
     </tr>
 
-    <tr id="12-12" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-12" class="fas fa-play"></i>
-        <audio id="audio_12-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-12.mp3" type="audio/mpeg">
+    <tr id="12-012" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-012" class="fas fa-play"></i>
+        <audio id="audio_12-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-012.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">何度失敗しても立ち直って、また歩ける人間になるようにと、このことわざがよく口にされます。</span>
         <span class="content-sent kanji-sent is-hidden">何<a onclick="show_kanji_data('度')">度</a><a onclick="show_kanji_data('失')">失</a><a onclick="show_kanji_data('敗')">敗</a>しても立ち<a onclick="show_kanji_data('直')">直</a>って、また歩ける人間になるようにと、このことわざがよく口にされます。</span>
         <span class="content-sent plain-sent is-hidden">何度失敗しても立ち直って、また歩ける人間になるようにと、このことわざがよく口にされます。</span>
@@ -572,27 +628,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">and become the kind of person that can get up and walk again, no matter how many times you fail.&quot;</span>
       </td>
     </tr>
 
-    <tr id="12-13" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-13" class="fas fa-play"></i>
-        <audio id="audio_12-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-13.mp3" type="audio/mpeg">
+    <tr id="12-013" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-013" class="fas fa-play"></i>
+        <audio id="audio_12-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-013.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ダルマには、この忍耐を表現するほかに、片目だけ入れておいて、何か願いごとがかなうと、</span>
         <span class="content-sent kanji-sent is-hidden">ダルマには、この忍耐を<a onclick="show_kanji_data('表')">表</a><a onclick="show_kanji_data('現')">現</a>するほかに、片目だけ入れておいて、何か<a onclick="show_kanji_data('願')">願</a>いごとがかなうと、</span>
         <span class="content-sent plain-sent is-hidden">ダルマには、この忍耐を表現するほかに、片目だけ入れておいて、何か願いごとがかなうと、</span>
@@ -600,27 +660,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">With the Daruma, in addition to expressing this [idea] of patience, there is the custom of painting in just one eye, and then when some wish or desire is fulfilled,</span>
       </td>
     </tr>
 
-    <tr id="12-14" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-14" class="fas fa-play"></i>
-        <audio id="audio_12-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-14.mp3" type="audio/mpeg">
+    <tr id="12-014" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-014" class="fas fa-play"></i>
+        <audio id="audio_12-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-014.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">もう一つの目を入れるしきたりがあります。</span>
         <span class="content-sent kanji-sent is-hidden">もう一つの目を入れるしきたりがあります。</span>
         <span class="content-sent plain-sent is-hidden">もう一つの目を入れるしきたりがあります。</span>
@@ -628,27 +692,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">painting the other eye.</span>
       </td>
     </tr>
 
-    <tr id="12-15" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-15" class="fas fa-play"></i>
-        <audio id="audio_12-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-15.mp3" type="audio/mpeg">
+    <tr id="12-015" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-015" class="fas fa-play"></i>
+        <audio id="audio_12-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-015.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">選挙の時に、当選すると、大喜びをして、ダルアの目を入れているところなど、</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('選')">選</a><a onclick="show_kanji_data('挙')">挙</a>の時に、当<a onclick="show_kanji_data('選')">選</a>すると、大<a onclick="show_kanji_data('喜')">喜</a>びをして、ダルアの目を入れているところなど、</span>
         <span class="content-sent plain-sent is-hidden">選挙の時に、当選すると、大喜びをして、ダルアの目を入れているところなど、</span>
@@ -656,27 +724,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">At election time, the scene of the winner joyfully painting in the eye of a Daruma</span>
       </td>
     </tr>
 
-    <tr id="12-16" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-16" class="fas fa-play"></i>
-        <audio id="audio_12-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-16.mp3" type="audio/mpeg">
+    <tr id="12-016" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-016" class="fas fa-play"></i>
+        <audio id="audio_12-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-016.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">テレビで時々報道されるのを見たことが<a onclick="show_grammar_data('あるかもしれません')">あるかもしれません</a>。</span>
         <span class="content-sent kanji-sent is-hidden">テレビで時々<a onclick="show_kanji_data('報')">報</a>道されるのを見たことがあるかもしれません。</span>
         <span class="content-sent plain-sent is-hidden">テレビで時々報道されるのを見たことがあるかもしれません。</span>
@@ -684,27 +756,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">is sometimes broadcast on TV; you may have seen this.</span>
       </td>
     </tr>
 
-    <tr id="12-17" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-17" class="fas fa-play"></i>
-        <audio id="audio_12-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-17.mp3" type="audio/mpeg">
+    <tr id="12-017" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-017" class="fas fa-play"></i>
+        <audio id="audio_12-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-017.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このしきたりも、<a onclick="show_grammar_data('成功するには')">成功するには</a>、ダルアのような忍耐が必要だという考えが残っているからだと思います。</span>
         <span class="content-sent kanji-sent is-hidden">このしきたりも、<a onclick="show_kanji_data('成')">成</a><a onclick="show_kanji_data('功')">功</a>するには、ダルアのような忍耐が<a onclick="show_kanji_data('必')">必</a><a onclick="show_kanji_data('要')">要</a>だという考えが<a onclick="show_kanji_data('残')">残</a>っているからだと思います。</span>
         <span class="content-sent plain-sent is-hidden">このしきたりも、成功するには、ダルアのような忍耐が必要だという考えが残っているからだと思います。</span>
@@ -712,27 +788,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">I think this practice also exists because the way of thinking remains that in order to succeed, patience like that of Daruma is necessary.</span>
       </td>
     </tr>
 
-    <tr id="12-18" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-18" class="fas fa-play"></i>
-        <audio id="audio_12-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-18.mp3" type="audio/mpeg">
+    <tr id="12-018" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-018" class="fas fa-play"></i>
+        <audio id="audio_12-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-018.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">仕事で、失敗ばかりして、もう<a onclick="show_grammar_data('やめたくなったり')">やめたくなったり</a>、</span>
         <span class="content-sent kanji-sent is-hidden">仕<a onclick="show_kanji_data('事')">事</a>で、<a onclick="show_kanji_data('失')">失</a><a onclick="show_kanji_data('敗')">敗</a>ばかりして、もうやめたくなったり、</span>
         <span class="content-sent plain-sent is-hidden">仕事で、失敗ばかりして、もうやめたくなったり、</span>
@@ -740,27 +820,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">So, if at work you do nothing but fail, and you think you want to quit, </span>
       </td>
     </tr>
 
-    <tr id="12-19" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-19" class="fas fa-play"></i>
-        <audio id="audio_12-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-19.mp3" type="audio/mpeg">
+    <tr id="12-019" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-019" class="fas fa-play"></i>
+        <audio id="audio_12-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-019.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">勉強で、漢字を覚えても覚えてもすぐわすれてしまったり、</span>
         <span class="content-sent kanji-sent is-hidden">勉強で、<a onclick="show_kanji_data('漢')">漢</a>字を<a onclick="show_kanji_data('覚')">覚</a>えても<a onclick="show_kanji_data('覚')">覚</a>えてもすぐわすれてしまったり、</span>
         <span class="content-sent plain-sent is-hidden">勉強で、漢字を覚えても覚えてもすぐわすれてしまったり、</span>
@@ -768,27 +852,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">or if in your study, though you memorize kanji over and over again you quickly forget them,</span>
       </td>
     </tr>
 
-    <tr id="12-20" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-20" class="fas fa-play"></i>
-        <audio id="audio_12-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-20.mp3" type="audio/mpeg">
+    <tr id="12-020" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-020" class="fas fa-play"></i>
+        <audio id="audio_12-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-020.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">好きな人にふられて、もう生きていく<a onclick="show_grammar_data('力もなくなるほどがっかりする')">力もなくなるほどがっかりする</a>ようなことがあったら、</span>
         <span class="content-sent kanji-sent is-hidden">好きな人にふられて、もう生きていく力もなくなるほどがっかりするようなことがあったら、</span>
         <span class="content-sent plain-sent is-hidden">好きな人にふられて、もう生きていく力もなくなるほどがっかりするようなことがあったら、</span>
@@ -796,27 +884,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">or if you&#39;re jilted by someone you like, and feel so discouraged that you don&#39;t have the strength to go on living,</span>
       </td>
     </tr>
 
-    <tr id="12-21" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-21" class="fas fa-play"></i>
-        <audio id="audio_12-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-21.mp3" type="audio/mpeg">
+    <tr id="12-021" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-021" class="fas fa-play"></i>
+        <audio id="audio_12-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-021.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">「七転八起」ということわざと、ダルマさんの姿を思い出してください。</span>
         <span class="content-sent kanji-sent is-hidden">「七<a onclick="show_kanji_data('転')">転</a>八<a onclick="show_kanji_data('起')">起</a>」ということわざと、ダルマさんの<a onclick="show_kanji_data('姿')">姿</a>を思い出してください。</span>
         <span class="content-sent plain-sent is-hidden">「七転八起」ということわざと、ダルマさんの姿を思い出してください。</span>
@@ -824,27 +916,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">just remember the proverb, &quot;Fall down seven times, but get up eight,&quot; and the form of the Daruma.</span>
       </td>
     </tr>
 
-    <tr id="12-22" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_12-22" class="fas fa-play"></i>
-        <audio id="audio_12-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/12-22.mp3" type="audio/mpeg">
+    <tr id="12-022" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_12-022" class="fas fa-play"></i>
+        <audio id="audio_12-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/12-022.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">きっと、もう一度頑張ってみようという勇気が心にわいてくるでしょう。</span>
         <span class="content-sent kanji-sent is-hidden">きっと、もう一<a onclick="show_kanji_data('度')">度</a>頑<a onclick="show_kanji_data('張')">張</a>ってみようという<a onclick="show_kanji_data('勇')">勇</a>気が心にわいてくるでしょう。</span>
         <span class="content-sent plain-sent is-hidden">きっと、もう一度頑張ってみようという勇気が心にわいてくるでしょう。</span>
@@ -852,13 +948,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Certainly, the courage to try once more will well up in your heart.</span>
       </td>
     </tr>

@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
     <tr id="09a-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-01" class="fas fa-play"></i>
         <audio id="audio_09a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-01.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
         <span class="content-sent kanji-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
         <span class="content-sent plain-sent is-hidden">徳川家康が、まだ小さくて竹千代と言っていた頃です。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The following event happened when Tokugawa Ieyasu was still small and called [by his boyhood name of] Takechiyo.</span>
       </td>
     </tr>
 
     <tr id="09a-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-02" class="fas fa-play"></i>
         <audio id="audio_09a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-02.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
         <span class="content-sent kanji-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
         <span class="content-sent plain-sent is-hidden">家来におぶわれて散歩に出てみると、近所の子供達が川をはさんで石合戦をしていました。</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">As he went for a stroll, carried piggyback by a retainer, the children of the neighborhood were having a rock fight on both sides of a river.</span>
       </td>
     </tr>
 
     <tr id="09a-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-03" class="fas fa-play"></i>
         <audio id="audio_09a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-03.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">おもしろいので遊び半分に見ていると、一人の家来が、「こんなに人数の差があっては試合にならない。きっと人数の多い方が<a onclick="show_grammar_data('勝つに決まっている')">勝つに決まっている</a>」と言い出しました。</span>
         <span class="content-sent kanji-sent is-hidden">おもしろいので<a onclick="show_kanji_data('遊')">遊</a>び半分に見ていると、一人の家来が、「こんなに人数の<a onclick="show_kanji_data('差')">差</a>があっては<a onclick="show_kanji_data('試')">試</a>合にならない。きっと人数の多い方が勝つに決まっている」と言い出しました。</span>
         <span class="content-sent plain-sent is-hidden">おもしろいので遊び半分に見ていると、一人の家来が、「こんなに人数の差があっては試合にならない。きっと人数の多い方が勝つに決まっている」と言い出しました。</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">As they watched, half in amusement, one retainer said, &quot;With such a large difference in numbers it will be no contest. Surely, the larger side will win.&quot;</span>
       </td>
     </tr>
 
     <tr id="09a-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-04" class="fas fa-play"></i>
         <audio id="audio_09a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-04.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">確かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('確')">確</a>かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
         <span class="content-sent plain-sent is-hidden">確かに、一方はとても人数が多いのですが、相手はほんの小人数です。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Indeed, one side was large, while the other was very small.</span>
       </td>
     </tr>
 
     <tr id="09a-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-05" class="fas fa-play"></i>
         <audio id="audio_09a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-05.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が<a onclick="show_grammar_data('勝ちますよ')">勝ちますよ</a>。」と堂々と声を張りました。</span>
         <span class="content-sent kanji-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が勝ちますよ。」と<a onclick="show_kanji_data('堂')">堂</a>々と声を張りました。</span>
         <span class="content-sent plain-sent is-hidden">ところが、家来の背中におぶわれている竹千代は、「いや、きっと小人数の方が勝ちますよ。」と堂々と声を張りました。</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Takechiyo, however, still carried by his retainer, said with great dignity in a tense voice, &quot;No. The side with the fewer numbers will surely win.&quot;</span>
       </td>
     </tr>
 
     <tr id="09a-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-06" class="fas fa-play"></i>
         <audio id="audio_09a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-06.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
         <span class="content-sent kanji-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
         <span class="content-sent plain-sent is-hidden">石合戦が終わってみると、やはり、竹千代の言ったように小人数の方が勝ちました。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Sure enough, when the battle came to an end the smaller group had won, just as Takechiyo had said.</span>
       </td>
     </tr>
 
     <tr id="09a-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-07" class="fas fa-play"></i>
         <audio id="audio_09a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-07.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
         <span class="content-sent kanji-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
         <span class="content-sent plain-sent is-hidden">竹千代は、「大勢の方は、人数が多いからと言って油断をしていた。でも、小人数の方は数が少ないので、かえって気を引きしめて力を合わせてやったので勝ったのだ。」と言いました。</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">&quot;The large group was careless because they outnumbered the other. The small group, on the other hand, because they were outnumbered, disciplined themselves and worked together, so they won,&quot; he said.</span>
       </td>
     </tr>
 
     <tr id="09a-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-08" class="fas fa-play"></i>
         <audio id="audio_09a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-08.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
         <span class="content-sent kanji-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
         <span class="content-sent plain-sent is-hidden">家来はとても感心して、「竹千代様は、きっと戦争もうまくなり、立派な大将になられるでしょう。」と言ったと言われています。</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The story says that the retainers, very impressed, said, &quot;Lord Takechiyo will no doubt be good at battle strategy and will make a splendid general.&quot;</span>
       </td>
     </tr>
 
     <tr id="09a-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-09" class="fas fa-play"></i>
         <audio id="audio_09a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-09.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
         <span class="content-sent kanji-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
         <span class="content-sent plain-sent is-hidden">この竹千代が、秀吉の死後、日本の国を治めるようになった徳川家康です。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This Takechiyo was Tokugawa Ieyasu, who came to rule the nation of Japan after Hideyoshi&#39;s death.</span>
       </td>
     </tr>
 
     <tr id="09a-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-10" class="fas fa-play"></i>
         <audio id="audio_09a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-10.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡単に政権を<a onclick="show_grammar_data('握ったわけではありません')">握ったわけではありません</a>。</span>
         <span class="content-sent kanji-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡<a onclick="show_kanji_data('単')">単</a>に政権を握ったわけではありません。</span>
         <span class="content-sent plain-sent is-hidden">もちろん、秀吉には秀頼という息子があり、家康もそう簡単に政権を握ったわけではありません。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It was, of course, not all that easy for Ieyasu to get control of political power because Hideyoshi had a son named Hideyori.</span>
       </td>
     </tr>
 
     <tr id="09a-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-11" class="fas fa-play"></i>
         <audio id="audio_09a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-11.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">しかし、持ち前の辛抱強さと確実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
         <span class="content-sent kanji-sent is-hidden">しかし、持ち前の辛抱強さと<a onclick="show_kanji_data('確')">確</a>実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
         <span class="content-sent plain-sent is-hidden">しかし、持ち前の辛抱強さと確実さでじりじりと力を増し、ついに天下分け目の戦いと言われた関が原の戦いで勝利を収め、１６０３年、江戸（現在の東京）に幕府を開き政治を行いました。</span>
@@ -544,27 +596,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">However, thanks to his innate patience and steadiness, he built his power little by little, and after attaining victory in what is known as the decisive battle at Sekigahara, he established a bakufu [military government] in Edo (currently Tōkyō) from where he took charge of the government.</span>
       </td>
     </tr>
 
     <tr id="09a-12" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-12" class="fas fa-play"></i>
         <audio id="audio_09a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-12.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
         <span class="content-sent kanji-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
         <span class="content-sent plain-sent is-hidden">この江戸幕府が、１８６８年の明治維新になるまでの長い間続いたわけです。</span>
@@ -572,27 +628,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Edo Shogunate continued all the way until the Meiji restoration in 1868.</span>
       </td>
     </tr>
 
     <tr id="09a-13" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-13" class="fas fa-play"></i>
         <audio id="audio_09a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-13.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく確かめて、忍耐強く、何事も<a onclick="show_grammar_data('確実にやるたち')">確実にやるたち</a>でした。</span>
         <span class="content-sent kanji-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく<a onclick="show_kanji_data('確')">確</a>かめて、忍耐強く、何事も<a onclick="show_kanji_data('確')">確</a>実にやるたちでした。</span>
         <span class="content-sent plain-sent is-hidden">家康は、秀吉や信長と比べると、ものごとの成り行きをよく確かめて、忍耐強く、何事も確実にやるたちでした。</span>
@@ -600,27 +660,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Compared to Hideyoshi and Nobunaga, Ieyasu was of a disposition to patiently make very certain of things and to act very deliberately.</span>
       </td>
     </tr>
 
     <tr id="09a-14" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-14" class="fas fa-play"></i>
         <audio id="audio_09a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-14.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
         <span class="content-sent kanji-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
         <span class="content-sent plain-sent is-hidden">この戦国末期の三英雄、信長、秀吉、家康の性格をよく表したとてもおもしろい歌があります。</span>
@@ -628,27 +692,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">There is a very interesting poem expressing well the characters of Nobunaga, Hideyoshi, and Ieyasu, the three great heroes of the last part of the Warring States Period:</span>
       </td>
     </tr>
 
     <tr id="09a-15" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-15" class="fas fa-play"></i>
         <audio id="audio_09a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-15.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a>殺してしまえほととぎす</span>
         <span class="content-sent kanji-sent is-hidden">鳴かぬなら殺してしまえほととぎす</span>
         <span class="content-sent plain-sent is-hidden">鳴かぬなら殺してしまえほととぎす</span>
@@ -656,27 +724,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The nightingale: if she won&#39;t sing, kill her.</span>
       </td>
     </tr>
 
     <tr id="09a-16" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-16" class="fas fa-play"></i>
         <audio id="audio_09a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-16.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a><a onclick="show_grammar_data('鳴かせてみせよう')">鳴かせてみせよう</a>ほととぎす</span>
         <span class="content-sent kanji-sent is-hidden">鳴かぬなら鳴かせてみせようほととぎす</span>
         <span class="content-sent plain-sent is-hidden">鳴かぬなら鳴かせてみせようほととぎす</span>
@@ -684,27 +756,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The nightingale: if she won&#39;t sing, I&#39;ll force her to do it.</span>
       </td>
     </tr>
 
     <tr id="09a-17" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-17" class="fas fa-play"></i>
         <audio id="audio_09a-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-17.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('鳴かぬなら')">鳴かぬなら</a>鳴くまで待とうほととぎす</span>
         <span class="content-sent kanji-sent is-hidden">鳴かぬなら鳴くまで待とうほととぎす</span>
         <span class="content-sent plain-sent is-hidden">鳴かぬなら鳴くまで待とうほととぎす</span>
@@ -712,27 +788,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The nightingale: if she won&#39;t sing, I&#39;ll wait until she does.</span>
       </td>
     </tr>
 
     <tr id="09a-18" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-18" class="fas fa-play"></i>
         <audio id="audio_09a-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-18.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
         <span class="content-sent kanji-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
         <span class="content-sent plain-sent is-hidden">信長の短気、秀吉の巧みさ、家康の気長さを本当にうまく表していると思います。</span>
@@ -740,27 +820,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The poem seems to me to clearly reveal Nobunaga&#39;s short temper, Hideyoshi&#39;s ingenuity, and Ieyasu&#39;s patience.</span>
       </td>
     </tr>
 
     <tr id="09a-19" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-19" class="fas fa-play"></i>
         <audio id="audio_09a-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-19.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
         <span class="content-sent kanji-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
         <span class="content-sent plain-sent is-hidden">江戸幕府は全国を藩に分けて、各藩に大名を置いて治めさせました。</span>
@@ -768,27 +852,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Edo Shogunate divided the whole country into fiefs and placed a Daimyō in each to rule it.</span>
       </td>
     </tr>
 
     <tr id="09a-20" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-20" class="fas fa-play"></i>
         <audio id="audio_09a-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-20.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を支配しました。</span>
         <span class="content-sent kanji-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を<a onclick="show_kanji_data('支')">支</a>配しました。</span>
         <span class="content-sent plain-sent is-hidden">また、人々は士農工商という身分に定められ、武士が一番上で、農民や町人を支配しました。</span>
@@ -796,27 +884,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The people were also divided into [the four classes of] warrior, peasant, artisan, and merchant, with the warrior in control at the top.</span>
       </td>
     </tr>
 
     <tr id="09a-21" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-21" class="fas fa-play"></i>
         <audio id="audio_09a-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-21.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
         <span class="content-sent kanji-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
         <span class="content-sent plain-sent is-hidden">農民は勝手に自分達の土地を離れることはできませんでした。</span>
@@ -824,27 +916,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The peasants were not free to leave their lands at will.</span>
       </td>
     </tr>
 
     <tr id="09a-22" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-22" class="fas fa-play"></i>
         <audio id="audio_09a-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-22.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な存在になっていました。</span>
         <span class="content-sent kanji-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な<a onclick="show_kanji_data('存')">存</a>在になっていました。</span>
         <span class="content-sent plain-sent is-hidden">平安時代に勢力のあった貴族達は長い戦国時代ですっかり領土を失い、無力な存在になっていました。</span>
@@ -852,27 +948,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The nobility, who had held power during the Heian period, lost their estates completely over the long warring states period, ending up powerless.</span>
       </td>
     </tr>
 
     <tr id="09a-23" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-23" class="fas fa-play"></i>
         <audio id="audio_09a-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-23.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
         <span class="content-sent kanji-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
         <span class="content-sent plain-sent is-hidden">江戸幕府は、ほかの大名達が経済的な力を持つと不利になるとみて、いろいろな事業を大名達にさせました。</span>
@@ -880,27 +980,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Thinking it would be to their own disadvantage if other Daimyō possessed economic power, the Edo Shōgunate forced the Daimyō to undertake various projects.</span>
       </td>
     </tr>
 
     <tr id="09a-24" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-24" class="fas fa-play"></i>
         <audio id="audio_09a-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-24.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">家康を祭った日光の東照宮を造らせたり、参勤交代の制度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義務にし、お金を使わせたのです。</span>
         <span class="content-sent kanji-sent is-hidden">家康を祭った日光の東照宮を造らせたり、<a onclick="show_kanji_data('参')">参</a><a onclick="show_kanji_data('勤')">勤</a>交代の<a onclick="show_kanji_data('制')">制</a>度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義<a onclick="show_kanji_data('務')">務</a>にし、お金を使わせたのです。</span>
         <span class="content-sent plain-sent is-hidden">家康を祭った日光の東照宮を造らせたり、参勤交代の制度を定めて大名達が一年おきに江戸に出て幕府に仕えるのを義務にし、お金を使わせたのです。</span>
@@ -908,27 +1012,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">They caused them to use up their funds by having them build the Nikkō Tōshōgū shrine, where Ieyasu is worshipped, and established the alternate attendance system, whereby Daimyō were given the duty to journey to Edo to be in attendance on the Shogunate every other year.</span>
       </td>
     </tr>
 
     <tr id="09a-25" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-25" class="fas fa-play"></i>
         <audio id="audio_09a-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-25.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">また、鎖国と言って、外国との交際を一切禁止しました。</span>
         <span class="content-sent kanji-sent is-hidden">また、鎖国と言って、外国との交際を一切<a onclick="show_kanji_data('禁')">禁</a>止しました。</span>
         <span class="content-sent plain-sent is-hidden">また、鎖国と言って、外国との交際を一切禁止しました。</span>
@@ -936,27 +1044,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Also, [under a policy] known as sakoku (national isolation), they outlawed exchange with foreign countries altogether.</span>
       </td>
     </tr>
 
     <tr id="09a-26" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_09a-26" class="fas fa-play"></i>
         <audio id="audio_09a-26" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/09a-26.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このような政策や制度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
         <span class="content-sent kanji-sent is-hidden">このような政<a onclick="show_kanji_data('策')">策</a>や<a onclick="show_kanji_data('制')">制</a>度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
         <span class="content-sent plain-sent is-hidden">このような政策や制度を実際化して、武士中心の社会を築いたのは家康代々続いた子孫達ですが、この長い江戸幕府を開き基礎を作ったのが徳川家康です。</span>
@@ -964,13 +1076,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It was the succeeding generations of descendants of Ieyasu who put the policies and systems into effect, and built a feudal society, but it was Tokugawa Ieyasu who established and provided the foundation for the lengthy Edo Shogunate.</span>
       </td>
     </tr>

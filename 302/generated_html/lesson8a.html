@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
     <tr id="08a-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-01" class="fas fa-play"></i>
         <audio id="audio_08a-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-01.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">金閣、銀閣を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の末になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">金<a onclick="show_kanji_data('閣')">閣</a>、銀<a onclick="show_kanji_data('閣')">閣</a>を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の<a onclick="show_kanji_data('末')">末</a>になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">金閣、銀閣を建ててはなやかな生活を楽しんだ室町幕府も、１５世紀の末になると全く力がなくなり、幕府の言うことを聞く者は一人もいなくなってしまいました。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Muromachi Bakufu, which had built the Kinkaku and the Ginkaku and had enjoyed a gorgeous lifestyle, lost power completely toward the end of the 15th century, and there was no longer anyone who paid them any heed.</span>
       </td>
     </tr>
 
     <tr id="08a-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-02" class="fas fa-play"></i>
         <audio id="audio_08a-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-02.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そして、日本中がいろいろな国に分かれ、その指導者である大名が、我も我もと京都に進んで、全国を治めようと戦い合いました。</span>
         <span class="content-sent kanji-sent is-hidden">そして、日本中がいろいろな国に分かれ、その<a onclick="show_kanji_data('指')">指</a><a onclick="show_kanji_data('導')">導</a>者である大名が、<a onclick="show_kanji_data('我')">我</a>も<a onclick="show_kanji_data('我')">我</a>もと京都に進んで、全国を治めようと戦い合いました。</span>
         <span class="content-sent plain-sent is-hidden">そして、日本中がいろいろな国に分かれ、その指導者である大名が、我も我もと京都に進んで、全国を治めようと戦い合いました。</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In addition, the country of Japan was divided into provinces, and the leaders of the provinces, the Daimyō (Feudal Lords), fought among themselves, each trying to advance on Kyōto and control the whole country.</span>
       </td>
     </tr>
 
     <tr id="08a-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-03" class="fas fa-play"></i>
         <audio id="audio_08a-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-03.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
         <span class="content-sent kanji-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
         <span class="content-sent plain-sent is-hidden">このような時代が百年間ぐらい続きますが、これを戦国時代と呼んでいます。</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This period, known as the Warring States period, would continue for some 100 years.</span>
       </td>
     </tr>
 
     <tr id="08a-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-04" class="fas fa-play"></i>
         <audio id="audio_08a-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-04.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
         <span class="content-sent kanji-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
         <span class="content-sent plain-sent is-hidden">戦国時代に有名な戦いがいろいろ起こりましたが、特に、武田信玄と上杉謙信の戦いは有名です。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">There were various well-known battles in the Warring States period, but particularly famous were the battles between Takeda Shingen and Uesugi Kenshin.</span>
       </td>
     </tr>
 
     <tr id="08a-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-05" class="fas fa-play"></i>
         <audio id="audio_08a-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-05.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も旗をあげて京都に進むことはできませんでした。</span>
         <span class="content-sent kanji-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も<a onclick="show_kanji_data('旗')">旗</a>をあげて京都に進むことはできませんでした。</span>
         <span class="content-sent plain-sent is-hidden">信濃の国（現在の長野県）の川中島で何度も何度も戦いましたが、いつも引き分けに終わり、ついに勝負がつかず、信玄も謙信も旗をあげて京都に進むことはできませんでした。</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">They fought battle after battle at Kawanakajima in Shinano Province (currently Nagano Prefecture), but each battle ended in a draw, and in the end no victor emerged; thus neither Shingen nor Kenshin were able to raise his banner and march on Kyōto.</span>
       </td>
     </tr>
 
     <tr id="08a-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-06" class="fas fa-play"></i>
         <audio id="audio_08a-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-06.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
         <span class="content-sent kanji-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
         <span class="content-sent plain-sent is-hidden">１６世紀の終わりになって、ようやく尾張の国（現在の愛知県）の大名が全国を統一しかけました。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Finally, toward the end of the 16th century, the Daimyō of Owari Province (modern Aichi Prefecture) began unifying Japan.</span>
       </td>
     </tr>
 
     <tr id="08a-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-07" class="fas fa-play"></i>
         <audio id="audio_08a-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-07.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">この大名が織田信長です。</span>
         <span class="content-sent kanji-sent is-hidden">この大名が織田信長です。</span>
         <span class="content-sent plain-sent is-hidden">この大名が織田信長です。</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">He was Oda Nobunaga.</span>
       </td>
     </tr>
 
     <tr id="08a-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-08" class="fas fa-play"></i>
         <audio id="audio_08a-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-08.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊臣秀吉）や新しい戦争の技術などの助けで、次々と大名を倒し京都に上りました。</span>
         <span class="content-sent kanji-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊<a onclick="show_kanji_data('臣')">臣</a>秀吉）や新しい戦争の技<a onclick="show_kanji_data('術')">術</a>などの助けで、次々と大名を倒し京都に上りました。</span>
         <span class="content-sent plain-sent is-hidden">信長は非常に優れた家来、木下藤吉郎（後の豊臣秀吉）や新しい戦争の技術などの助けで、次々と大名を倒し京都に上りました。</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Nobunaga, with the help of his outstanding retainer, Kinoshita Tōkichirō (later called Toyotomi Hideyoshi), and new fighting tactics (technology) overthrew Daimyō after Daimyō and advanced on Kyōto.</span>
       </td>
     </tr>
 
     <tr id="08a-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-09" class="fas fa-play"></i>
         <audio id="audio_08a-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-09.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
         <span class="content-sent plain-sent is-hidden">残念なことに、日本統一もう一歩というところで、自分の家来の一人、明智光秀という武士に不意に襲われ、命を落としてしまいました。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Unfortunately, just on the verge of achieving full unification, he was taken in a surprise attack from his own retainer, the warrior Akechi Mitsuhide, and lost his life.</span>
       </td>
     </tr>
 
     <tr id="08a-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-10" class="fas fa-play"></i>
         <audio id="audio_08a-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-10.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
         <span class="content-sent kanji-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
         <span class="content-sent plain-sent is-hidden">信長は気が短すぎるのでこんなことになってしまったと言われています。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Things arrived at such a state, it is said, because Nobunaga was too short-tempered.</span>
       </td>
     </tr>
 
     <tr id="08a-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-11" class="fas fa-play"></i>
         <audio id="audio_08a-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-11.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">例えば、信長は、ほかの大名を助けたり応援したりする者は、<a onclick="show_grammar_data('寺であろうと何であろうと')">寺であろうと何であろうと</a>すべて焼き払いました。</span>
         <span class="content-sent kanji-sent is-hidden">例えば、信長は、ほかの大名を助けたり<a onclick="show_kanji_data('応')">応</a>援したりする者は、寺であろうと何であろうとすべて焼き払いました。</span>
         <span class="content-sent plain-sent is-hidden">例えば、信長は、ほかの大名を助けたり応援したりする者は、寺であろうと何であろうとすべて焼き払いました。</span>
@@ -544,27 +596,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">For example, Nobunaga burned to the ground anything, be it a temple or whatever, that provided aid to other Daimyō.</span>
       </td>
     </tr>
 
     <tr id="08a-12" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-12" class="fas fa-play"></i>
         <audio id="audio_08a-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-12.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">京都の比叡山にある延暦寺という非常に有名な寺も、立派な建物や文化財を信長にすっかり焼かれてしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">京都の比叡山にある<a onclick="show_kanji_data('延')">延</a>暦寺という非常に有名な寺も、立派な建物や文化<a onclick="show_kanji_data('財')">財</a>を信長にすっかり焼かれてしまいました。</span>
         <span class="content-sent plain-sent is-hidden">京都の比叡山にある延暦寺という非常に有名な寺も、立派な建物や文化財を信長にすっかり焼かれてしまいました。</span>
@@ -572,27 +628,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Even the very famous Enryakuji on Mt. Hiei had its splendid buildings and cultural treasures burned completely to the ground by Nobunaga.</span>
       </td>
     </tr>
 
     <tr id="08a-13" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-13" class="fas fa-play"></i>
         <audio id="audio_08a-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-13.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
         <span class="content-sent kanji-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
         <span class="content-sent plain-sent is-hidden">そのような信長が、恵林寺という寺を焼き払ってしまえと命じました。</span>
@@ -600,27 +660,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Nobunaga commanded [his men] to burn down a temple known as Erinji.</span>
       </td>
     </tr>
 
     <tr id="08a-14" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-14" class="fas fa-play"></i>
         <audio id="audio_08a-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-14.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
         <span class="content-sent kanji-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
         <span class="content-sent plain-sent is-hidden">敵の兵隊をかくまっていたからです。</span>
@@ -628,27 +692,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The reason was that it harbored enemy soldiers.</span>
       </td>
     </tr>
 
     <tr id="08a-15" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-15" class="fas fa-play"></i>
         <audio id="audio_08a-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-15.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
         <span class="content-sent kanji-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
         <span class="content-sent plain-sent is-hidden">ところが、光秀は信長に従おうとせず、「もう少しお寺やお坊さんを大切にするように」と勧めました。</span>
@@ -656,27 +724,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">However, Mitsuhide, making no effort to obey Nobunaga, encouraged him to place a little more value on temples and priests.</span>
       </td>
     </tr>
 
     <tr id="08a-16" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-16" class="fas fa-play"></i>
         <audio id="audio_08a-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-16.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従順な態度をしかりました。</span>
         <span class="content-sent kanji-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従<a onclick="show_kanji_data('順')">順</a>な<a onclick="show_kanji_data('態')">態</a>度をしかりました。</span>
         <span class="content-sent plain-sent is-hidden">すると、信長はかんかんにおこって、光秀の不従順な態度をしかりました。</span>
@@ -684,27 +756,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Nobunaga was angered and scolded Mitsuhide for his unfaithful attitude.</span>
       </td>
     </tr>
 
     <tr id="08a-17" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-17" class="fas fa-play"></i>
         <audio id="audio_08a-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-17.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家康が信長を訪ねて来た時、光秀はそのもてなしの責任を受けました。</span>
         <span class="content-sent kanji-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家<a onclick="show_kanji_data('康')">康</a>が信長を訪ねて来た時、光秀はそのもてなしの<a onclick="show_kanji_data('責')">責</a><a onclick="show_kanji_data('任')">任</a>を受けました。</span>
         <span class="content-sent plain-sent is-hidden">また、尾張の国のすぐ隣の国の大名、徳川家康が信長を訪ねて来た時、光秀はそのもてなしの責任を受けました。</span>
@@ -712,27 +788,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Also, when Tokugawa Ieyasu, the Daimyō of the province neighboring Owari Province, visited Nobunaga, Mitsuhide was charged with hosting him.</span>
       </td>
     </tr>
 
     <tr id="08a-18" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-18" class="fas fa-play"></i>
         <audio id="audio_08a-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-18.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
         <span class="content-sent plain-sent is-hidden">ところが、あまりに豪華なもてなし方をするので、光秀はまたまた信長にしかられてしまいました。</span>
@@ -740,27 +820,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Once again, however, Mitsuhide was scolded by Nobunaga because of his overly ostentatious treatment of Tokugawa.</span>
       </td>
     </tr>
 
     <tr id="08a-19" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-19" class="fas fa-play"></i>
         <audio id="audio_08a-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-19.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
         <span class="content-sent kanji-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
         <span class="content-sent plain-sent is-hidden">このようなことが積もり積もって、光秀は、とうとう信長に対して謀反を起こす決心をしました。</span>
@@ -768,27 +852,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Events such as these accumulated, and at length Mitsuhide determined to mount a rebellion against Nobunaga.</span>
       </td>
     </tr>
 
     <tr id="08a-20" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-20" class="fas fa-play"></i>
         <audio id="audio_08a-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-20.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">備中の国（現在の岡山県）を治めていた毛利家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
         <span class="content-sent kanji-sent is-hidden">備中の国（現在の岡山県）を治めていた毛<a onclick="show_kanji_data('利')">利</a>家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
         <span class="content-sent plain-sent is-hidden">備中の国（現在の岡山県）を治めていた毛利家を征伐に行く途中、信長は数人の家来と本能寺という寺に泊まっていました。</span>
@@ -796,27 +884,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">On his way to subjugate the Mōri Clan, who governed Bichū Province (current Okayama Prefecture), Nobunaga put up in Honnōji with a few retainers.</span>
       </td>
     </tr>
 
     <tr id="08a-21" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-21" class="fas fa-play"></i>
         <audio id="audio_08a-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-21.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
         <span class="content-sent kanji-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
         <span class="content-sent plain-sent is-hidden">先に出発していた光秀は、方向をくるりと変えて本能寺めがけて攻め寄りました。</span>
@@ -824,27 +916,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Mitsuhide, who had set off in advance, reversed his direction and attacked Honnōji.</span>
       </td>
     </tr>
 
     <tr id="08a-22" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-22" class="fas fa-play"></i>
         <audio id="audio_08a-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-22.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
         <span class="content-sent kanji-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
         <span class="content-sent plain-sent is-hidden">不意をつかれた信長は、本能寺に火をつけ、その中で死んでいきました。</span>
@@ -852,27 +948,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Caught by surprise, Nobunaga set fire to Honnōji, and died there.</span>
       </td>
     </tr>
 
     <tr id="08a-23" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-23" class="fas fa-play"></i>
         <audio id="audio_08a-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-23.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
         <span class="content-sent kanji-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
         <span class="content-sent plain-sent is-hidden">夜明けの明るくなりかけた空に、本能寺の焼け跡のくすぶった煙がだんだんと消えていきました。</span>
@@ -880,27 +980,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The smoke from the smoldering ruins of Honnōji gradually wafted away in the dawn sky.</span>
       </td>
     </tr>
 
     <tr id="08a-24" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-24" class="fas fa-play"></i>
         <audio id="audio_08a-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-24.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">そのきれいな朝日が見られなかったように、百年も続いた戦国時代を平定するあと一歩というところで、信長はついにこの世を去っていってしまいました。</span>
@@ -908,27 +1012,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In the same way that he was unable to see that beautiful dawning sun, Nobunaga finally left the world just on the verge of bringing to an end the Warring States period which had continued already 100 years.</span>
       </td>
     </tr>
 
     <tr id="08a-25" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
         <i id="play_08a-25" class="fas fa-play"></i>
         <audio id="audio_08a-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
           <source src="sound/08a-25.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
         <span class="content-sent kanji-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
         <span class="content-sent plain-sent is-hidden">天正１０年（１５８２年）６月２日のことでした。</span>
@@ -936,13 +1044,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">It happened the second day of the sixth month of the tenth year of Tenshō (1582).</span>
       </td>
     </tr>

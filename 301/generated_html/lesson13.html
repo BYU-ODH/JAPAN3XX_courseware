@@ -30,7 +30,7 @@ function unplay(elem) {
 
 
 function show_hide_trans(elem) {
-    trans_elem = elem.getElementsByClassName('trans')[0]
+    trans_elem = elem.parentElement.parentElement.getElementsByClassName('trans')[0]
     if (trans_elem.classList.contains('is-invisible')) {
         trans_elem.classList.remove('is-invisible')
     } else {
@@ -54,17 +54,12 @@ function change_mode(mode) {
     mode_sents = document.getElementsByClassName(mode + '-sent')
     for (let i = 0; i < mode_sents.length; i++) {
         mode_sents[i].classList.remove('is-hidden')
+	// Bold all links
+	links = mode_sents[i].getElementsByTagName('a')
+        for (let j = 0; j < links.length; j++) {
+	    links[j].classList.add('bold-emph')
+	}
     }
-}
-
-
-function show(content_path) {
-    modal_card_body = document.getElementById("modal-card-body")
-    fetch(content_path)
-        .then(response => response.text())
-        .then(content_src => modal_card_body.innerHTML = content_src)
-    modal_card = document.getElementById("modal-card")
-    modal_card.classList.add("is-active")
 }
 
 
@@ -122,14 +117,6 @@ function show_kanji_data(link) {
 		.then(() => reset_paths());
 }
 
-function show_gif(gif_path) {
-    var img = document.createElement("IMG")
-    img.src = gif_path
-    document.getElementById('modal-content-img').appendChild(img)
-    modal = document.getElementById("modal-img")
-    modal.classList.add("is-active")
-}
-
 function close_modal() {
     modals = document.getElementsByClassName("modal")
     modals[0].classList.remove("is-active")
@@ -167,14 +154,33 @@ function reset_paths() {
 </script>
 
 <style>
-i.fa-play {
-	padding-right: 9;
-}
-
 .sentence {
     border-top-color: gray;
     border-top-style: solid;
     border-top-width: thin;
+}
+
+@keyframes embolden {
+  0% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+
+  50% {
+    text-shadow: -0.2px -0.2px 0 #1d3979, 0.2px -0.2px 0 #1d3979,
+      -0.2px 0.2px 0 #1d3979, 0.2px 0.2px 0 #1d3979;
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1.0);
+  }
+}
+
+.bold-emph {
+  animation: 0.4s embolden forwards;
+  transform: scale(1);
+  display:inline-block;
 }
 
 nav.navbar.is-fixed-bottom > .field {
@@ -184,6 +190,10 @@ nav.navbar.is-fixed-bottom > .field {
 svg {
     width: 75px;
     height: 75px;
+}
+
+td {
+    padding: 3;
 }
 </style>
 </head>
@@ -242,21 +252,23 @@ svg {
       </a>
     </p>
   </div>
-  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> icon to play a sentence.
-                          Use the <i class="fas fa-language"></i> icon to show a translation.<br><br>
+  <p><b>Instructions: </b>Use the <i class="fas fa-play"></i> button to listen to a sentence.
+                          Use the <i class="fas fa-language"></i> button to show a translation.<br><br>
 
   <table id="sentences" class="table-NOT"><tbody>
 
-    <tr id="13-01" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-01" class="fas fa-play"></i>
-        <audio id="audio_13-01" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-01.mp3" type="audio/mpeg">
+    <tr id="13-001" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-001" class="fas fa-play"></i>
+        <audio id="audio_13-001" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-001.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">むかしむかし、遠い星の国に、織り姫という美しい星と、彦星といって、美男子で、働き者の星がいました。</span>
         <span class="content-sent kanji-sent is-hidden">むかしむかし、遠い星の国に、<a onclick="show_kanji_data('織')">織</a>り姫という<a onclick="show_kanji_data('美')">美</a>しい星と、彦星といって、<a onclick="show_kanji_data('美')">美</a>男子で、<a onclick="show_kanji_data('働')">働</a>き<a onclick="show_kanji_data('者')">者</a>の星がいました。</span>
         <span class="content-sent plain-sent is-hidden">むかしむかし、遠い星の国に、織り姫という美しい星と、彦星といって、美男子で、働き者の星がいました。</span>
@@ -264,27 +276,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Once upon a time, in a faraway star country, there was a beautiful star called the Weaving Princess, and a hard-working, handsome star called Hikoboshi.</span>
       </td>
     </tr>
 
-    <tr id="13-02" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-02" class="fas fa-play"></i>
-        <audio id="audio_13-02" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-02.mp3" type="audio/mpeg">
+    <tr id="13-002" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-002" class="fas fa-play"></i>
+        <audio id="audio_13-002" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-002.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">織り姫は、<a onclick="show_grammar_data('織物が上手')">織物が上手</a>で、彦星は、忠実な羊飼いで、二人ともとてもよく働きました。</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫は、<a onclick="show_kanji_data('織')">織</a><a onclick="show_kanji_data('物')">物</a>が上手で、彦星は、忠実な羊飼いで、二人ともとてもよく<a onclick="show_kanji_data('働')">働</a>きました。</span>
         <span class="content-sent plain-sent is-hidden">織り姫は、織物が上手で、彦星は、忠実な羊飼いで、二人ともとてもよく働きました。</span>
@@ -292,27 +308,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Weaving Princess was very good at weaving, and Hikoboshi was a faithful shepherd, and both of them worked very hard.</span>
       </td>
     </tr>
 
-    <tr id="13-03" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-03" class="fas fa-play"></i>
-        <audio id="audio_13-03" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-03.mp3" type="audio/mpeg">
+    <tr id="13-003" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-003" class="fas fa-play"></i>
+        <audio id="audio_13-003" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-003.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
         <span class="content-sent kanji-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
         <span class="content-sent plain-sent is-hidden">ところが、大きくなって恋をしはじめるころになると、</span>
@@ -320,27 +340,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">But, when they grew up and began to fall in love,</span>
       </td>
     </tr>
 
-    <tr id="13-04" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-04" class="fas fa-play"></i>
-        <audio id="audio_13-04" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-04.mp3" type="audio/mpeg">
+    <tr id="13-004" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-004" class="fas fa-play"></i>
+        <audio id="audio_13-004" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-004.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">織り姫は、機を放り出し、彦星も、羊の世話など全くしなくなってしまいました。</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫は、<a onclick="show_kanji_data('機')">機</a>を<a onclick="show_kanji_data('放')">放</a>り出し、彦星も、羊の世話など<a onclick="show_kanji_data('全')">全</a>くしなくなってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">織り姫は、機を放り出し、彦星も、羊の世話など全くしなくなってしまいました。</span>
@@ -348,27 +372,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">the Weaving Princess abandoned her loom, and Hikoboshi also completely stopped taking care of his sheep.</span>
       </td>
     </tr>
 
-    <tr id="13-05" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-05" class="fas fa-play"></i>
-        <audio id="audio_13-05" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-05.mp3" type="audio/mpeg">
+    <tr id="13-005" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-005" class="fas fa-play"></i>
+        <audio id="audio_13-005" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-005.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">これを見た星の国の王様は、おこって、織り姫を星の国の一番南に、</span>
         <span class="content-sent kanji-sent is-hidden">これを見た星の国の王<a onclick="show_kanji_data('様')">様</a>は、おこって、<a onclick="show_kanji_data('織')">織</a>り姫を星の国の一番南に、</span>
         <span class="content-sent plain-sent is-hidden">これを見た星の国の王様は、おこって、織り姫を星の国の一番南に、</span>
@@ -376,27 +404,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The king of the star country, who saw this, was angry, and sent the Weaving Princess to the very southernmost part of the star country,</span>
       </td>
     </tr>
 
-    <tr id="13-06" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-06" class="fas fa-play"></i>
-        <audio id="audio_13-06" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-06.mp3" type="audio/mpeg">
+    <tr id="13-006" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-006" class="fas fa-play"></i>
+        <audio id="audio_13-006" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-006.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
         <span class="content-sent kanji-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
         <span class="content-sent plain-sent is-hidden">そして、彦星を一番北におくってしまいました。</span>
@@ -404,27 +436,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">and Hikoboshi to the very north.</span>
       </td>
     </tr>
 
-    <tr id="13-07" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-07" class="fas fa-play"></i>
-        <audio id="audio_13-07" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-07.mp3" type="audio/mpeg">
+    <tr id="13-007" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-007" class="fas fa-play"></i>
+        <audio id="audio_13-007" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-007.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、仕事など全然手につきません。</span>
         <span class="content-sent kanji-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、<a onclick="show_kanji_data('仕')">仕</a>事など<a onclick="show_kanji_data('全')">全</a><a onclick="show_kanji_data('然')">然</a>手につきません。</span>
         <span class="content-sent plain-sent is-hidden">離ればなれになってしまった二人の恋人は、毎日なみだを流して、仕事など全然手につきません。</span>
@@ -432,27 +468,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The two separated lovers cried every day, and didn&#39;t even touch their work.</span>
       </td>
     </tr>
 
-    <tr id="13-08" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-08" class="fas fa-play"></i>
-        <audio id="audio_13-08" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-08.mp3" type="audio/mpeg">
+    <tr id="13-008" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-008" class="fas fa-play"></i>
+        <audio id="audio_13-008" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-008.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そこで王様は、二人に、一生懸命働いたら、</span>
         <span class="content-sent kanji-sent is-hidden">そこで王<a onclick="show_kanji_data('様')">様</a>は、二人に、一生懸<a onclick="show_kanji_data('命')">命</a><a onclick="show_kanji_data('働')">働</a>いたら、</span>
         <span class="content-sent plain-sent is-hidden">そこで王様は、二人に、一生懸命働いたら、</span>
@@ -460,27 +500,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">So, the king promised the two that if they worked diligently,</span>
       </td>
     </tr>
 
-    <tr id="13-09" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-09" class="fas fa-play"></i>
-        <audio id="audio_13-09" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-09.mp3" type="audio/mpeg">
+    <tr id="13-009" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-009" class="fas fa-play"></i>
+        <audio id="audio_13-009" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-009.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと約束なさいました。</span>
         <span class="content-sent kanji-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと<a onclick="show_kanji_data('約')">約</a>束なさいました。</span>
         <span class="content-sent plain-sent is-hidden">一年に一度、天の川のほとりで会わせてあげようと約束なさいました。</span>
@@ -488,27 +532,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">he would let them meet once a year on the bank of the River of Heaven (the Milky Way).</span>
       </td>
     </tr>
 
-    <tr id="13-10" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-10" class="fas fa-play"></i>
-        <audio id="audio_13-10" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-10.mp3" type="audio/mpeg">
+    <tr id="13-010" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-010" class="fas fa-play"></i>
+        <audio id="audio_13-010" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-010.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">織り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸命働くことに決めました。</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('織')">織</a>り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸<a onclick="show_kanji_data('命')">命</a><a onclick="show_kanji_data('働')">働</a>くことに<a onclick="show_kanji_data('決')">決</a>めました。</span>
         <span class="content-sent plain-sent is-hidden">織り姫と彦星は、一年に一度、お互いに会えるのを楽にみに、一生懸命働くことに決めました。</span>
@@ -516,27 +564,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The Weaving Princess and Hikoboshi, looking forward to being able to meet once a year, decided to work very hard.</span>
       </td>
     </tr>
 
-    <tr id="13-11" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-11" class="fas fa-play"></i>
-        <audio id="audio_13-11" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-11.mp3" type="audio/mpeg">
+    <tr id="13-011" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-011" class="fas fa-play"></i>
+        <audio id="audio_13-011" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-011.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">毎日毎日、織り姫は、彦星のことを思いながら機を織り、</span>
         <span class="content-sent kanji-sent is-hidden">毎日毎日、<a onclick="show_kanji_data('織')">織</a>り姫は、彦星のことを思いながら<a onclick="show_kanji_data('機')">機</a>を<a onclick="show_kanji_data('織')">織</a>り、</span>
         <span class="content-sent plain-sent is-hidden">毎日毎日、織り姫は、彦星のことを思いながら機を織り、</span>
@@ -544,27 +596,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Every day, the Weaving Princess would work her loom while thinking of Hikoboshi,</span>
       </td>
     </tr>
 
-    <tr id="13-12" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-12" class="fas fa-play"></i>
-        <audio id="audio_13-12" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-12.mp3" type="audio/mpeg">
+    <tr id="13-012" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-012" class="fas fa-play"></i>
+        <audio id="audio_13-012" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-012.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">彦星も、織り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
         <span class="content-sent kanji-sent is-hidden">彦星も、<a onclick="show_kanji_data('織')">織</a>り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
         <span class="content-sent plain-sent is-hidden">彦星も、織り姫の顔を目に浮べて、羊の世話をするようになりました。</span>
@@ -572,27 +628,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">and Hikoboshi too began to take care of his sheep while dreaming of the Weaving Princess.</span>
       </td>
     </tr>
 
-    <tr id="13-13" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-13" class="fas fa-play"></i>
-        <audio id="audio_13-13" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-13.mp3" type="audio/mpeg">
+    <tr id="13-013" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-013" class="fas fa-play"></i>
+        <audio id="audio_13-013" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-013.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
         <span class="content-sent kanji-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
         <span class="content-sent plain-sent is-hidden">そうして、一年に一度、天の川のほとりで会って、楽しい一夜をすごすのです。</span>
@@ -600,27 +660,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Thus, they meet on the bank of the River of Heaven once a year, and spend a wonderful night.</span>
       </td>
     </tr>
 
-    <tr id="13-14" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-14" class="fas fa-play"></i>
-        <audio id="audio_13-14" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-14.mp3" type="audio/mpeg">
+    <tr id="13-014" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-014" class="fas fa-play"></i>
+        <audio id="audio_13-014" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-014.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
         <span class="content-sent kanji-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
         <span class="content-sent plain-sent is-hidden">七月七日の夜、外に出て、星空をながめてごらんなさい。</span>
@@ -628,27 +692,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">On the night of the seventh of July, look up at the starry sky.</span>
       </td>
     </tr>
 
-    <tr id="13-15" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-15" class="fas fa-play"></i>
-        <audio id="audio_13-15" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-15.mp3" type="audio/mpeg">
+    <tr id="13-015" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-015" class="fas fa-play"></i>
+        <audio id="audio_13-015" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-015.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
         <span class="content-sent kanji-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
         <span class="content-sent plain-sent is-hidden">天の川のそばで、二つのきれいな星がうれしそうにきらきら輝いていますよ。</span>
@@ -656,27 +724,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Beside the Milky Way, two beautiful stars will be twinkling happily.</span>
       </td>
     </tr>
 
-    <tr id="13-16" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-16" class="fas fa-play"></i>
-        <audio id="audio_13-16" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-16.mp3" type="audio/mpeg">
+    <tr id="13-016" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-016" class="fas fa-play"></i>
+        <audio id="audio_13-016" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-016.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">日本の人々は、この日に、<a onclick="show_grammar_data('この二つの星のために')">この二つの星のために</a>七夕というお祭りをします。</span>
         <span class="content-sent kanji-sent is-hidden">日本の人々は、この日に、この二つの星のために七夕というお<a onclick="show_kanji_data('祭')">祭</a>りをします。</span>
         <span class="content-sent plain-sent is-hidden">日本の人々は、この日に、この二つの星のために七夕というお祭りをします。</span>
@@ -684,27 +756,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">On this day, the Japanese people have a festival called &quot;Tanabata&quot; for these two stars.</span>
       </td>
     </tr>
 
-    <tr id="13-17" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-17" class="fas fa-play"></i>
-        <audio id="audio_13-17" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-17.mp3" type="audio/mpeg">
+    <tr id="13-017" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-017" class="fas fa-play"></i>
+        <audio id="audio_13-017" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-017.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden"><a onclick="show_grammar_data('地方によって')">地方によって</a>、いろいろなお祝いの仕方がありますが、</span>
         <span class="content-sent kanji-sent is-hidden">地方によって、いろいろなお祝いの<a onclick="show_kanji_data('仕')">仕</a>方がありますが、</span>
         <span class="content-sent plain-sent is-hidden">地方によって、いろいろなお祝いの仕方がありますが、</span>
@@ -712,27 +788,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Depending on the region, there are various ways of celebrating,</span>
       </td>
     </tr>
 
-    <tr id="13-18" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-18" class="fas fa-play"></i>
-        <audio id="audio_13-18" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-18.mp3" type="audio/mpeg">
+    <tr id="13-018" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-018" class="fas fa-play"></i>
+        <audio id="audio_13-018" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-018.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">大抵、笹の葉のついた竹の枝に、きれいな折り紙で作った装飾品や、筆で願いごとを書いたふだをつけて<a onclick="show_grammar_data('かざるのが普通です')">かざるのが普通です</a>。</span>
         <span class="content-sent kanji-sent is-hidden">大抵、笹の<a onclick="show_kanji_data('葉')">葉</a>のついた竹の枝に、きれいな折り紙で作った装飾<a onclick="show_kanji_data('品')">品</a>や、<a onclick="show_kanji_data('筆')">筆</a>で願いごとを書いたふだをつけてかざるのが普通です。</span>
         <span class="content-sent plain-sent is-hidden">大抵、笹の葉のついた竹の枝に、きれいな折り紙で作った装飾品や、筆で願いごとを書いたふだをつけてかざるのが普通です。</span>
@@ -740,27 +820,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">but it&#39;s usually customary to decorate bamboo branches (with bamboo leaves on them) with decorations made from folded paper and tags with wishes written in calligraphy (lit. &quot;with a brush&quot;).</span>
       </td>
     </tr>
 
-    <tr id="13-19" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-19" class="fas fa-play"></i>
-        <audio id="audio_13-19" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-19.mp3" type="audio/mpeg">
+    <tr id="13-019" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-019" class="fas fa-play"></i>
+        <audio id="audio_13-019" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-019.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">丁度、西洋のクリスマス・ツリーにいろいろなものをかざるのと似ています。</span>
         <span class="content-sent kanji-sent is-hidden"><a onclick="show_kanji_data('丁')">丁</a>度、西洋のクリスマス・ツリーにいろいろなものをかざるのと<a onclick="show_kanji_data('似')">似</a>ています。</span>
         <span class="content-sent plain-sent is-hidden">丁度、西洋のクリスマス・ツリーにいろいろなものをかざるのと似ています。</span>
@@ -768,27 +852,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">This closely resembles the decorating of the Western Christmas tree with various things.</span>
       </td>
     </tr>
 
-    <tr id="13-20" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-20" class="fas fa-play"></i>
-        <audio id="audio_13-20" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-20.mp3" type="audio/mpeg">
+    <tr id="13-020" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-020" class="fas fa-play"></i>
+        <audio id="audio_13-020" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-020.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">西洋では<a onclick="show_grammar_data('どんなにわんぱくでも、意地悪でも')">どんなにわんぱくでも、意地悪でも</a>、「とってもいい子になりますから、すてきなプレゼントを持って来て下さい。」と、</span>
         <span class="content-sent kanji-sent is-hidden">西洋ではどんなにわんぱくでも、意地<a onclick="show_kanji_data('悪')">悪</a>でも、「とってもいい子になりますから、すてきなプレゼントを<a onclick="show_kanji_data('持')">持</a>って来て下さい。」と、</span>
         <span class="content-sent plain-sent is-hidden">西洋ではどんなにわんぱくでも、意地悪でも、「とってもいい子になりますから、すてきなプレゼントを持って来て下さい。」と、</span>
@@ -796,27 +884,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In the West, no matter how naughty or ill-tempered they are, children say &quot;I&#39;ll be a very good kid, so please bring me a wonderful present,&quot;</span>
       </td>
     </tr>
 
-    <tr id="13-21" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-21" class="fas fa-play"></i>
-        <audio id="audio_13-21" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-21.mp3" type="audio/mpeg">
+    <tr id="13-021" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-021" class="fas fa-play"></i>
+        <audio id="audio_13-021" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-021.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
         <span class="content-sent kanji-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
         <span class="content-sent plain-sent is-hidden">クリスマス・ツリーの下でお願いごとをしますが、</span>
@@ -824,27 +916,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">and make a wish under the Christmas tree.</span>
       </td>
     </tr>
 
-    <tr id="13-22" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-22" class="fas fa-play"></i>
-        <audio id="audio_13-22" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-22.mp3" type="audio/mpeg">
+    <tr id="13-022" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-022" class="fas fa-play"></i>
+        <audio id="audio_13-022" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-022.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
         <span class="content-sent kanji-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
         <span class="content-sent plain-sent is-hidden">日本でも七夕の時、子供たちは、同じようなことをします。</span>
@@ -852,27 +948,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">In Japan, at Tanabata, children do the same kind of thing.</span>
       </td>
     </tr>
 
-    <tr id="13-23" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-23" class="fas fa-play"></i>
-        <audio id="audio_13-23" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-23.mp3" type="audio/mpeg">
+    <tr id="13-023" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-023" class="fas fa-play"></i>
+        <audio id="audio_13-023" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-023.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">普通、お習字とか<a onclick="show_grammar_data('おさいほうなどが上手')">おさいほうなどが上手</a>になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
         <span class="content-sent kanji-sent is-hidden">普通、お<a onclick="show_kanji_data('習')">習</a>字とかおさいほうなどが上手になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
         <span class="content-sent plain-sent is-hidden">普通、お習字とかおさいほうなどが上手になりますようにと、願いごとを紙に書いて、竹の枝にしばります。</span>
@@ -880,27 +980,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Usually, they write wishes, like wanting to become good at calligraphy or sewing, on paper, and tie the paper onto the bamboo branch.</span>
       </td>
     </tr>
 
-    <tr id="13-24" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-24" class="fas fa-play"></i>
-        <audio id="audio_13-24" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-24.mp3" type="audio/mpeg">
+    <tr id="13-024" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-024" class="fas fa-play"></i>
+        <audio id="audio_13-024" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-024.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">行事のはじまりも季節も、また、願いごともまるっきり違いますが、</span>
         <span class="content-sent kanji-sent is-hidden">行事のはじまりも<a onclick="show_kanji_data('季')">季</a><a onclick="show_kanji_data('節')">節</a>も、また、願いごともまるっきり違いますが、</span>
         <span class="content-sent plain-sent is-hidden">行事のはじまりも季節も、また、願いごともまるっきり違いますが、</span>
@@ -908,27 +1012,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The origin of the ceremony, the season, and the wishes are completely different,</span>
       </td>
     </tr>
 
-    <tr id="13-25" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-25" class="fas fa-play"></i>
-        <audio id="audio_13-25" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-25.mp3" type="audio/mpeg">
+    <tr id="13-025" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-025" class="fas fa-play"></i>
+        <audio id="audio_13-025" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-025.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">クリスマス・ツリーと似たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
         <span class="content-sent kanji-sent is-hidden">クリスマス・ツリーと<a onclick="show_kanji_data('似')">似</a>たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
         <span class="content-sent plain-sent is-hidden">クリスマス・ツリーと似たようなことを日本の人も続けてきたということは、おもしろいことだと思います。</span>
@@ -936,27 +1044,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">but I think it&#39;s interesting that the people of Japan have continued a tradition similar to the Christmas tree.</span>
       </td>
     </tr>
 
-    <tr id="13-26" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-26" class="fas fa-play"></i>
-        <audio id="audio_13-26" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-26.mp3" type="audio/mpeg">
+    <tr id="13-026" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-026" class="fas fa-play"></i>
+        <audio id="audio_13-026" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-026.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">七夕の伝説やお祝いの仕方は、日本の中でも、<a onclick="show_grammar_data('場所と時代によって')">場所と時代によって</a>、大分違います。</span>
         <span class="content-sent kanji-sent is-hidden">七夕の伝<a onclick="show_kanji_data('説')">説</a>やお祝いの<a onclick="show_kanji_data('仕')">仕</a>方は、日本の中でも、場<a onclick="show_kanji_data('所')">所</a>と時代によって、大分違います。</span>
         <span class="content-sent plain-sent is-hidden">七夕の伝説やお祝いの仕方は、日本の中でも、場所と時代によって、大分違います。</span>
@@ -964,27 +1076,31 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">The legend and way of celebrating Tanabata are very different depending on the place and the era, even within Japan.</span>
       </td>
     </tr>
 
-    <tr id="13-27" class="sentence">
-      <td class="has-text-centered" style="vertical-align: middle">
-      <span class="icon is-clickable is-small" onclick="aud_play_pause(this)">
-        <i id="play_13-27" class="fas fa-play"></i>
-        <audio id="audio_13-27" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
-          <source src="sound/13-27.mp3" type="audio/mpeg">
+    <tr id="13-027" class="sentence">
+      <td style="vertical-align: middle">
+      <button class="button is-rounded" onclick="aud_play_pause(this)">
+      <span class="icon is-clickable is-small">
+        <i id="play_13-027" class="fas fa-play"></i>
+        <audio id="audio_13-027" onended="unplay(this.parentElement.getElementsByTagName('i')[0])">
+          <source src="sound/13-027.mp3" type="audio/mpeg">
         </audio>
       </span>
+      </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="content-sent grammar-sent is-hidden">現在では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても有名です。</span>
         <span class="content-sent kanji-sent is-hidden">現<a onclick="show_kanji_data('在')">在</a>では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても<a onclick="show_kanji_data('有')">有</a>名です。</span>
         <span class="content-sent plain-sent is-hidden">現在では、一ヵ月おくれの八月七日に行われる仙台市の七夕がとても有名です。</span>
@@ -992,13 +1108,15 @@ svg {
       </td>
     </tr>
 
-    <tr class="is-clickable" onclick="show_hide_trans(this)">
-      <td class="has-text-centered" style="vertical-align: middle">
+    <tr>
+      <td style="vertical-align: middle">
+        <button class="button is-rounded" onclick="show_hide_trans(this)">
         <span class="icon">
           <i class="fas fa-language"></i>
         </span>
+        </button>
       </td>
-      <td>
+      <td style="vertical-align: middle">
         <span class="trans is-invisible">Nowadays, the month-late Tanabata of Sendai, which is held on August 8th, is very famous.</span>
       </td>
     </tr>
