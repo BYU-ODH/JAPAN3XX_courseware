@@ -12,8 +12,13 @@ import os
 import re
 import shutil
 import sys
+import warnings
 
 from bs4 import BeautifulSoup
+
+if sys.version_info < (3, 8):
+    warnings.warn('This script is written for Python 3.8+')
+    exit()
 
 try:
     src_xml = sys.argv[1]
