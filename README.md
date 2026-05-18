@@ -1,13 +1,35 @@
-# JAPAN302\_courseware
+# JAPAN3XX_courseware
 
-The old website currently resides at http://nihongo.byu.edu/j301New/l\_index.html
-We are working to refactor the website to be pure HTML/CSS with minimal to no
-javascript.
+This repository contains the courseware for the Japanese 301, 302, and 322
+sites. Each course is built from source data in its own directory and rendered
+into static HTML under `generated_html/`.
 
-## Structure
+## Current layout
 
-The old website is found in the `old/` directory. DO NOT EDIT ANYTHING IN THIS
-DIRECTORY!
+- `301/` - source XML, build script, and generated site for course 301
+- `302/` - source XML, build script, and generated site for course 302
+- `322/` - source XML, build script, transcript files, and generated site for
+  course 322
+- `common/` - shared CSS, icons, HTML fragments, and XML validation support
+- `index.html` - simple entry page that links to the generated course sites
 
-The new website is in the `JAPAN302/` directory. Scripts used to convert the
-old website to the new website are in the `scripts/` directory.
+## Workflow
+
+1. Edit the course source in the relevant course directory.
+2. Rebuild that course by running `python3 build_html.py` from inside the
+	course directory.
+3. The script writes static output to `generated_html/` and copies shared
+	assets from `common/`.
+4. If you change XML source files, validate them with `common/validate_xml.py`
+	before rebuilding.
+
+Examples:
+
+```bash
+cd 301 && python3 build_html.py
+cd 302 && python3 build_html.py
+cd 322 && python3 build_html.py
+```
+
+The generated files are build outputs and should not be edited directly unless
+you are intentionally changing the rendered static site.
