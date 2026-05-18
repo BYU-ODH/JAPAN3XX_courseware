@@ -26,9 +26,9 @@ into static HTML under `generated_html/`.
 Examples:
 
 ```bash
-cd 301 && python3 build_html.py
-cd 302 && python3 build_html.py
-cd 322 && python3 build_html.py
+cd 301 && uv run build_html.py
+cd 302 && uv run build_html.py
+cd 322 && uv run build_html.py
 ```
 
 The generated files are build outputs and should not be edited directly unless
